@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#091428" />
+      <stop offset="50%" stop-color="#0f1f38" />
+      <stop offset="100%" stop-color="#040b17" />
+    </linearGradient>
+
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#152642" />
+      <stop offset="100%" stop-color="#0e1a2f" />
+    </linearGradient>
+
+    <!-- Blue Gradient for text -->
+    <linearGradient id="brandTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00aaff" />
+      <stop offset="100%" stop-color="#0066ff" />
+    </linearGradient>
+
+    <linearGradient id="vnRingGrad" x1="50" y1="20" x2="350" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0047b3" />
+      <stop offset="35%" stop-color="#0066ff" />
+      <stop offset="70%" stop-color="#00aaff" />
+      <stop offset="100%" stop-color="#003399" />
+    </linearGradient>
+
+    <radialGradient id="vnBgGlow" cx="50%" cy="45%" r="55%" fx="50%" fy="35%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="75%" stop-color="#eef5ff" />
+      <stop offset="100%" stop-color="#d9e8ff" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+  <!-- Colombian Flag Top Micro Accent -->
+  <rect x="0" y="0" width="1200" height="4" fill="#fcd116" />
+  <rect x="0" y="4" width="1200" height="2" fill="#003893" />
+  <rect x="0" y="6" width="1200" height="2" fill="#ce1126" />
+
+  <!-- Subtle Grid Pattern Background -->
+  <g opacity="0.08" stroke="#ffffff" stroke-width="1">
+    <line x1="100" y1="0" x2="100" y2="630" />
+    <line x1="300" y1="0" x2="300" y2="630" />
+    <line x1="500" y1="0" x2="500" y2="630" />
+    <line x1="700" y1="0" x2="700" y2="630" />
+    <line x1="900" y1="0" x2="900" y2="630" />
+    <line x1="1100" y1="0" x2="1100" y2="630" />
+    <line x1="0" y1="150" x2="1200" y2="150" />
+    <line x1="0" y1="315" x2="1200" y2="315" />
+    <line x1="0" y1="480" x2="1200" y2="480" />
+  </g>
+
+  <!-- Glowing background effect behind logo -->
+  <circle cx="280" cy="315" r="230" fill="#0066ff" opacity="0.18" filter="blur(60px)" />
+
+  <!-- LEFT: Circular Logo Emblem -->
+  <g transform="translate(130, 165)">
+    <!-- Outer Ring -->
+    <circle cx="150" cy="150" r="140" fill="url(#vnBgGlow)" stroke="url(#vnRingGrad)" stroke-width="12" />
+
+    <!-- Circuit Left Wing -->
+    <circle cx="85" cy="108" r="4" fill="#0077b6" />
+    <path d="M 89 108 L 107 108 L 120 122" stroke="#0077b6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <circle cx="79" cy="125" r="4" fill="#0096c7" />
+    <path d="M 83 125 L 104 125 L 115 135" stroke="#0096c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <path d="M 88 84 L 130 84 L 153 154 L 136 154 Z" fill="#0077b6" />
+
+    <!-- Road Right Wing -->
+    <path d="M 144 162 C 136 154, 136 142, 142 130 C 150 114, 166 100, 189 88 C 205 80, 222 77, 234 77 L 231 85 C 218 86, 202 90, 187 96 C 169 106, 157 118, 151 130 C 147 141, 150 150, 156 156 Z" fill="#0f172a" />
+
+    <!-- Road Stripes -->
+    <line x1="154" y1="148" x2="157" y2="142" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+    <line x1="160" y1="135" x2="165" y2="126" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    <line x1="171" y1="117" x2="178" y2="108" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    <line x1="187" y1="100" x2="198" y2="92" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Pin -->
+    <path d="M 226 58 C 219 58, 213 64, 213 71 C 213 80, 226 91, 226 91 C 226 91, 240 80, 240 71 C 240 64, 234 58, 226 58 Z" fill="#0056b3" />
+    <circle cx="226" cy="70" r="4" fill="#ffffff" />
+
+    <!-- Logo Typography inside badge -->
+    <text x="42" y="210" fill="#0072ff" font-size="52" font-weight="900" font-family="Inter, system-ui, sans-serif" letter-spacing="-0.03em">Via</text>
+    <text x="128" y="210" fill="#0a192f" font-size="52" font-weight="900" font-family="Inter, system-ui, sans-serif" letter-spacing="-0.03em">Nova</text>
+    <text x="150" y="230" text-anchor="middle" fill="#0a192f" font-size="8" font-weight="800" font-family="Inter, system-ui, sans-serif" letter-spacing="0.12em">MOVILIDAD INTELIGENTE</text>
+  </g>
+
+  <!-- RIGHT: Content Area -->
+  <g transform="translate(480, 150)">
+    <!-- Pill Badge -->
+    <rect x="0" y="0" width="310" height="36" rx="18" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5" />
+    <circle cx="20" cy="18" r="6" fill="#38bdf8" />
+    <text x="36" y="23" fill="#93c5fd" font-size="13" font-weight="800" font-family="Inter, system-ui, sans-serif" letter-spacing="0.08em">COLOMBIA • LEY 769 &amp; LEY 2251</text>
+
+    <!-- Main Title -->
+    <text x="0" y="95" fill="#ffffff" font-size="54" font-weight="900" font-family="Inter, system-ui, sans-serif" letter-spacing="-0.02em">
+      <tspan fill="url(#brandTextGrad)">Via</tspan>Nova Colombia
+    </text>
+
+    <text x="0" y="145" fill="#e2e8f0" font-size="28" font-weight="700" font-family="Inter, system-ui, sans-serif">
+      Movilidad Inteligente &amp; Educación Vial
+    </text>
+
+    <!-- Subtitle / Bullet Points -->
+    <text x="0" y="195" fill="#94a3b8" font-size="18" font-family="Inter, system-ui, sans-serif" line-height="1.5">
+      <tspan x="0" dy="0">• Simulador Oficial de Exámenes de Tránsito CEA / RUNT</tspan>
+      <tspan x="0" dy="30">• Manual Completo de Señales de Tránsito SR, SP, SI y ST</tspan>
+      <tspan x="0" dy="30">• Reportes de Incidencias Viales &amp; Gestión Comunitaria</tspan>
+    </text>
+
+    <!-- Bottom URL Tag -->
+    <g transform="translate(0, 310)">
+      <rect x="0" y="0" width="220" height="38" rx="10" fill="#0052cc" />
+      <text x="110" y="24" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800" font-family="Inter, system-ui, sans-serif" letter-spacing="0.04em">
+        VIANOVA.CO
+      </text>
+    </g>
+  </g>
+</svg>

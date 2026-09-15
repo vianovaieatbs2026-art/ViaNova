@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "entities": {
+    "users": {
+      "fields": {
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    }
+  }
+}

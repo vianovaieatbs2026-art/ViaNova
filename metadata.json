@@ -1,0 +1,8 @@
+{
+  "name": "Remix ViaNova - Movilidad Segura e Inteligente",
+  "description": "Plataforma integral de educación vial, certificación de conductores y gestión de movilidad inteligente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

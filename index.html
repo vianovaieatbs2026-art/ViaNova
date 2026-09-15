@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es" class="h-full dark" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('vianova_pref_theme_mode');
+          if (mode === 'light') {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    
+    <!-- App Title & Primary SEO Meta -->
+    <title>Vianova</title>
+    <meta name="title" content="Vianova" />
+    <meta name="description" content="Plataforma de educación vial, certificación de conductores con simulacro oficial CEA/RUNT, catálogo de señales y gestión de reportes viales en Colombia." />
+    <meta name="keywords" content="Vianova, educación vial, señales de tránsito, simulador RUNT, examen de conducción, Colombia, Ley 769, Ley 2251" />
+    <meta name="author" content="Vianova Colombia" />
+
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="shortcut icon" href="/logo.png" />
+
+    <!-- OpenGraph (Facebook, WhatsApp, LinkedIn, Telegram) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ViaNova Colombia" />
+    <meta property="og:title" content="ViaNova - Movilidad Segura e Inteligente" />
+    <meta property="og:description" content="Plataforma de educación vial, simulacros oficiales de examen de conducción CEA/RUNT y reportes viales comunitarios en Colombia." />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Logo oficial de ViaNova Colombia - Movilidad Inteligente para tu Ciudad" />
+
+    <!-- Twitter Card Meta -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@ViaNovaCol" />
+    <meta name="twitter:title" content="ViaNova - Movilidad Segura e Inteligente" />
+    <meta name="twitter:description" content="Plataforma integral de educación vial, simulacros de examen de licencia y reportes en tiempo real para Colombia." />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <meta name="twitter:image:alt" content="ViaNova - Movilidad Segura e Inteligente" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  </head>
+  <body class="h-full bg-[#f8fafc] text-[#0f172a] antialiased">
+    <div id="root" class="min-h-full flex flex-col"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
