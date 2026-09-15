@@ -11,9 +11,10 @@ import {
   RefreshCw, 
   X,
   Mail,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
-import { verifyResetCode, confirmNewPassword } from '../lib/firebase';
+import { verifyResetCode, confirmNewPassword, getLastResetEmail } from '../lib/firebase';
 import { updateRegisteredUserPassword } from '../utils/authStorage';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
@@ -35,6 +36,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
   const { t } = useThemeLanguage();
 
   const [rawInput, setRawInput] = useState('');
+  const [candidateEmail, setCandidateEmail] = useState('');
   const [activeCode, setActiveCode] = useState(initialCode);
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [step, setStep] = useState<'verifying' | 'input_code' | 'set_password' | 'success' | 'error'>('verifying');
@@ -63,8 +65,8 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     return trimmed;
   };
 
-  // Verify code with Firebase Auth
-  const handleVerifyCode = async (codeToVerify: string) => {
+  // Verify code with Firebase Auth / Backend Service
+  const handleVerifyCode = async (codeToVerify: string, emailHint?: string) => {
     const cleanCode = extractCode(codeToVerify);
     if (!cleanCode) {
       setErrorMessage('Por favor ingresa o pega el código o enlace recibido en tu correo.');
@@ -76,7 +78,8 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     setErrorMessage('');
     setStep('verifying');
 
-    const res = await verifyResetCode(cleanCode);
+    const emailToUse = (emailHint || candidateEmail || getLastResetEmail()).trim().toLowerCase();
+    const res = await verifyResetCode(cleanCode, emailToUse);
     setIsLoading(false);
 
     if (res.success && res.email) {
@@ -95,9 +98,14 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
       setConfirmPassword('');
       setErrorMessage('');
       setSuccessMessage('');
+      const lastEmail = getLastResetEmail();
+      if (lastEmail) {
+        setCandidateEmail(lastEmail);
+      }
       
       if (initialCode && initialCode.trim()) {
-        handleVerifyCode(initialCode.trim());
+        setRawInput(initialCode.trim());
+        handleVerifyCode(initialCode.trim(), lastEmail);
       } else {
         setStep('input_code');
       }
@@ -122,13 +130,14 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     setIsLoading(true);
 
     try {
-      const res = await confirmNewPassword(activeCode, newPassword);
+      const emailToUse = (verifiedEmail || candidateEmail || getLastResetEmail()).trim().toLowerCase();
+      const res = await confirmNewPassword(activeCode, newPassword, emailToUse);
       setIsLoading(false);
 
       if (res.success) {
         // Update local credential cache so the user can immediately log in
-        if (verifiedEmail) {
-          updateRegisteredUserPassword(verifiedEmail, newPassword);
+        if (emailToUse) {
+          updateRegisteredUserPassword(emailToUse, newPassword);
         }
 
         // Clean query parameters from address bar cleanly
@@ -241,7 +250,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
         {step === 'input_code' && (
           <div className="space-y-4">
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Pega el <strong>enlace completo</strong> o el <strong>código de recuperación</strong> que te enviamos al correo electrónico:
+              Ingresa el <strong>código de 6 dígitos</strong> o el <strong>enlace de recuperación</strong> que te enviamos al correo electrónico:
             </p>
 
             {errorMessage && (
@@ -252,21 +261,38 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
             )}
 
             <div>
-              <label htmlFor="manual-code-input" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Enlace o Código recibido
+              <label htmlFor="reset-candidate-email" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Tu Correo Electrónico
               </label>
-              <textarea
-                id="manual-code-input"
-                rows={3}
-                value={rawInput}
-                onChange={(e) => setRawInput(e.target.value)}
-                placeholder="Pega aquí el enlace recibido en tu correo (ej. https://.../?mode=resetPassword&oobCode=...)"
+              <input
+                id="reset-candidate-email"
+                type="email"
+                value={candidateEmail}
+                onChange={(e) => setCandidateEmail(e.target.value)}
+                placeholder="ejemplo@correo.com"
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:border-[#0052cc] bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
 
+            <div>
+              <label htmlFor="manual-code-input" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Código de Verificación (6 dígitos) o Enlace
+              </label>
+              <textarea
+                id="manual-code-input"
+                rows={2}
+                value={rawInput}
+                onChange={(e) => setRawInput(e.target.value)}
+                placeholder="Ejemplo: 489201 o pega el enlace recibido..."
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-mono focus:outline-none focus:border-[#0052cc] bg-white dark:bg-slate-800 text-slate-900 dark:text-white tracking-wider"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Acepta tanto el código numérico como el enlace seguro de Firebase.
+              </p>
+            </div>
+
             <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300">
-              💡 <strong>¿No encuentras el correo?</strong> Revisa tu correo, incluyendo spam o la carpeta de correo no deseado.
+              💡 <strong>¿No encuentras el correo?</strong> Revisa tu correo, incluyendo la bandeja de spam o correo no deseado.
             </div>
 
             <div className="flex items-center gap-2 pt-1">
@@ -279,7 +305,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleVerifyCode(rawInput)}
+                onClick={() => handleVerifyCode(rawInput, candidateEmail)}
                 disabled={!rawInput.trim() || isLoading}
                 className="flex-1 py-2.5 bg-[#0052cc] hover:bg-[#0047b3] disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
               >

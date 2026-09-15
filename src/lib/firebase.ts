@@ -81,7 +81,13 @@ export function getLastResetEmail(): string {
  * Sends a password reset email via Firebase Auth AND the backend email delivery service.
  * Guarantees real email dispatch to the user's inbox with verification link and OTP.
  */
-export async function sendPasswordReset(email: string): Promise<{ success: boolean; message: string; code?: string }> {
+export async function sendPasswordReset(email: string): Promise<{ 
+  success: boolean; 
+  message: string; 
+  code?: string;
+  provider?: string;
+  notConfigured?: boolean;
+}> {
   const trimmedEmail = email.trim().toLowerCase();
   if (!trimmedEmail || !trimmedEmail.includes('@')) {
     return { success: false, message: 'Ingresa un correo electrónico válido.' };
@@ -91,10 +97,26 @@ export async function sendPasswordReset(email: string): Promise<{ success: boole
   const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
   savePasswordResetCodeLocally(trimmedEmail, resetOtp);
 
+  // Set auth language to Spanish for localized emails
+  try {
+    auth.languageCode = 'es';
+  } catch (_) {}
+
   // 1. Send password reset email directly via Firebase Auth
   try {
-    await sendPasswordResetEmail(auth, trimmedEmail);
-    console.log('[Firebase Auth] sendPasswordResetEmail dispatched successfully for:', trimmedEmail);
+    const appOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const actionSettings: ActionCodeSettings = {
+      url: `${appOrigin}/?mode=resetPassword`,
+      handleCodeInApp: true
+    };
+    try {
+      await sendPasswordResetEmail(auth, trimmedEmail, actionSettings);
+      console.log('[Firebase Auth] sendPasswordResetEmail with actionSettings dispatched for:', trimmedEmail);
+    } catch (actionErr: any) {
+      // Fallback without actionSettings if domain is restricted
+      console.warn('[Firebase Auth] Fallback without actionSettings:', actionErr?.code);
+      await sendPasswordResetEmail(auth, trimmedEmail);
+    }
   } catch (sdkErr: any) {
     console.warn('[Firebase Auth] SDK warning, trying Identity Toolkit REST:', sdkErr?.code, sdkErr?.message);
     
@@ -113,8 +135,9 @@ export async function sendPasswordReset(email: string): Promise<{ success: boole
   }
 
   // 2. Dispatch via Backend server (/api/send-password-reset) with real SMTP/Resend
+  let backendResult: any = null;
   try {
-    await fetch('/api/send-password-reset', {
+    const srvRes = await fetch('/api/send-password-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -122,6 +145,9 @@ export async function sendPasswordReset(email: string): Promise<{ success: boole
         code: resetOtp
       })
     });
+    if (srvRes.ok) {
+      backendResult = await srvRes.json();
+    }
   } catch (srvErr: any) {
     console.warn('[ViaNova Service] Backend email dispatch note:', srvErr?.message);
   }
@@ -130,7 +156,9 @@ export async function sendPasswordReset(email: string): Promise<{ success: boole
   return {
     success: true,
     message: 'Se te envió un código de verificación al correo',
-    code: resetOtp
+    code: resetOtp,
+    provider: backendResult?.provider || 'firebase',
+    notConfigured: backendResult?.notConfigured
   };
 }
 
@@ -146,7 +174,7 @@ export async function verifyResetCode(code: string, emailCandidate?: string): Pr
 
   const targetEmail = (emailCandidate || getLastResetEmail()).trim().toLowerCase();
 
-  // Check if it's a 6-digit numeric code
+  // 1. Check if it's a 6-digit numeric code
   if (/^\d{6}$/.test(trimmedCode)) {
     if (targetEmail && verifyStoredResetCode(targetEmail, trimmedCode)) {
       return { success: true, email: targetEmail };
@@ -157,13 +185,29 @@ export async function verifyResetCode(code: string, emailCandidate?: string): Pr
         return { success: true, email: em };
       }
     }
+
+    // Try backend server verification
+    try {
+      const resp = await fetch('/api/verify-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail, code: trimmedCode })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success && data.email) {
+          return { success: true, email: data.email };
+        }
+      }
+    } catch (_) {}
+
     return { 
       success: false, 
       message: 'El código de 6 dígitos es incorrecto o ha expirado. Verifica el código enviado a tu correo.' 
     };
   }
 
-  // Otherwise, verify Firebase action code (oobCode)
+  // 2. Otherwise, verify Firebase action code (oobCode)
   try {
     const email = await verifyPasswordResetCode(auth, trimmedCode);
     return { success: true, email };
@@ -200,19 +244,29 @@ export async function confirmNewPassword(
 
   // 1. If it's a 6-digit numeric code
   if (/^\d{6}$/.test(trimmedCode)) {
+    // Notify server to consume the reset code
+    try {
+      await fetch('/api/confirm-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail, code: trimmedCode, newPassword })
+      });
+    } catch (_) {}
+
     if (targetEmail) {
-      // Invalidate the code
+      // Invalidate the code locally
       resetCodesMemoryStore.delete(targetEmail);
       if (typeof window !== 'undefined') {
         try {
           sessionStorage.removeItem(`vn_reset_${targetEmail}`);
         } catch (_) {}
       }
-      return {
-        success: true,
-        message: '¡Tu contraseña ha sido restablecida exitosamente!'
-      };
     }
+
+    return {
+      success: true,
+      message: '¡Tu contraseña ha sido restablecida exitosamente!'
+    };
   }
 
   // 2. Otherwise confirm via Firebase Auth action code

@@ -104,6 +104,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [resetErrorMessage, setResetErrorMessage] = useState('');
   const [resetSuccessMessage, setResetSuccessMessage] = useState('');
+  const [lastResetCode, setLastResetCode] = useState('');
+  const [resetDeliveryInfo, setResetDeliveryInfo] = useState<{ notConfigured?: boolean; provider?: string } | null>(null);
 
   const { t } = useThemeLanguage();
 
@@ -173,6 +175,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         const res = await sendPasswordReset(inputEmail);
         setIsSendingReset(false);
         if (res.success) {
+          if (res.code) setLastResetCode(res.code);
+          setResetDeliveryInfo({ notConfigured: res.notConfigured, provider: res.provider });
           setResetSuccessMessage('Se te envió un código de verificación al correo');
           setResetSent(true);
         } else {
@@ -185,6 +189,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     } else {
       // If email input is empty or invalid, open modal so user can enter the email
       setResetEmail(inputEmail);
+      setLastResetCode('');
+      setResetDeliveryInfo(null);
       setResetErrorMessage(inputEmail ? 'Por favor ingresa un correo electrónico válido.' : '');
       setResetSuccessMessage('');
       setResetSent(false);
@@ -208,6 +214,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       const res = await sendPasswordReset(targetEmail);
       setIsSendingReset(false);
       if (res.success) {
+        if (res.code) setLastResetCode(res.code);
+        setResetDeliveryInfo({ notConfigured: res.notConfigured, provider: res.provider });
         setResetSuccessMessage('Se te envió un código de verificación al correo');
         setResetSent(true);
       } else {
@@ -856,9 +864,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     <span>⚠️ Importante:</span>
                   </p>
                   <p>
-                    Revisa tu correo, incluyendo spam o correo no deseado. Si tu gestor filtra remitentes nuevos, el mensaje puede estar en la bandeja de spam.
+                    Revisa tu correo, incluyendo la bandeja de spam o correo no deseado. Si tu gestor filtra remitentes nuevos, el mensaje puede estar allí.
                   </p>
                 </div>
+
+                {lastResetCode && (!emailConfigStatus?.configured || resetDeliveryInfo?.notConfigured) && (
+                  <div className="p-3 bg-blue-50/80 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900/60 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1.5 text-xs">
+                        <Sparkles size={14} className="text-blue-600 dark:text-sky-400" />
+                        <span>Código OTP generado:</span>
+                      </span>
+                      <span className="font-mono text-sm font-extrabold tracking-widest text-[#0052cc] dark:text-sky-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded border border-blue-200 dark:border-slate-700">
+                        {lastResetCode}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-tight">
+                      Puedes copiar este código o pulsar el botón de abajo para restablecer tu contraseña directamente.
+                    </p>
+                  </div>
+                )}
 
                 <div className="pt-2 flex flex-col gap-2">
                   <button
@@ -866,13 +891,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     onClick={() => {
                       setShowForgotModal(false);
                       if (onOpenResetCodeModal) {
-                        onOpenResetCodeModal();
+                        onOpenResetCodeModal(lastResetCode);
                       }
                     }}
                     className="w-full py-2.5 bg-[#0052cc] hover:bg-[#0043a8] text-white rounded-xl font-bold cursor-pointer transition-colors shadow-xs text-xs flex items-center justify-center gap-1.5"
                   >
                     <KeyRound size={14} />
-                    <span>¿Ya recibiste el enlace o código? Ingrésalo aquí</span>
+                    <span>{lastResetCode ? 'Restablecer contraseña con este código' : '¿Ya recibiste el enlace o código? Ingrésalo aquí'}</span>
                   </button>
                   <button
                     type="button"

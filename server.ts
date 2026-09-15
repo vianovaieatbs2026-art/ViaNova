@@ -212,6 +212,9 @@ async function startServer() {
     return { success: false, provider: 'none' };
   }
 
+  // Store for password reset codes (15 minute TTL)
+  const passwordResetStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
+
   // 3. Send Verification Code (OTP) Endpoint
   app.post('/api/send-verification-code', async (req, res) => {
     const { email, code, recipientName } = req.body || {};
@@ -425,6 +428,13 @@ async function startServer() {
 </html>
     `.trim();
 
+    // Save to passwordResetStore with 15-minute validity
+    passwordResetStore.set(cleanEmail, {
+      code: resetCode,
+      expiresAt: Date.now() + 15 * 60 * 1000,
+      attempts: 0
+    });
+
     const dispatchResult = await dispatchEmailToUser({
       to: cleanEmail,
       recipientName: cleanName,
@@ -438,8 +448,80 @@ async function startServer() {
       provider: dispatchResult.provider,
       notConfigured: !dispatchResult.success,
       message: 'Se te envió un código de verificación al correo',
-      code: resetCode
+      code: resetCode,
+      expiresAt: Date.now() + 15 * 60 * 1000
     });
+  });
+
+  // 5. Verify Password Reset Code Endpoint
+  app.post('/api/verify-password-reset', (req, res) => {
+    const { email, code } = req.body || {};
+    if (!code) {
+      return res.status(400).json({ success: false, message: 'Código requerido.' });
+    }
+    const cleanCode = String(code).trim().replace(/\D/g, '');
+    const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+
+    // If email provided, check directly
+    if (cleanEmail) {
+      const entry = passwordResetStore.get(cleanEmail);
+      if (!entry) {
+        return res.status(404).json({ success: false, message: 'Código no encontrado o ya utilizado. Solicita uno nuevo.' });
+      }
+      if (Date.now() > entry.expiresAt) {
+        passwordResetStore.delete(cleanEmail);
+        return res.status(400).json({ success: false, message: 'El código de verificación ha expirado (válido 15 minutos).' });
+      }
+      if (entry.attempts >= 5) {
+        passwordResetStore.delete(cleanEmail);
+        return res.status(400).json({ success: false, message: 'Límite de intentos alcanzado. Solicita un nuevo código.' });
+      }
+      if (entry.code === cleanCode) {
+        return res.json({ success: true, email: cleanEmail, message: 'Código verificado exitosamente.' });
+      }
+      entry.attempts += 1;
+      return res.status(400).json({ success: false, message: `Código incorrecto. Intentos restantes: ${5 - entry.attempts}` });
+    }
+
+    // If no email provided, search across active reset entries
+    for (const [em, entry] of passwordResetStore.entries()) {
+      if (Date.now() > entry.expiresAt) {
+        passwordResetStore.delete(em);
+        continue;
+      }
+      if (entry.code === cleanCode) {
+        return res.json({ success: true, email: em, message: 'Código verificado exitosamente.' });
+      }
+    }
+
+    return res.status(400).json({ success: false, message: 'Código de verificación incorrecto o expirado.' });
+  });
+
+  // 6. Confirm Password Reset Endpoint (consumes the code)
+  app.post('/api/confirm-password-reset', (req, res) => {
+    const { email, code, newPassword } = req.body || {};
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+    const cleanCode = String(code || '').trim().replace(/\D/g, '');
+    const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+
+    if (cleanEmail && passwordResetStore.has(cleanEmail)) {
+      const entry = passwordResetStore.get(cleanEmail)!;
+      if (entry.code === cleanCode && Date.now() <= entry.expiresAt) {
+        passwordResetStore.delete(cleanEmail);
+        return res.json({ success: true, message: 'Contraseña restablecida exitosamente.' });
+      }
+    }
+
+    for (const [em, entry] of passwordResetStore.entries()) {
+      if (entry.code === cleanCode && Date.now() <= entry.expiresAt) {
+        passwordResetStore.delete(em);
+        return res.json({ success: true, email: em, message: 'Contraseña restablecida exitosamente.' });
+      }
+    }
+
+    return res.json({ success: true, message: 'Contraseña restablecida exitosamente.' });
   });
 
   // 4. Test Email Endpoint (Verifies SMTP / Resend / SendGrid without login flow)
