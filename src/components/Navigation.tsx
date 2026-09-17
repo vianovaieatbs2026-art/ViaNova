@@ -9,11 +9,15 @@ import {
   User, 
   ShieldCheck, 
   Trash2,
-  UserPlus
+  UserPlus,
+  Volume2,
+  VolumeX,
+  Sparkles
 } from 'lucide-react';
 import { ScreenId, UserProfile } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { HeaderSearchBar } from './HeaderSearchBar';
+import { soundEngine } from '../utils/soundEffects';
 
 interface NavigationProps {
   currentScreen: ScreenId;
@@ -32,6 +36,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(soundEngine.isMuted());
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { 
@@ -112,7 +117,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             </div>
           )}
 
-          {/* Center Nav Items: ONLY visible when authenticated */}
+          {/* Center Nav Items */}
           {user ? (
             <nav className="hidden lg:flex items-center gap-4 xl:gap-6 overflow-x-auto no-scrollbar py-2">
               {navItems.map((item) => {
@@ -139,12 +144,63 @@ export const Navigation: React.FC<NavigationProps> = ({
               })}
             </nav>
           ) : (
-            <div className="hidden sm:block"></div>
+            /* Unauthenticated Visitor Section Links */
+            <nav className="hidden lg:flex items-center gap-5 xl:gap-7 py-2">
+              {[
+                { id: 'hero', label: 'Inicio' },
+                { id: 'servicios', label: 'Servicios' },
+                { id: 'simulacion-2d', label: 'Seguridad Vial 2D' },
+                { id: 'storyboard', label: 'Storyboard SENA' },
+                { id: 'contacto', label: 'Contacto' },
+              ].map((link) => (
+                <button
+                  key={link.id}
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playClick();
+                    if (currentScreen !== 'landing') {
+                      onNavigate('landing');
+                      setTimeout(() => {
+                        document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    } else {
+                      document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-[#0052cc] dark:hover:text-[#00AFFF] transition-colors cursor-pointer"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </nav>
           )}
 
           {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             
+            {/* Audio Synthesizer Sound Toggle */}
+            <button
+              type="button"
+              id="header-sound-toggle-btn"
+              onClick={() => {
+                const muted = soundEngine.toggleMute();
+                setIsAudioMuted(muted);
+                if (!muted) soundEngine.playSuccess();
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
+              title={isAudioMuted ? 'Activar efectos de audio sutiles' : 'Silenciar audio'}
+              aria-label="Efectos de audio"
+            >
+              {isAudioMuted ? (
+                <VolumeX size={16} className="text-slate-400 shrink-0" />
+              ) : (
+                <Volume2 size={16} className="text-[#00FF88] shrink-0" />
+              )}
+              <span className="hidden xl:inline font-bold">
+                {isAudioMuted ? 'Mute' : 'Audio'}
+              </span>
+            </button>
+
             {/* Dark / Light Mode Toggle Button */}
             <button
               type="button"
@@ -291,6 +347,16 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <UserPlus size={15} />
                   <span>{t('landing_cta_register', 'Crear Cuenta')}</span>
                 </button>
+
+                {/* Mobile Hamburger for Visitors */}
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  aria-label="Abrir menú"
+                >
+                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
               </div>
             )}
 
@@ -298,7 +364,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         </div>
 
         {/* Mobile Search Bar & Menu Drawer */}
-        {user && (
+        {user ? (
           <>
             {/* Mobile Search Bar row */}
             <div className="block md:hidden pb-3">
@@ -330,6 +396,42 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
             )}
           </>
+        ) : (
+          /* Mobile Drawer for Visitors */
+          mobileMenuOpen && (
+            <div className="lg:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'hero', label: 'Inicio' },
+                  { id: 'servicios', label: 'Servicios' },
+                  { id: 'simulacion-2d', label: 'Seguridad Vial 2D' },
+                  { id: 'storyboard', label: 'Storyboard SENA' },
+                  { id: 'multimedia', label: 'Cápsulas Video' },
+                  { id: 'contacto', label: 'Contacto' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      soundEngine.playClick();
+                      if (currentScreen !== 'landing') {
+                        onNavigate('landing');
+                        setTimeout(() => {
+                          document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      } else {
+                        document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="p-2.5 rounded-xl text-xs font-bold text-left bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
         )}
       </div>
     </header>

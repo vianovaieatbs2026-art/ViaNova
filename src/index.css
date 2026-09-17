@@ -162,3 +162,61 @@ html.dark textarea {
 .shadow-level-glow {
   box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
 }
+
+/* ==========================================================================
+   ViaNova SENA 524704: Neon Glowing & Multimedia Animation Styles
+   ========================================================================== */
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 175, 255, 0.4), 0 0 30px rgba(0, 255, 136, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 175, 255, 0.7), 0 0 45px rgba(0, 255, 136, 0.4);
+  }
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 3s infinite ease-in-out;
+}
+
+.text-neon-blue {
+  color: #00AFFF;
+  text-shadow: 0 0 12px rgba(0, 175, 255, 0.5);
+}
+
+.text-neon-green {
+  color: #00FF88;
+  text-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+}
+
+.text-neon-orange {
+  color: #FF6B00;
+  text-shadow: 0 0 12px rgba(255, 107, 0, 0.5);
+}
+
+.bg-vianova-dark {
+  background-color: #0A1931;
+}
+
+.bg-vianova-deep {
+  background-color: #050B14;
+}
+
+.border-neon-blue {
+  border-color: #00AFFF;
+}
+
+.border-neon-green {
+  border-color: #00FF88;
+}
+
+.border-neon-orange {
+  border-color: #FF6B00;
+}

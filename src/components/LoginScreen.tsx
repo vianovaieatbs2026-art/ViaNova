@@ -35,7 +35,8 @@ import {
 } from '../utils/authStorage';
 import { executeInvisibleRecaptcha, RecaptchaVerificationResult } from '../utils/security';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import { sendPasswordReset, firebaseLogin } from '../lib/firebase';
+import { firebaseLogin } from '../lib/firebase';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { 
   sendVerificationCodeEmail, 
   verifyLoginCode, 
@@ -97,15 +98,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     return () => clearInterval(timer);
   }, [resendCooldown]);
   
-  // Forgot password state
+  // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
-  const [isSendingReset, setIsSendingReset] = useState(false);
-  const [resetErrorMessage, setResetErrorMessage] = useState('');
-  const [resetSuccessMessage, setResetSuccessMessage] = useState('');
-  const [lastResetCode, setLastResetCode] = useState('');
-  const [resetDeliveryInfo, setResetDeliveryInfo] = useState<{ notConfigured?: boolean; provider?: string } | null>(null);
 
   const { t } = useThemeLanguage();
 
@@ -159,72 +154,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const handleForgotPasswordClick = async () => {
-    const inputEmail = email.trim();
-    setResetErrorMessage('');
-
-    // If user already entered an email in the input, take it and send immediately
-    if (inputEmail && inputEmail.includes('@')) {
-      setResetEmail(inputEmail);
-      setResetSuccessMessage('');
-      setResetSent(false);
-      setIsSendingReset(true);
-      setShowForgotModal(true);
-
-      try {
-        const res = await sendPasswordReset(inputEmail);
-        setIsSendingReset(false);
-        if (res.success) {
-          if (res.code) setLastResetCode(res.code);
-          setResetDeliveryInfo({ notConfigured: res.notConfigured, provider: res.provider });
-          setResetSuccessMessage('Se te envió un código de verificación al correo');
-          setResetSent(true);
-        } else {
-          setResetErrorMessage(res.message);
-        }
-      } catch (err: any) {
-        setIsSendingReset(false);
-        setResetErrorMessage(err?.message || 'Error inesperado al conectar con el servicio de autenticación.');
-      }
-    } else {
-      // If email input is empty or invalid, open modal so user can enter the email
-      setResetEmail(inputEmail);
-      setLastResetCode('');
-      setResetDeliveryInfo(null);
-      setResetErrorMessage(inputEmail ? 'Por favor ingresa un correo electrónico válido.' : '');
-      setResetSuccessMessage('');
-      setResetSent(false);
-      setIsSendingReset(false);
-      setShowForgotModal(true);
-    }
-  };
-
-  const handleSendResetEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const targetEmail = (resetEmail || email).trim().toLowerCase();
-    if (!targetEmail || !targetEmail.includes('@')) {
-      setResetErrorMessage(t('login_forgot_err_email', 'Por favor ingresa un correo electrónico válido.'));
-      return;
-    }
-    
-    setIsSendingReset(true);
-    setResetErrorMessage('');
-
-    try {
-      const res = await sendPasswordReset(targetEmail);
-      setIsSendingReset(false);
-      if (res.success) {
-        if (res.code) setLastResetCode(res.code);
-        setResetDeliveryInfo({ notConfigured: res.notConfigured, provider: res.provider });
-        setResetSuccessMessage('Se te envió un código de verificación al correo');
-        setResetSent(true);
-      } else {
-        setResetErrorMessage(res.message);
-      }
-    } catch (err: any) {
-      setIsSendingReset(false);
-      setResetErrorMessage(err?.message || 'Error inesperado al conectar con el servicio de autenticación.');
-    }
+  const handleForgotPasswordClick = () => {
+    setResetEmail(email.trim());
+    setShowForgotModal(true);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -757,25 +689,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       type="button"
                       id="forgot-password-link"
                       onClick={handleForgotPasswordClick}
-                      disabled={isSendingReset}
-                      className="text-xs text-[#0052cc] dark:text-sky-400 hover:underline font-semibold cursor-pointer disabled:opacity-60 inline-flex items-center gap-1.5"
+                      className="text-xs text-[#0052cc] dark:text-sky-400 hover:underline font-semibold cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      {isSendingReset ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-blue-600/30 border-t-blue-600 dark:border-sky-400/30 dark:border-t-sky-400 rounded-full animate-spin" />
-                          <span>Enviando correo de recuperación...</span>
-                        </>
-                      ) : (
-                        <span>{t('login_forgot_password', '¿Olvidaste tu contraseña?')}</span>
-                      )}
+                      <span>{t('login_forgot_password', '¿Olvidaste tu contraseña?')}</span>
                     </button>
-
-                    {resetSent && (
-                      <div className="mt-2.5 p-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1.5 animate-fade-in">
-                        <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <span className="font-bold">Revisa tu correo, incluyendo spam</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Divider */}
@@ -814,161 +731,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
       </div>
 
-      {/* Forgot Password Modal (Firebase Auth sendPasswordResetEmail) */}
-      {showForgotModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full p-6 border border-[#e2e8f0] dark:border-slate-800 text-[#0f172a] dark:text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#eff6ff] dark:bg-sky-950 flex items-center justify-center text-[#0052cc] dark:text-sky-400">
-                <KeyRound size={22} />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#0f172a] dark:text-white text-base">
-                  {t('login_forgot_title', 'Recuperar Contraseña')}
-                </h3>
-                <p className="text-xs text-[#64748b] dark:text-slate-400">
-                  {t('login_forgot_desc', 'Te enviaremos un enlace de restablecimiento seguro a tu correo electrónico vía Firebase Auth.')}
-                </p>
-              </div>
-            </div>
-
-            {resetErrorMessage && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2">
-                <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                <span>{resetErrorMessage}</span>
-              </div>
-            )}
-
-            {resetSent ? (
-              <div className="p-5 bg-[#f0fdf4] dark:bg-emerald-950/40 border border-[#bbf7d0] dark:border-emerald-900 rounded-2xl text-xs text-[#166534] dark:text-emerald-300 space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <CheckCircle2 size={20} />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-sm sm:text-base text-emerald-900 dark:text-emerald-200">
-                      {resetSuccessMessage || "Se te envió un código de verificación al correo"}
-                    </h4>
-                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                      Enviado a <span className="font-bold underline">{resetEmail || email}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <p className="leading-relaxed text-emerald-800 dark:text-emerald-300/90">
-                  Hemos enviado un correo seguro mediante Firebase Auth con el enlace y código de verificación para restablecer tu contraseña.
-                </p>
-
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-amber-800 dark:text-amber-300 text-[11px] space-y-1">
-                  <p className="font-bold flex items-center gap-1.5">
-                    <span>⚠️ Importante:</span>
-                  </p>
-                  <p>
-                    Revisa tu correo, incluyendo la bandeja de spam o correo no deseado. Si tu gestor filtra remitentes nuevos, el mensaje puede estar allí.
-                  </p>
-                </div>
-
-                {lastResetCode && (!emailConfigStatus?.configured || resetDeliveryInfo?.notConfigured) && (
-                  <div className="p-3 bg-blue-50/80 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900/60 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1.5 text-xs">
-                        <Sparkles size={14} className="text-blue-600 dark:text-sky-400" />
-                        <span>Código OTP generado:</span>
-                      </span>
-                      <span className="font-mono text-sm font-extrabold tracking-widest text-[#0052cc] dark:text-sky-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded border border-blue-200 dark:border-slate-700">
-                        {lastResetCode}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-tight">
-                      Puedes copiar este código o pulsar el botón de abajo para restablecer tu contraseña directamente.
-                    </p>
-                  </div>
-                )}
-
-                <div className="pt-2 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForgotModal(false);
-                      if (onOpenResetCodeModal) {
-                        onOpenResetCodeModal(lastResetCode);
-                      }
-                    }}
-                    className="w-full py-2.5 bg-[#0052cc] hover:bg-[#0043a8] text-white rounded-xl font-bold cursor-pointer transition-colors shadow-xs text-xs flex items-center justify-center gap-1.5"
-                  >
-                    <KeyRound size={14} />
-                    <span>{lastResetCode ? 'Restablecer contraseña con este código' : '¿Ya recibiste el enlace o código? Ingrésalo aquí'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotModal(false)}
-                    className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold cursor-pointer transition-colors shadow-xs text-xs"
-                  >
-                    {t('login_forgot_back', 'Entendido, volver')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSendResetEmail} className="space-y-3">
-                <div>
-                  <label htmlFor="reset-email-input" className="block text-xs font-bold text-[#334155] dark:text-slate-300 mb-1.5">
-                    {t('login_email_label', 'Correo Electrónico')}
-                  </label>
-                  <input
-                    id="reset-email-input"
-                    type="email"
-                    required
-                    value={resetEmail}
-                    disabled={isSendingReset}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder={t('login_forgot_input_ph', 'Ingresa tu correo registrado...')}
-                    className="w-full px-3.5 py-2.5 border border-[#cbd5e1] dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[#0052cc] bg-white dark:bg-slate-800 text-[#0f172a] dark:text-white disabled:opacity-60"
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    disabled={isSendingReset}
-                    onClick={() => setShowForgotModal(false)}
-                    className="px-4 py-2 text-xs font-bold text-[#64748b] dark:text-slate-400 hover:text-[#0f172a] dark:hover:text-white cursor-pointer disabled:opacity-50"
-                  >
-                    {t('login_forgot_cancel', 'Cancelar')}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSendingReset}
-                    className="px-5 py-2.5 bg-[#0052cc] hover:bg-[#0043a8] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    {isSendingReset ? (
-                      <>
-                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>{t('login_forgot_sending', 'Enviando...')}</span>
-                      </>
-                    ) : (
-                      <span>{t('login_forgot_send', 'Enviar Enlace')}</span>
-                    )}
-                  </button>
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForgotModal(false);
-                      if (onOpenResetCodeModal) {
-                        onOpenResetCodeModal();
-                      }
-                    }}
-                    className="text-[11px] text-[#0052cc] dark:text-sky-400 hover:underline font-semibold cursor-pointer"
-                  >
-                    ¿Ya tienes el enlace o código de tu correo? Ingrésalo aquí
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Forgot Password Modal (Real Firebase Authentication sendPasswordResetEmail) */}
+      <ForgotPasswordModal
+        isOpen={showForgotModal}
+        initialEmail={resetEmail || email}
+        onClose={() => setShowForgotModal(false)}
+      />
 
       {/* Email Service Configuration Guide & Live Tester Modal */}
       {showConfigModal && (
