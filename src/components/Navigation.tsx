@@ -62,13 +62,13 @@ export const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   // Dashboard navigation items requested by user:
-  // Inicio, Quiz, Señales, Simulador, Google Maps, Mi Perfil
+  // Inicio, Servicios, Seguridad Vial, Storyboard, Reportes, Mi Perfil
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
-    { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
-    { id: 'senales', labelKey: 'nav_signs', defaultLabel: 'Señales' },
-    { id: 'simulador', labelKey: 'nav_simulator', defaultLabel: 'Simulador' },
-    { id: 'reportes', labelKey: 'nav_google_maps', defaultLabel: 'Google Maps' },
+    { id: 'servicios', labelKey: 'nav_services', defaultLabel: 'Servicios' },
+    { id: 'educacion_vial', labelKey: 'nav_road_safety', defaultLabel: 'Seguridad Vial' },
+    { id: 'storyboard', labelKey: 'nav_storyboard', defaultLabel: 'Storyboard' },
+    { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
     { id: 'perfil', labelKey: 'nav_profile', defaultLabel: 'Mi Perfil' },
   ];
 
@@ -143,37 +143,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 );
               })}
             </nav>
-          ) : (
-            /* Unauthenticated Visitor Section Links */
-            <nav className="hidden lg:flex items-center gap-5 xl:gap-7 py-2">
-              {[
-                { id: 'hero', label: 'Inicio' },
-                { id: 'servicios', label: 'Servicios' },
-                { id: 'simulacion-2d', label: 'Seguridad Vial 2D' },
-                { id: 'storyboard', label: 'Storyboard SENA' },
-                { id: 'contacto', label: 'Contacto' },
-              ].map((link) => (
-                <button
-                  key={link.id}
-                  type="button"
-                  onClick={() => {
-                    soundEngine.playClick();
-                    if (currentScreen !== 'landing') {
-                      onNavigate('landing');
-                      setTimeout(() => {
-                        document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
-                    } else {
-                      document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-[#0052cc] dark:hover:text-[#00AFFF] transition-colors cursor-pointer"
-                >
-                  {link.label}
-                </button>
-              ))}
-            </nav>
-          )}
+          ) : null}
 
           {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
@@ -328,35 +298,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                 </button>
               </>
             ) : (
-              /* Unauthenticated Visitor Actions */
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <button
-                  type="button"
-                  id="nav-login-btn"
-                  onClick={() => handleNavClick('login')}
-                  className="text-slate-700 dark:text-slate-200 hover:text-[#0052cc] dark:hover:text-sky-400 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
-                >
-                  {t('nav_login', 'Iniciar Sesión')}
-                </button>
-                <button
-                  type="button"
-                  id="nav-register-btn"
-                  onClick={() => handleNavClick('registro')}
-                  className="bg-[#0052cc] hover:bg-[#0047b3] active:scale-98 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-                >
-                  <UserPlus size={15} />
-                  <span>{t('landing_cta_register', 'Crear Cuenta')}</span>
-                </button>
-
-                {/* Mobile Hamburger for Visitors */}
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                  aria-label="Abrir menú"
-                >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
+              /* Unauthenticated: Clean navbar without distracting duplicate buttons */
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-[#00AFFF] hidden sm:inline-block px-2.5 py-1 rounded-full bg-[#00AFFF]/10 border border-[#00AFFF]/30">
+                  Portal Oficial SENA 524704
+                </span>
               </div>
             )}
 
@@ -396,43 +342,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
             )}
           </>
-        ) : (
-          /* Mobile Drawer for Visitors */
-          mobileMenuOpen && (
-            <div className="lg:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'hero', label: 'Inicio' },
-                  { id: 'servicios', label: 'Servicios' },
-                  { id: 'simulacion-2d', label: 'Seguridad Vial 2D' },
-                  { id: 'storyboard', label: 'Storyboard SENA' },
-                  { id: 'multimedia', label: 'Cápsulas Video' },
-                  { id: 'contacto', label: 'Contacto' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      soundEngine.playClick();
-                      if (currentScreen !== 'landing') {
-                        onNavigate('landing');
-                        setTimeout(() => {
-                          document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      } else {
-                        document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                    className="p-2.5 rounded-xl text-xs font-bold text-left bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )
-        )}
+        ) : null}
       </div>
     </header>
   );

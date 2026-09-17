@@ -6,9 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenId, UserProfile } from './types';
 import { Navigation } from './components/Navigation';
-import { LandingScreen } from './components/LandingScreen';
-import { RegisterScreen } from './components/RegisterScreen';
-import { LoginScreen } from './components/LoginScreen';
+import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { DashboardScreen } from './components/DashboardScreen';
 import { SearchScreen } from './components/SearchScreen';
 import { EducationScreen } from './components/EducationScreen';
@@ -113,7 +111,7 @@ function AppContent() {
   const handleLogout = () => {
     clearActiveUserSession();
     setUser(null);
-    setUnauthView('landing');
+    setUnauthView('login');
     setCurrentScreen('inicio');
     showToast(t('toast_logged_out', 'Has cerrado sesión correctamente.'));
   };
@@ -141,13 +139,28 @@ function AppContent() {
     if (!user) {
       if (screen === 'registro') {
         setUnauthView('registro');
-      } else if (screen === 'login') {
-        setUnauthView('login');
       } else {
-        setUnauthView('landing');
+        setUnauthView('login');
       }
       return;
     }
+
+    if (screen === 'servicios') {
+      setCurrentScreen('inicio');
+      setTimeout(() => {
+        document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
+    if (screen === 'storyboard') {
+      setCurrentScreen('inicio');
+      setTimeout(() => {
+        document.getElementById('storyboard')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
     setCurrentScreen(screen);
   };
 
@@ -155,7 +168,7 @@ function AppContent() {
     <div className="min-h-screen flex flex-col bg-[#f8fafc] dark:bg-[#0b1120] text-[#0f172a] dark:text-slate-100 transition-colors duration-200">
       {/* Top Header Navigation */}
       <Navigation
-        currentScreen={!user ? (unauthView === 'landing' ? 'landing' : unauthView) : currentScreen}
+        currentScreen={!user ? 'landing' : currentScreen}
         onNavigate={handleNavigate}
         user={user}
         onLogout={handleLogout}
@@ -165,33 +178,18 @@ function AppContent() {
       {/* Main Content Area: STRICT AUTH GATE */}
       <main className="flex-1 flex flex-col justify-start">
         {!user ? (
-          /* ================= UNAUTHENTICATED USERS: LANDING / LOGIN / REGISTRO ONLY ================= */
-          unauthView === 'registro' ? (
-            <RegisterScreen
-              onRegisterSuccess={handleRegisterSuccess}
-              onNavigateToLogin={() => setUnauthView('login')}
-              onBackToLanding={() => setUnauthView('landing')}
-            />
-          ) : unauthView === 'login' ? (
-            <LoginScreen
-              onLoginSuccess={handleLoginSuccess}
-              onFirstTimeRequired={handleRegisterSuccess}
-              onNavigateToRegister={() => setUnauthView('registro')}
-              onBackToLanding={() => setUnauthView('landing')}
-              initialEmail={prefillLoginEmail}
-              onOpenResetCodeModal={(code) => {
-                setResetPasswordCode(code || '');
-                setIsResetPasswordModalOpen(true);
-              }}
-            />
-          ) : (
-            <LandingScreen
-              onGoToLogin={() => setUnauthView('login')}
-              onGoToRegister={() => setUnauthView('registro')}
-            />
-          )
+          /* ================= ESTADO 1: PANTALLA INICIAL (SOLO AUTENTICACIÓN: [INICIAR SESIÓN] / [CREAR CUENTA]) ================= */
+          <AuthGatewayScreen
+            onAuthSuccess={handleLoginSuccess}
+            initialTab={unauthView === 'registro' ? 'register' : 'login'}
+            initialEmail={prefillLoginEmail}
+            onOpenResetCodeModal={(code) => {
+              setResetPasswordCode(code || '');
+              setIsResetPasswordModalOpen(true);
+            }}
+          />
         ) : (
-          /* ================= AUTHENTICATED USERS: FULL PORTAL ACCESS ================= */
+          /* ================= ESTADO 2: DENTRO DE LA APP (USUARIO AUTENTICADO) ================= */
           <ErrorBoundary onReset={() => setCurrentScreen('inicio')}>
             {currentScreen === 'inicio' && (
               <DashboardScreen

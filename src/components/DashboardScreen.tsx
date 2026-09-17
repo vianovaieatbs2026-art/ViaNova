@@ -38,6 +38,11 @@ import { TrafficSignGraphic } from './TrafficSignGraphic';
 import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { getUserDashboardProgress } from '../utils/userProgress';
+import { CityRouteSimulator2D } from './CityRouteSimulator2D';
+import { AnimatedServicesGrid } from './AnimatedServicesGrid';
+import { InteractiveStoryboard } from './InteractiveStoryboard';
+import { MultimediaVideoSection } from './MultimediaVideoSection';
+import { InteractiveWireframeSection } from './InteractiveWireframeSection';
 
 interface CorridorItem {
   id: string;
@@ -1685,6 +1690,39 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             {t('dash_safety_tip_content', 'Recuerda que en Colombia la velocidad máxima en zonas urbanas es de 50 km/h y en zonas escolares es de 30 km/h. Reducir la velocidad en solo 10 km/h duplica la posibilidad de salvar la vida de un peatón o ciclista ante una colisión.')}
           </p>
         </div>
+      </div>
+
+      {/* ===================== RUTA 2D INTERACTIVA CON VEHÍCULO EN MOVIMIENTO ===================== */}
+      <div id="simulacion-2d" className="pt-6">
+        <CityRouteSimulator2D />
+      </div>
+
+      {/* ===================== TARJETAS DE SERVICIOS 3D CON PRINCIPIOS DE ANIMACIÓN ===================== */}
+      <div id="servicios" className="pt-6">
+        <AnimatedServicesGrid 
+          onNavigate={onNavigate}
+          onActionClick={(id) => {
+            if (id === 'simulador') onNavigate('simulador');
+            else if (id === 'senales') onNavigate('senales');
+            else if (id === 'educacion') onNavigate('educacion_vial');
+            else if (id === 'reportes') onNavigate('reportes');
+          }}
+        />
+      </div>
+
+      {/* ===================== STORYBOARD INTERACTIVO "CÓMO FUNCIONA VIANOVA" EN 4 PASOS ===================== */}
+      <div id="storyboard" className="pt-6">
+        <InteractiveStoryboard />
+      </div>
+
+      {/* ===================== CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
+      <div id="multimedia" className="pt-6">
+        <MultimediaVideoSection />
+      </div>
+
+      {/* ===================== WIREFRAME ESTRUCTURAL VS MOCKUP DE ALTA FIDELIDAD ===================== */}
+      <div id="contacto" className="pt-6">
+        <InteractiveWireframeSection />
       </div>
     </div>
   );

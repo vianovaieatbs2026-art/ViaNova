@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { soundEngine } from '../utils/soundEffects';
 
+import { ScreenId } from '../types';
+
 interface ServiceItem {
   id: string;
   title: string;
@@ -23,13 +25,18 @@ interface ServiceItem {
   icon: React.ReactNode;
   actionText: string;
   stats: string;
+  targetScreen?: ScreenId;
 }
 
 interface AnimatedServicesGridProps {
-  onActionClick: () => void;
+  onActionClick?: (serviceId?: string) => void;
+  onNavigate?: (screen: ScreenId) => void;
 }
 
-export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onActionClick }) => {
+export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ 
+  onActionClick, 
+  onNavigate 
+}) => {
   const services: ServiceItem[] = [
     {
       id: 'simulador',
@@ -41,7 +48,8 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onAc
       description: 'Entrénate con preguntas oficiales bajo el estándar del Ministerio de Transporte. Cronómetro regresivo y retroalimentación técnica inmediata.',
       icon: <GraduationCap size={32} className="text-[#00AFFF]" />,
       actionText: 'Probar Simulador',
-      stats: '30 preguntas aleatorias • 40 min'
+      stats: '30 preguntas aleatorias • 40 min',
+      targetScreen: 'simulador'
     },
     {
       id: 'senales',
@@ -53,7 +61,8 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onAc
       description: 'Catálogo clasificado: reglamentarias rojas, preventivas amarillas e informativas azules con su código oficial y sanciones del Código Nacional.',
       icon: <TrafficCone size={32} className="text-[#FF6B00]" />,
       actionText: 'Explorar Señales',
-      stats: 'Más de 120 señales oficiales'
+      stats: 'Más de 120 señales oficiales',
+      targetScreen: 'senales'
     },
     {
       id: 'educacion',
@@ -65,7 +74,8 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onAc
       description: 'Módulos didácticos sobre la Ley Julián Esteban (Ley 2251 de 2022), distancias de frenado, prelación en glorietas y puntos ciegos de carga pesada.',
       icon: <BookOpen size={32} className="text-[#00FF88]" />,
       actionText: 'Acceder a Clases',
-      stats: 'Normativa Ley 769 & Ley 2251'
+      stats: 'Normativa Ley 769 & Ley 2251',
+      targetScreen: 'educacion_vial'
     },
     {
       id: 'reportes',
@@ -77,7 +87,8 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onAc
       description: 'Alertas viales comunitarias en mapa satelital: baches peligrosos, semáforos intermitentes, retenes y cierres viales en tiempo real.',
       icon: <MapPin size={32} className="text-[#00AFFF]" />,
       actionText: 'Ver Mapa en Vivo',
-      stats: 'Georreferenciación en tiempo real'
+      stats: 'Georreferenciación en tiempo real',
+      targetScreen: 'reportes'
     }
   ];
 
@@ -117,7 +128,11 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({ onAc
             onMouseEnter={() => soundEngine.playHover()}
             onClick={() => {
               soundEngine.playClick();
-              onActionClick();
+              if (item.targetScreen && onNavigate) {
+                onNavigate(item.targetScreen);
+              } else if (onActionClick) {
+                onActionClick(item.id);
+              }
             }}
             className={`group p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#0A1931]/90 backdrop-blur-md border-2 border-slate-200 dark:border-slate-800 ${item.borderColor} ${item.glowColor} transition-all duration-300 flex flex-col justify-between cursor-pointer relative overflow-hidden shadow-md`}
           >

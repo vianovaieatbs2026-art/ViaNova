@@ -3,6 +3,8 @@ export type UserType = 'conductor' | 'aspirante' | 'estudiante' | 'ciudadano';
 export type ScreenId = 
   | 'landing'
   | 'inicio'
+  | 'servicios'
+  | 'storyboard'
   | 'busqueda'
   | 'educacion_vial'
   | 'senales'
