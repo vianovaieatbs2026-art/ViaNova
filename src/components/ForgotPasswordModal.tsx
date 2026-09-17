@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { KeyRound, CheckCircle2, AlertCircle, X, Loader2, ArrowLeft } from 'lucide-react';
 import { sendPasswordReset } from '../lib/firebase';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   onClose,
   initialEmail = ''
 }) => {
+  const { t } = useThemeLanguage();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -37,7 +39,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMessage('Correo inválido');
+      setErrorMessage(t('login_err_empty_email', 'Correo inválido'));
       return;
     }
 
@@ -51,7 +53,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
       if (result.success) {
         setIsSuccess(true);
-        setSuccessMessage('Revisa tu correo, te enviamos un enlace para restablecer tu contraseña. Revisa también spam.');
+        setSuccessMessage(t('forgot_modal_success', 'Revisa tu correo, te enviamos un enlace para restablecer tu contraseña. Revisa también spam.'));
       } else {
         setErrorMessage(result.message);
       }
@@ -59,9 +61,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       setIsLoading(false);
       const code = err?.code || '';
       if (code === 'auth/user-not-found') {
-        setErrorMessage('No existe una cuenta con ese correo');
+        setErrorMessage(t('login_err_not_found', 'No existe una cuenta con ese correo'));
       } else if (code === 'auth/invalid-email') {
-        setErrorMessage('Correo inválido');
+        setErrorMessage(t('login_err_empty_email', 'Correo inválido'));
       } else if (code === 'auth/too-many-requests') {
         setErrorMessage('Demasiados intentos, espera unos minutos');
       } else {
@@ -96,11 +98,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <KeyRound size={20} />
             </div>
             <div>
-              <h3 id="forgot-password-title" className="font-bold text-slate-900 dark:text-white text-base">
-                Recuperar Contraseña
+              <h3 id="forgot-password-title" data-i18n="forgot_modal_title" className="font-bold text-slate-900 dark:text-white text-base">
+                {t('forgot_modal_title', 'Recuperar Contraseña')}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ingresa tu correo para recibir el enlace de restablecimiento.
+              <p data-i18n="forgot_modal_desc" className="text-xs text-slate-500 dark:text-slate-400">
+                {t('forgot_modal_desc', 'Ingresa tu correo para recibir el enlace de restablecimiento.')}
               </p>
             </div>
           </div>
@@ -136,7 +138,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="font-bold text-sm text-emerald-900 dark:text-emerald-100">
-                  ¡Correo enviado!
+                  {t('login_forgot_success_title', '¡Correo enviado!')}
                 </span>
               </div>
               <p className="leading-relaxed">
@@ -151,10 +153,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <button
                 type="button"
                 onClick={handleClose}
+                data-i18n="forgot_modal_btn_back"
                 className="w-full py-2.5 bg-[#0052cc] hover:bg-[#0043a8] text-white rounded-xl font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <ArrowLeft size={14} />
-                <span>Volver al inicio de sesión</span>
+                <span>{t('forgot_modal_btn_back', 'Volver al inicio de sesión')}</span>
               </button>
             </div>
           </div>
@@ -164,9 +167,10 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             <div>
               <label 
                 htmlFor="forgot-email-input" 
+                data-i18n="forgot_modal_email_label"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
               >
-                Correo Electrónico
+                {t('forgot_modal_email_label', 'Correo Electrónico')}
               </label>
               <input
                 id="forgot-email-input"
@@ -186,13 +190,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 type="button"
                 disabled={isLoading}
                 onClick={handleClose}
+                data-i18n="forgot_modal_btn_cancel"
                 className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white cursor-pointer disabled:opacity-50 transition-colors"
               >
-                Cancelar
+                {t('forgot_modal_btn_cancel', 'Cancelar')}
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !email.trim()}
+                data-i18n="forgot_modal_btn_send"
                 className="px-5 py-2.5 bg-[#0052cc] hover:bg-[#0043a8] disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-2"
               >
                 {isLoading ? (
@@ -201,7 +207,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                     <span>Enviando...</span>
                   </>
                 ) : (
-                  <span>Enviar Enlace</span>
+                  <span>{t('forgot_modal_btn_send', 'Enviar Enlace')}</span>
                 )}
               </button>
             </div>

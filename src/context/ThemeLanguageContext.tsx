@@ -127,10 +127,55 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     return fallback || key;
   };
 
-  // Sync with document element and CSS variables
+  // Update data-i18n elements in DOM dynamically
+  const updateDomTranslations = (lang: AppLanguage) => {
+    try {
+      const dict = TRANSLATIONS[lang] || TRANSLATIONS.es;
+      const elements = document.querySelectorAll<HTMLElement>('[data-i18n]');
+      elements.forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (!key) return;
+        const text = dict[key] || TRANSLATIONS.es[key] || key;
+        
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          el.placeholder = text;
+        } else {
+          // If the element has a dedicated text target child, update that
+          const targetChild = el.querySelector<HTMLElement>('[data-i18n-text]');
+          if (targetChild) {
+            targetChild.textContent = text;
+          } else if (el.children.length === 0) {
+            el.textContent = text;
+          } else {
+            // If it has children (like icons + text), find the span containing text
+            const spans = Array.from(el.querySelectorAll('span'));
+            if (spans.length > 0) {
+              const textSpan = spans.find(s => !s.querySelector('svg') && s.children.length === 0);
+              if (textSpan) {
+                textSpan.textContent = text;
+              }
+            }
+          }
+        }
+      });
+    } catch (_) {}
+  };
+
+  // Sync with document element, window, and CSS variables
   useEffect(() => {
     const root = document.documentElement;
+    root.lang = language;
     
+    // Expose global helper requested by user:
+    // const translations = { es: {...}, en: {...} } y una función setLanguage('es'|'en')
+    if (typeof window !== 'undefined') {
+      (window as any).translations = TRANSLATIONS;
+      (window as any).setLanguage = (l: AppLanguage) => setLanguage(l);
+    }
+
+    // Run DOM translation immediately
+    updateDomTranslations(language);
+
     // 1. Dark mode class & attribute
     if (themeMode === 'dark') {
       root.classList.add('dark');
@@ -147,7 +192,7 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     root.style.setProperty('--color-primary-light', activeThemeConfig.bgLightHex);
     root.style.setProperty('--color-primary-border', activeThemeConfig.borderLightHex);
     root.setAttribute('data-color', themeColor);
-  }, [themeMode, themeColor, activeThemeConfig]);
+  }, [themeMode, themeColor, activeThemeConfig, language]);
 
   const openSettingsModal = () => setIsSettingsModalOpen(true);
   const closeSettingsModal = () => setIsSettingsModalOpen(false);

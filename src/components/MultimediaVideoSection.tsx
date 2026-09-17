@@ -4,8 +4,6 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Volume2, 
-  VolumeX, 
   ShieldCheck, 
   Sparkles, 
   Film,
@@ -31,7 +29,6 @@ export const MultimediaVideoSection: React.FC = () => {
   const [activeLessonId, setActiveLessonId] = useState<string>('decalogo');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(18);
-  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(soundEngine.isMuted());
 
   const lessons: LessonVideo[] = [
     {
@@ -96,38 +93,21 @@ export const MultimediaVideoSection: React.FC = () => {
     setIsPlaying(true);
   };
 
-  const toggleAudio = () => {
-    const m = soundEngine.toggleMute();
-    setIsAudioMuted(m);
-  };
-
   return (
-    <div className="w-full rounded-3xl overflow-hidden bg-gradient-to-b from-[#0A1931] via-[#071326] to-[#050B14] border-2 border-[#00AFFF]/30 shadow-[0_0_40px_rgba(0,175,255,0.15)] p-5 sm:p-8 text-white">
+    <div className="w-full rounded-3xl overflow-hidden bg-white dark:bg-gradient-to-b dark:from-[#0A1931] dark:via-[#071326] dark:to-[#050B14] border-2 border-slate-200 dark:border-[#00AFFF]/30 shadow-xl dark:shadow-[0_0_40px_rgba(0,175,255,0.15)] p-5 sm:p-8 text-slate-900 dark:text-white transition-colors">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/15 border border-[#00AFFF]/30 text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
-            <Film size={13} className="text-[#00FF88]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/15 border border-[#00AFFF]/30 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
+            <Film size={13} className="text-[#059669] dark:text-[#00FF88]" />
             <span>SENA 220501102 • INTEGRAR ELEMENTOS MULTIMEDIA</span>
           </div>
-          <h3 className="text-xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-            Cápsulas Multimedia de <span className="text-[#00AFFF]">Educación Vial</span>
+          <h3 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            Cápsulas Multimedia de <span className="text-[#0052cc] dark:text-[#00AFFF]">Educación Vial</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-            Producción audiovisual interactiva con animaciones explicativas y sonido sincronizado.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-1">
+            Producción audiovisual interactiva con animaciones explicativas de las normas de tránsito.
           </p>
-        </div>
-
-        {/* Global Sound Control */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleAudio}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-200 hover:text-white hover:border-[#00AFFF] transition-all cursor-pointer"
-          >
-            {isAudioMuted ? <VolumeX size={15} /> : <Volume2 size={15} className="text-[#00FF88]" />}
-            <span>{isAudioMuted ? 'Audio Desactivado' : 'Audio Sintetizado'}</span>
-          </button>
         </div>
       </div>
 

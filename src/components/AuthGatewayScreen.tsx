@@ -18,7 +18,10 @@ import {
   RotateCcw,
   Zap,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  Languages,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { MultimediaCanvas } from './MultimediaCanvas';
@@ -32,7 +35,6 @@ import {
   formatNameFromEmail 
 } from '../utils/authStorage';
 import { evaluatePasswordStrength, validateColombianPhone } from '../utils/security';
-import { soundEngine } from '../utils/soundEffects';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { TermsModal } from './TermsModal';
 
@@ -49,15 +51,15 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   initialEmail = '',
   onOpenResetCodeModal,
 }) => {
-  const { t } = useThemeLanguage();
+  const { t, language, toggleLanguage, themeMode, toggleThemeMode } = useThemeLanguage();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
 
   // Typewriter effect state for Hero Headline
   const typewriterPhrases = [
-    'Inteligencia Vial para Colombia',
-    'Educación Interactiva y Certificada',
-    'Rutas Seguras, Vidas Salvadas',
-    'El Futuro de la Movilidad Urbana'
+    t('gateway_typewriter_1', 'Inteligencia Vial para Colombia'),
+    t('gateway_typewriter_2', 'Educación Interactiva y Certificada'),
+    t('gateway_typewriter_3', 'Rutas Seguras, Vidas Salvadas'),
+    t('gateway_typewriter_4', 'El Futuro de la Movilidad Urbana')
   ];
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [currentText, setCurrentText] = useState('');
@@ -113,9 +115,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
   const passwordAnalysis = evaluatePasswordStrength(regPassword);
 
-  // Switch tabs with sound
+  // Switch tabs
   const handleTabChange = (tab: 'login' | 'register') => {
-    soundEngine.playClick();
     setActiveTab(tab);
     setLoginError('');
     setRegError('');
@@ -123,7 +124,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
   // Quick fill test credentials
   const handleFillDemo = () => {
-    soundEngine.playClick();
     setLoginEmail('conductor.demo@vianova.edu.co');
     setLoginPassword('ViaNova2026*');
     setLoginError('');
@@ -151,8 +151,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       const firebaseRes = await firebaseLogin(trimmedEmail, loginPassword);
 
       if (firebaseRes.success && firebaseRes.user) {
-        soundEngine.playSuccess();
-
         // Check if we have an existing local profile for extra metadata
         const existingAccount = findRegisteredUserByEmail(trimmedEmail);
         let profile: UserProfile;
@@ -183,14 +181,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         // Fallback check in local registered users (for offline or demo testing)
         const localAccount = findRegisteredUserByEmail(trimmedEmail);
         if (localAccount && localAccount.password === loginPassword) {
-          soundEngine.playSuccess();
           onAuthSuccess(localAccount.profile);
           return;
         }
 
         // Demo fallback
         if (trimmedEmail === 'conductor.demo@vianova.edu.co' && loginPassword === 'ViaNova2026*') {
-          soundEngine.playSuccess();
           const demoUser: UserProfile = {
             id: 'demo-conductor-01',
             name: 'Carlos Andrés Rodríguez',
@@ -218,7 +214,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         // General fallback check
         const localAccount = findRegisteredUserByEmail(trimmedEmail);
         if (localAccount && localAccount.password === loginPassword) {
-          soundEngine.playSuccess();
           onAuthSuccess(localAccount.profile);
           return;
         }
@@ -269,7 +264,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       const firebaseRes = await firebaseRegister(trimmedEmail, regPassword);
 
       if (firebaseRes.success && firebaseRes.user) {
-        soundEngine.playSuccess();
         const newUser: UserProfile = {
           id: firebaseRes.user.uid || `user-${Date.now()}`,
           name: regName.trim(),
@@ -301,7 +295,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         if (existing) {
           setRegError('Este correo ya está registrado localmente. Por favor inicia sesión.');
         } else {
-          soundEngine.playSuccess();
           const newUser: UserProfile = {
             id: `user-${Date.now()}`,
             name: regName.trim(),
@@ -341,6 +334,41 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         aria-hidden="true" 
       />
 
+      {/* Top Floating Controls: Language Switch & Theme Toggle */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
+        {/* Language Toggle Button */}
+        <button
+          type="button"
+          id="btn-translate-lang"
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#050B14]/85 hover:bg-[#0A1931] text-white border border-[#00AFFF]/50 hover:border-[#00FF88] text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,175,255,0.3)] cursor-pointer"
+          title="Cambiar Idioma / Switch Language (ES/EN)"
+        >
+          <Languages size={15} className="text-[#00AFFF]" />
+          <span className="font-extrabold text-[11px] text-white">
+            {language === 'es' ? 'EN • English' : 'ES • Español'}
+          </span>
+        </button>
+
+        {/* Theme Mode Toggle Button */}
+        <button
+          type="button"
+          id="btn-theme-mode"
+          onClick={toggleThemeMode}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#050B14]/85 hover:bg-[#0A1931] text-white border border-slate-700 hover:border-amber-400 text-xs font-bold transition-all shadow-md cursor-pointer"
+          title={themeMode === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+        >
+          {themeMode === 'dark' ? (
+            <Sun size={15} className="text-amber-400" />
+          ) : (
+            <Moon size={15} className="text-sky-300" />
+          )}
+          <span className="text-[11px] text-slate-200">
+            {themeMode === 'dark' ? 'Claro' : 'Oscuro'}
+          </span>
+        </button>
+      </div>
+
       {/* 4. Central Authenticator Container */}
       <div className="w-full max-w-xl mx-auto relative z-10 flex flex-col items-center">
         
@@ -365,7 +393,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#050B14]/80 backdrop-blur-md border border-[#00AFFF]/40 text-[#00AFFF] text-[11px] font-black uppercase tracking-wider mb-2 shadow-[0_0_15px_rgba(0,175,255,0.3)]"
         >
           <span className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
-          <span>SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES</span>
+          <span data-i18n="gateway_badge">{t('gateway_badge', 'SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES')}</span>
         </motion.div>
 
         {/* Dynamic Typewriter Headline */}
@@ -383,6 +411,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           <button
             type="button"
             id="tab-login-btn"
+            data-i18n="tab_login"
             onClick={() => handleTabChange('login')}
             className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer relative ${
               activeTab === 'login'
@@ -391,7 +420,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             }`}
           >
             <LogIn size={18} className={activeTab === 'login' ? 'animate-pulse text-white' : ''} />
-            <span>{t('landing_cta_access', 'Iniciar Sesión')}</span>
+            <span data-i18n-text>{t('tab_login', 'Iniciar Sesión')}</span>
             {activeTab === 'login' && (
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping ml-1" />
             )}
@@ -401,6 +430,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           <button
             type="button"
             id="tab-register-btn"
+            data-i18n="tab_register"
             onClick={() => handleTabChange('register')}
             className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer relative ${
               activeTab === 'register'
@@ -409,7 +439,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             }`}
           >
             <UserPlus size={18} className={activeTab === 'register' ? 'animate-pulse text-slate-950' : ''} />
-            <span>{t('landing_cta_register', 'Crear Cuenta')}</span>
+            <span data-i18n-text>{t('tab_register', 'Crear Cuenta')}</span>
             {activeTab === 'register' && (
               <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping ml-1" />
             )}
@@ -437,11 +467,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 className="space-y-4"
               >
                 <div className="text-center pb-2">
-                  <h2 className="text-lg sm:text-xl font-black text-white">
-                    Acceso Oficial a la Plataforma
+                  <h2 data-i18n="gateway_login_title" className="text-lg sm:text-xl font-black text-white">
+                    {t('gateway_login_title', 'Acceso Oficial a la Plataforma')}
                   </h2>
-                  <p className="text-xs text-slate-400 font-medium mt-1">
-                    Ingresa tus credenciales registradas en Firebase Auth
+                  <p data-i18n="gateway_login_sub" className="text-xs text-slate-400 font-medium mt-1">
+                    {t('gateway_login_sub', 'Ingresa tus credenciales registradas en Firebase Auth')}
                   </p>
                 </div>
 
@@ -459,8 +489,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* Email Input */}
                 <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-bold text-slate-300">
-                    Correo Electrónico
+                  <label data-i18n="login_email_label" className="block text-xs font-bold text-slate-300">
+                    {t('login_email_label', 'Correo Electrónico')}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -480,18 +510,16 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Password Input */}
                 <div className="space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-300">
-                      Contraseña
+                    <label data-i18n="login_password_label" className="block text-xs font-bold text-slate-300">
+                      {t('login_password_label', 'Contraseña')}
                     </label>
                     <button
                       type="button"
-                      onClick={() => {
-                        soundEngine.playClick();
-                        setIsForgotPasswordOpen(true);
-                      }}
+                      onClick={() => setIsForgotPasswordOpen(true)}
+                      data-i18n="login_forgot_password"
                       className="text-xs font-bold text-[#00AFFF] hover:text-[#00FF88] hover:underline transition-colors cursor-pointer"
                     >
-                      ¿Olvidaste tu contraseña?
+                      {t('login_forgot_password', '¿Olvidaste tu contraseña?')}
                     </button>
                   </div>
                   <div className="relative">
@@ -521,16 +549,17 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 <button
                   type="submit"
                   disabled={loginSubmitting}
+                  data-i18n="login_btn_submit"
                   className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0052cc] via-[#00AFFF] to-[#00FF88] text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,175,255,0.4)] hover:shadow-[0_0_35px_rgba(0,175,255,0.6)] hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
                 >
                   {loginSubmitting ? (
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
-                      <span>Verificando con Firebase...</span>
+                      <span>{t('reg_btn_submitting_firebase', 'Verificando con Firebase...')}</span>
                     </div>
                   ) : (
                     <>
-                      <span>Iniciar Sesión en ViaNova</span>
+                      <span data-i18n-text>{t('login_btn_submit', 'Iniciar Sesión en ViaNova')}</span>
                       <ArrowRight size={17} className="animate-pulse" />
                     </>
                   )}
@@ -538,14 +567,17 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* Demo Test Account Shortcut */}
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">¿Deseas probar la plataforma?</span>
+                  <span data-i18n="login_demo_question" className="text-slate-400 font-medium">
+                    {t('login_demo_question', '¿Deseas probar la plataforma?')}
+                  </span>
                   <button
                     type="button"
                     onClick={handleFillDemo}
+                    data-i18n="login_demo_btn"
                     className="text-[#00FF88] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Zap size={13} />
-                    <span>Cargar Cuenta Demo</span>
+                    <span data-i18n-text>{t('login_demo_btn', 'Cargar Cuenta Demo')}</span>
                   </button>
                 </div>
               </motion.form>
@@ -561,11 +593,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 className="space-y-3.5 text-left"
               >
                 <div className="text-center pb-1">
-                  <h2 className="text-lg sm:text-xl font-black text-white">
-                    Registro de Conductor en Colombia
+                  <h2 data-i18n="gateway_reg_title" className="text-lg sm:text-xl font-black text-white">
+                    {t('gateway_reg_title', 'Registro de Conductor en Colombia')}
                   </h2>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">
-                    Crea tu perfil oficial para acceder a simuladores y certificaciones
+                  <p data-i18n="gateway_reg_sub" className="text-xs text-slate-400 font-medium mt-0.5">
+                    {t('gateway_reg_sub', 'Crea tu perfil oficial para acceder a simuladores y certificaciones')}
                   </p>
                 </div>
 
@@ -583,8 +615,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* Full Name */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-300">
-                    Nombre y Apellido
+                  <label data-i18n="reg_name_label" className="block text-xs font-bold text-slate-300">
+                    {t('reg_name_label', 'Nombre y Apellidos')}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -604,8 +636,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Email & Phone in 2 Columns */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-300">
-                      Correo Electrónico
+                    <label data-i18n="reg_email_label" className="block text-xs font-bold text-slate-300">
+                      {t('reg_email_label', 'Correo Electrónico')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -623,8 +655,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-300">
-                      Celular (Colombia)
+                    <label data-i18n="reg_phone_label" className="block text-xs font-bold text-slate-300">
+                      {t('reg_phone_label', 'Celular (Colombia)')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -644,26 +676,26 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* User Type / Role */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-300">
-                    Tipo de Actor Vial
+                  <label data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-300">
+                    {t('reg_user_type_label', 'Tipo de Perfil Vial')}
                   </label>
                   <select
                     value={regUserType}
                     onChange={(e) => setRegUserType(e.target.value as UserType)}
                     className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm text-white focus:outline-none focus:border-[#00FF88] transition-all cursor-pointer"
                   >
-                    <option value="conductor">Conductor de Automóvil / Servicio Público</option>
-                    <option value="aspirante">Aspirante a Licencia de Conducción CEA</option>
+                    <option value="conductor">{t('reg_user_type_driver', 'Conductor de Automóvil / Servicio Público')}</option>
+                    <option value="aspirante">{t('reg_user_type_instructor', 'Aspirante a Licencia de Conducción CEA')}</option>
                     <option value="estudiante">Estudiante Vial / Técnico SENA</option>
-                    <option value="ciudadano">Motociclista / Peatón / Ciclista</option>
+                    <option value="ciudadano">{t('reg_user_type_pedestrian', 'Motociclista / Peatón / Ciclista')}</option>
                   </select>
                 </div>
 
                 {/* Password & Confirm Password */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-300">
-                      Contraseña
+                    <label data-i18n="reg_pass_label" className="block text-xs font-bold text-slate-300">
+                      {t('reg_pass_label', 'Contraseña')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -688,8 +720,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-300">
-                      Confirmar Contraseña
+                    <label data-i18n="reg_pass_confirm_label" className="block text-xs font-bold text-slate-300">
+                      {t('reg_pass_confirm_label', 'Confirmar Contraseña')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -745,21 +777,23 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     className="mt-0.5 rounded border-slate-700 text-[#00FF88] focus:ring-[#00FF88] bg-slate-900"
                   />
                   <span className="leading-snug">
-                    Acepto los{' '}
+                    <span data-i18n="reg_terms_agree">{t('reg_terms_agree', 'Acepto los')}</span>{' '}
                     <button
                       type="button"
+                      data-i18n="reg_terms_service"
                       onClick={() => setTermsModalType('terms')}
                       className="text-[#00AFFF] underline hover:text-[#00FF88]"
                     >
-                      Términos de Servicio
+                      {t('reg_terms_service', 'Términos de Servicio')}
                     </button>{' '}
-                    y la{' '}
+                    <span data-i18n="reg_terms_and">{t('reg_terms_and', 'y la')}</span>{' '}
                     <button
                       type="button"
+                      data-i18n="reg_terms_privacy"
                       onClick={() => setTermsModalType('privacy')}
                       className="text-[#00AFFF] underline hover:text-[#00FF88]"
                     >
-                      Política de Privacidad
+                      {t('reg_terms_privacy', 'Política de Privacidad')}
                     </button>
                     .
                   </span>
@@ -769,16 +803,17 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 <button
                   type="submit"
                   disabled={regSubmitting}
+                  data-i18n="reg_btn_submit_official"
                   className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#00FF88] via-[#00AFFF] to-[#0052cc] text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,255,136,0.4)] hover:shadow-[0_0_35px_rgba(0,255,136,0.6)] hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 mt-2"
                 >
                   {regSubmitting ? (
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
-                      <span>Creando cuenta en Firebase...</span>
+                      <span>{t('reg_btn_submitting_firebase', 'Creando cuenta en Firebase...')}</span>
                     </div>
                   ) : (
                     <>
-                      <span>Crear Mi Cuenta en ViaNova</span>
+                      <span data-i18n-text>{t('reg_btn_submit_official', 'Crear Mi Cuenta en ViaNova')}</span>
                       <UserPlus size={17} className="animate-pulse" />
                     </>
                   )}
@@ -789,8 +824,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         </motion.div>
 
         {/* Footer info: Seguridad Vial Colombia */}
-        <p className="mt-6 text-xs text-slate-500 text-center font-medium">
-          Sistema de Educación Vial y Movilidad Urbana • Ley 769 de 2002 & Ley 2251 de 2022
+        <p data-i18n="gateway_footer_legal" className="mt-6 text-xs text-slate-500 text-center font-medium">
+          {t('gateway_footer_legal', 'Sistema de Educación Vial y Movilidad Urbana • Ley 769 de 2002 & Ley 2251 de 2022')}
         </p>
       </div>
 

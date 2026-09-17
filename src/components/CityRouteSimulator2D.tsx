@@ -7,8 +7,6 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Volume2, 
-  VolumeX, 
   Gauge, 
   ShieldAlert, 
   Sparkles,
@@ -25,7 +23,6 @@ export const CityRouteSimulator2D: React.FC = () => {
   const [trafficLight, setTrafficLight] = useState<TrafficLight>('green');
   const [progress, setProgress] = useState(15); // percentage along the road
   const [speed, setSpeed] = useState(50); // km/h
-  const [isAudioMuted, setIsAudioMuted] = useState(soundEngine.isMuted());
   const [modeTheme, setModeTheme] = useState<'neon' | 'cyberpunk'>('neon');
 
   // Realistic city animation loop
@@ -72,48 +69,31 @@ export const CityRouteSimulator2D: React.FC = () => {
     setProgress((p) => Math.min(99, p + 5));
   };
 
-  const toggleSound = () => {
-    const m = soundEngine.toggleMute();
-    setIsAudioMuted(m);
-  };
-
   return (
-    <div className="w-full rounded-3xl overflow-hidden bg-gradient-to-b from-[#0A1931] via-[#071326] to-[#050B14] border-2 border-[#00AFFF]/40 shadow-[0_0_35px_rgba(0,175,255,0.2)] p-4 sm:p-7 relative text-white">
+    <div className="w-full rounded-3xl overflow-hidden bg-white dark:bg-gradient-to-b dark:from-[#0A1931] dark:via-[#071326] dark:to-[#050B14] border-2 border-slate-200 dark:border-[#00AFFF]/40 shadow-xl dark:shadow-[0_0_35px_rgba(0,175,255,0.2)] p-4 sm:p-7 relative text-slate-900 dark:text-white transition-colors">
       {/* Top Header & HUD */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/20 border border-[#00AFFF]/40 text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
-            <Zap size={13} className="text-[#00FF88] animate-bounce" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/15 dark:bg-[#00AFFF]/20 border border-[#00AFFF]/30 dark:border-[#00AFFF]/40 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
+            <Zap size={13} className="text-[#059669] dark:text-[#00FF88] animate-bounce" />
             <span>SENA 250201026 • SECUENCIA ANIMADA 2D</span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-            Ruta Inteligente <span className="text-[#00AFFF]">ViaNova 2D</span>
+          <h3 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            Ruta Inteligente <span className="text-[#0052cc] dark:text-[#00AFFF]">ViaNova 2D</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
             Simulador de tráfico urbano, semaforización adaptativa y respeto al paso peatonal.
           </p>
         </div>
 
         {/* Telemetry HUD */}
-        <div className="flex items-center gap-3 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
-            <Gauge size={16} className="text-[#00AFFF]" />
+        <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-inner">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+            <Gauge size={16} className="text-[#0052cc] dark:text-[#00AFFF]" />
             <span>Velocidad:</span>
-            <span className="font-mono text-base font-black text-[#00FF88]">{speed}</span>
-            <span className="text-[10px] text-slate-400">km/h</span>
+            <span className="font-mono text-base font-black text-emerald-600 dark:text-[#00FF88]">{speed}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">km/h</span>
           </div>
-
-          <div className="h-4 w-px bg-slate-700"></div>
-
-          {/* Sound Mute Toggle */}
-          <button
-            type="button"
-            onClick={toggleSound}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title={isAudioMuted ? 'Activar audio sutil' : 'Silenciar audio'}
-          >
-            {isAudioMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-[#00FF88]" />}
-          </button>
         </div>
       </div>
 
@@ -269,7 +249,7 @@ export const CityRouteSimulator2D: React.FC = () => {
       {/* Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         {/* Vehicle Selector */}
-        <div className="flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
           <button
             type="button"
             onClick={() => {
@@ -278,8 +258,8 @@ export const CityRouteSimulator2D: React.FC = () => {
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               vehicle === 'car'
-                ? 'bg-[#00AFFF] text-slate-950 font-black shadow-[0_0_12px_#00AFFF]'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#0052cc] dark:bg-[#00AFFF] text-white dark:text-slate-950 font-black shadow-md dark:shadow-[0_0_12px_#00AFFF]'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <Car size={15} />
@@ -294,8 +274,8 @@ export const CityRouteSimulator2D: React.FC = () => {
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               vehicle === 'bike'
-                ? 'bg-[#00FF88] text-slate-950 font-black shadow-[0_0_12px_#00FF88]'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                ? 'bg-emerald-600 dark:bg-[#00FF88] text-white dark:text-slate-950 font-black shadow-md dark:shadow-[0_0_12px_#00FF88]'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <Bike size={15} />
@@ -310,8 +290,8 @@ export const CityRouteSimulator2D: React.FC = () => {
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               vehicle === 'bus'
-                ? 'bg-[#FF6B00] text-white font-black shadow-[0_0_12px_#FF6B00]'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#FF6B00] text-white font-black shadow-md dark:shadow-[0_0_12px_#FF6B00]'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <Bus size={15} />
@@ -324,7 +304,7 @@ export const CityRouteSimulator2D: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsPlaying(!isPlaying)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors cursor-pointer border border-slate-700"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs transition-colors cursor-pointer border border-slate-300 dark:border-slate-700"
           >
             {isPlaying ? <Pause size={14} /> : <Play size={14} />}
             <span>{isPlaying ? 'Pausar' : 'Reanudar'}</span>
@@ -333,10 +313,10 @@ export const CityRouteSimulator2D: React.FC = () => {
           <button
             type="button"
             onClick={handleAccelerateBoost}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00FF88] to-[#00AFFF] text-slate-950 font-black text-xs transition-all shadow-[0_0_15px_rgba(0,255,136,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0052cc] to-emerald-600 dark:from-[#00FF88] dark:to-[#00AFFF] text-white dark:text-slate-950 font-black text-xs transition-all shadow-md dark:shadow-[0_0_15px_rgba(0,255,136,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
           >
             <Sparkles size={14} />
-            <span>Acelerar + Sonido</span>
+            <span>Acelerar</span>
           </button>
 
           <button
@@ -345,7 +325,7 @@ export const CityRouteSimulator2D: React.FC = () => {
               setProgress(0);
               soundEngine.playClick();
             }}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer border border-slate-300 dark:border-slate-700"
             title="Reiniciar ruta"
           >
             <RotateCcw size={15} />

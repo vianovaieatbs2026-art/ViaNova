@@ -13,8 +13,6 @@ import {
   BookOpen, 
   FileCheck2,
   Flame,
-  Volume2,
-  VolumeX,
   Sparkles,
   Eye,
   Info,
@@ -61,72 +59,12 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   const [answersHistory, setAnswersHistory] = useState<QuestionAnswerRecord[]>([]);
   const [showReviewList, setShowReviewList] = useState<boolean>(false);
   const [showHint, setShowHint] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isZoomedSign, setIsZoomedSign] = useState<boolean>(false);
-
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const activeTopic = topics.find(tp => tp.id === activeTopicId) || null;
 
-  // Sound effect generator using Web Audio API
-  const playSound = (type: 'correct' | 'wrong' | 'click' | 'complete') => {
-    if (!soundEnabled || typeof window === 'undefined') return;
-    try {
-      if (!audioCtxRef.current) {
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        audioCtxRef.current = new AudioContextClass();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      const now = ctx.currentTime;
-
-      if (type === 'correct') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
-        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.start(now);
-        osc.stop(now + 0.35);
-      } else if (type === 'wrong') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now); // A3
-        osc.frequency.exponentialRampToValueAtTime(160, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-      } else if (type === 'complete') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(554.37, now + 0.15);
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.45);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-        osc.start(now);
-        osc.stop(now + 0.6);
-      } else {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, now);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      }
-    } catch {
-      // Audio not supported or blocked, fail silently
-    }
-  };
+  // Sound disabled per user requirements
+  const playSound = (_type: 'correct' | 'wrong' | 'click' | 'complete') => {};
 
   const startTopic = (topic: QuizTopic) => {
     playSound('click');
@@ -211,29 +149,8 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     }
   };
 
-  // Cleanup audio context on unmount
-  useEffect(() => {
-    return () => {
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-      }
-    };
-  }, []);
-
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      {/* Sound toggle floating button */}
-      <div className="flex justify-end mb-3">
-        <button
-          onClick={() => setSoundEnabled(prev => !prev)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-[#e2e8f0] dark:border-slate-700 text-[#64748b] dark:text-slate-300 hover:text-[#0f172a] dark:hover:text-white shadow-xs transition-colors cursor-pointer"
-          title={soundEnabled ? 'Silenciar sonidos' : 'Activar efectos de sonido'}
-        >
-          {soundEnabled ? <Volume2 size={15} className="text-[#0052cc] dark:text-sky-400" /> : <VolumeX size={15} className="text-slate-400" />}
-          <span className="text-[11px]">{soundEnabled ? 'Sonido Activado' : 'Sin Sonido'}</span>
-        </button>
-      </div>
-
       {/* ===================== 1. CATEGORY SELECTION SCREEN ===================== */}
       {!activeTopic ? (
         <div className="space-y-8 animate-fade-in">

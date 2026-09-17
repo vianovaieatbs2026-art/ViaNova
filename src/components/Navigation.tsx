@@ -10,14 +10,11 @@ import {
   ShieldCheck, 
   Trash2,
   UserPlus,
-  Volume2,
-  VolumeX,
   Sparkles
 } from 'lucide-react';
 import { ScreenId, UserProfile } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { HeaderSearchBar } from './HeaderSearchBar';
-import { soundEngine } from '../utils/soundEffects';
 
 interface NavigationProps {
   currentScreen: ScreenId;
@@ -36,7 +33,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAudioMuted, setIsAudioMuted] = useState(soundEngine.isMuted());
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { 
@@ -147,34 +143,11 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            
-            {/* Audio Synthesizer Sound Toggle */}
-            <button
-              type="button"
-              id="header-sound-toggle-btn"
-              onClick={() => {
-                const muted = soundEngine.toggleMute();
-                setIsAudioMuted(muted);
-                if (!muted) soundEngine.playSuccess();
-              }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
-              title={isAudioMuted ? 'Activar efectos de audio sutiles' : 'Silenciar audio'}
-              aria-label="Efectos de audio"
-            >
-              {isAudioMuted ? (
-                <VolumeX size={16} className="text-slate-400 shrink-0" />
-              ) : (
-                <Volume2 size={16} className="text-[#00FF88] shrink-0" />
-              )}
-              <span className="hidden xl:inline font-bold">
-                {isAudioMuted ? 'Mute' : 'Audio'}
-              </span>
-            </button>
-
             {/* Dark / Light Mode Toggle Button */}
             <button
               type="button"
               id="header-theme-toggle-btn"
+              data-i18n="nav_theme_switch"
               onClick={toggleThemeMode}
               className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
               title={themeMode === 'dark' ? t('theme_light', 'Modo Claro') : t('theme_dark', 'Modo Oscuro')}
@@ -194,6 +167,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             <button
               type="button"
               id="header-lang-toggle-btn"
+              data-i18n="nav_lang_switch"
               onClick={toggleLanguage}
               className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
               title="Cambiar idioma / Switch language"

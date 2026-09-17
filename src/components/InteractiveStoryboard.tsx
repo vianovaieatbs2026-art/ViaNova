@@ -124,18 +124,18 @@ export const InteractiveStoryboard: React.FC = () => {
   const current = steps[activeStep];
 
   return (
-    <div className="w-full rounded-3xl overflow-hidden bg-gradient-to-b from-[#0A1931] via-[#071326] to-[#050B14] border-2 border-[#00FF88]/40 shadow-[0_0_35px_rgba(0,255,136,0.15)] p-5 sm:p-8 text-white relative">
+    <div className="w-full rounded-3xl overflow-hidden bg-white dark:bg-gradient-to-b dark:from-[#0A1931] dark:via-[#071326] dark:to-[#050B14] border-2 border-slate-200 dark:border-[#00FF88]/40 shadow-xl dark:shadow-[0_0_35px_rgba(0,255,136,0.15)] p-5 sm:p-8 text-slate-900 dark:text-white relative transition-colors">
       {/* Top Tagline */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00FF88]/15 border border-[#00FF88]/30 text-[#00FF88] text-xs font-black uppercase tracking-wider mb-2">
-            <Film size={13} className="text-[#00FF88]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00FF88]/15 border border-[#00FF88]/30 text-[#059669] dark:text-[#00FF88] text-xs font-black uppercase tracking-wider mb-2">
+            <Film size={13} className="text-[#059669] dark:text-[#00FF88]" />
             <span>STORYBOARD INTERACTIVO • CÓMO FUNCIONA VIANOVA</span>
           </div>
-          <h3 className="text-xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-            El Viaje del Conductor <span className="text-[#00FF88]">en 4 Escenas</span>
+          <h3 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            El Viaje del Conductor <span className="text-[#059669] dark:text-[#00FF88]">en 4 Escenas</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-1">
             Metodología pedagógica diseñada bajo competencias SENA para transformar la cultura vial.
           </p>
         </div>
@@ -145,7 +145,7 @@ export const InteractiveStoryboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
           >
             {isAutoPlaying ? <Pause size={13} /> : <Play size={13} />}
             <span>{isAutoPlaying ? 'Auto' : 'Pausado'}</span>
@@ -154,7 +154,7 @@ export const InteractiveStoryboard: React.FC = () => {
           <button
             type="button"
             onClick={handlePrev}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
             title="Anterior escena"
           >
             <ArrowLeft size={16} />
@@ -163,7 +163,7 @@ export const InteractiveStoryboard: React.FC = () => {
           <button
             type="button"
             onClick={handleNext}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
             title="Siguiente escena"
           >
             <ArrowRight size={16} />
@@ -182,24 +182,24 @@ export const InteractiveStoryboard: React.FC = () => {
               onClick={() => goToStep(idx)}
               className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
                 isSelected
-                  ? 'bg-slate-900/90 border-[#00FF88] shadow-[0_0_15px_rgba(0,255,136,0.3)] scale-[1.02]'
-                  : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
+                  ? 'bg-slate-100 dark:bg-slate-900/90 border-[#059669] dark:border-[#00FF88] shadow-sm dark:shadow-[0_0_15px_rgba(0,255,136,0.3)] scale-[1.02]'
+                  : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900/60'
               }`}
             >
               {isSelected && (
                 <div 
-                  className="absolute top-0 left-0 right-0 h-1 bg-[#00FF88] shadow-[0_0_8px_#00FF88]"
+                  className="absolute top-0 left-0 right-0 h-1 bg-[#059669] dark:bg-[#00FF88] shadow-[0_0_8px_#00FF88]"
                 />
               )}
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${s.badgeColor}`}>
                   {`0${s.id}`}
                 </span>
-                <span className="text-xs font-black truncate text-slate-200">
+                <span className="text-xs font-black truncate text-slate-800 dark:text-slate-200">
                   {s.title.replace(`Paso ${s.id}: `, '')}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
                 {s.tagline}
               </p>
             </button>
@@ -215,7 +215,7 @@ export const InteractiveStoryboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -15 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-950/70 p-5 sm:p-8 rounded-3xl border border-slate-800 relative overflow-hidden"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-50 dark:bg-slate-950/70 p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 relative overflow-hidden"
         >
           {/* Left Explanation Column */}
           <div className="lg:col-span-6 space-y-4">
