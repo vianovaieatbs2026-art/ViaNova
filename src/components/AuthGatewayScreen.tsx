@@ -18,10 +18,7 @@ import {
   RotateCcw,
   Zap,
   HelpCircle,
-  ExternalLink,
-  Languages,
-  Sun,
-  Moon
+  ExternalLink
 } from 'lucide-react';
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { MultimediaCanvas } from './MultimediaCanvas';
@@ -51,7 +48,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   initialEmail = '',
   onOpenResetCodeModal,
 }) => {
-  const { t, language, toggleLanguage, themeMode, toggleThemeMode } = useThemeLanguage();
+  const { t } = useThemeLanguage();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
 
   // Typewriter effect state for Hero Headline
@@ -320,7 +317,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-[#0A1931] text-white py-10 px-4 sm:px-6 lg:px-8 select-none">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-[#f8fafc] dark:bg-[#0A1931] text-[#0f172a] dark:text-white py-10 px-4 sm:px-6 lg:px-8 select-none transition-colors duration-300">
       
       {/* 1. Real-time Animated Particle Canvas */}
       <MultimediaCanvas />
@@ -328,46 +325,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       {/* 2. Floating Mobility Icons & Rotating Tech Gears (Arandelas) */}
       <FloatingDecorations />
 
-      {/* 3. Deep Atmospheric Ambient Lighting (Azul Eléctrico + Verde Neón + Naranja) */}
+      {/* 3. Deep Atmospheric Ambient Lighting (Adaptable a Claro y Oscuro) */}
       <div 
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-[#00AFFF]/20 via-[#00FF88]/15 to-[#FF6B00]/10 blur-[130px] pointer-events-none" 
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-[#00AFFF]/15 via-[#00FF88]/10 to-[#FF6B00]/10 dark:from-[#00AFFF]/20 dark:via-[#00FF88]/15 dark:to-[#FF6B00]/10 blur-[130px] pointer-events-none" 
         aria-hidden="true" 
       />
-
-      {/* Top Floating Controls: Language Switch & Theme Toggle */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
-        {/* Language Toggle Button */}
-        <button
-          type="button"
-          id="btn-translate-lang"
-          onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#050B14]/85 hover:bg-[#0A1931] text-white border border-[#00AFFF]/50 hover:border-[#00FF88] text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,175,255,0.3)] cursor-pointer"
-          title="Cambiar Idioma / Switch Language (ES/EN)"
-        >
-          <Languages size={15} className="text-[#00AFFF]" />
-          <span className="font-extrabold text-[11px] text-white">
-            {language === 'es' ? 'EN • English' : 'ES • Español'}
-          </span>
-        </button>
-
-        {/* Theme Mode Toggle Button */}
-        <button
-          type="button"
-          id="btn-theme-mode"
-          onClick={toggleThemeMode}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#050B14]/85 hover:bg-[#0A1931] text-white border border-slate-700 hover:border-amber-400 text-xs font-bold transition-all shadow-md cursor-pointer"
-          title={themeMode === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
-        >
-          {themeMode === 'dark' ? (
-            <Sun size={15} className="text-amber-400" />
-          ) : (
-            <Moon size={15} className="text-sky-300" />
-          )}
-          <span className="text-[11px] text-slate-200">
-            {themeMode === 'dark' ? 'Claro' : 'Oscuro'}
-          </span>
-        </button>
-      </div>
 
       {/* 4. Central Authenticator Container */}
       <div className="w-full max-w-xl mx-auto relative z-10 flex flex-col items-center">
@@ -390,7 +352,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#050B14]/80 backdrop-blur-md border border-[#00AFFF]/40 text-[#00AFFF] text-[11px] font-black uppercase tracking-wider mb-2 shadow-[0_0_15px_rgba(0,175,255,0.3)]"
+          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 dark:bg-[#050B14]/80 backdrop-blur-md border border-sky-300 dark:border-[#00AFFF]/40 text-[#0052cc] dark:text-[#00AFFF] text-[11px] font-black uppercase tracking-wider mb-2 shadow-xs dark:shadow-[0_0_15px_rgba(0,175,255,0.3)] transition-colors"
         >
           <span className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
           <span data-i18n="gateway_badge">{t('gateway_badge', 'SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES')}</span>
@@ -398,14 +360,14 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
         {/* Dynamic Typewriter Headline */}
         <div className="h-9 mb-6 flex items-center justify-center text-center">
-          <p className="text-base sm:text-xl font-bold text-[#00AFFF] tracking-tight drop-shadow-[0_0_15px_rgba(0,175,255,0.4)]">
+          <p className="text-base sm:text-xl font-bold text-[#0052cc] dark:text-[#00AFFF] tracking-tight drop-shadow-xs dark:drop-shadow-[0_0_15px_rgba(0,175,255,0.4)]">
             <span>{currentText}</span>
             <span className="inline-block w-0.5 h-4 ml-1 bg-[#00FF88] animate-pulse align-middle" />
           </p>
         </div>
 
         {/* ===================== THE 2 PROMINENT TABS ===================== */}
-        <div className="w-full grid grid-cols-2 p-1.5 rounded-2xl bg-[#050B14]/90 backdrop-blur-md border-2 border-slate-700/80 mb-6 shadow-2xl relative">
+        <div className="w-full grid grid-cols-2 p-1.5 rounded-2xl bg-white/90 dark:bg-[#050B14]/90 backdrop-blur-md border-2 border-slate-200 dark:border-slate-700/80 mb-6 shadow-xl dark:shadow-2xl relative transition-colors">
           
           {/* Tab 1: Iniciar Sesión */}
           <button
@@ -416,7 +378,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer relative ${
               activeTab === 'login'
                 ? 'bg-gradient-to-r from-[#0052cc] to-[#00AFFF] text-white shadow-[0_0_25px_rgba(0,175,255,0.5)] scale-[1.02]'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40'
             }`}
           >
             <LogIn size={18} className={activeTab === 'login' ? 'animate-pulse text-white' : ''} />
@@ -435,7 +397,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer relative ${
               activeTab === 'register'
                 ? 'bg-gradient-to-r from-[#00FF88] to-[#00AFFF] text-slate-950 shadow-[0_0_25px_rgba(0,255,136,0.5)] scale-[1.02]'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/40'
             }`}
           >
             <UserPlus size={18} className={activeTab === 'register' ? 'animate-pulse text-slate-950' : ''} />
@@ -449,7 +411,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         {/* ===================== GLASSMORPHIC CARD WITH INPUT FOCUS GLOW ===================== */}
         <motion.div 
           layout
-          className="w-full rounded-3xl bg-[#050B14]/85 backdrop-blur-2xl border-2 border-[#00AFFF]/40 p-6 sm:p-8 shadow-[0_0_50px_rgba(0,175,255,0.25)] relative overflow-hidden"
+          className="w-full rounded-3xl bg-white/95 dark:bg-[#050B14]/85 backdrop-blur-2xl border-2 border-sky-300/60 dark:border-[#00AFFF]/40 p-6 sm:p-8 shadow-xl dark:shadow-[0_0_50px_rgba(0,175,255,0.25)] relative overflow-hidden transition-colors duration-300"
         >
           {/* Subtle top neon border accent */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0052cc] via-[#00AFFF] to-[#00FF88]" />
@@ -467,10 +429,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 className="space-y-4"
               >
                 <div className="text-center pb-2">
-                  <h2 data-i18n="gateway_login_title" className="text-lg sm:text-xl font-black text-white">
+                  <h2 data-i18n="gateway_login_title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                     {t('gateway_login_title', 'Acceso Oficial a la Plataforma')}
                   </h2>
-                  <p data-i18n="gateway_login_sub" className="text-xs text-slate-400 font-medium mt-1">
+                  <p data-i18n="gateway_login_sub" className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-1">
                     {t('gateway_login_sub', 'Ingresa tus credenciales registradas en Firebase Auth')}
                   </p>
                 </div>
@@ -480,20 +442,20 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-200 text-xs flex items-start gap-2.5 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                    className="p-3 rounded-xl bg-red-500/15 border border-red-500/50 text-red-700 dark:text-red-200 text-xs flex items-start gap-2.5 shadow-sm"
                   >
-                    <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
-                    <span className="leading-snug">{loginError}</span>
+                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                    <span className="leading-snug font-medium">{loginError}</span>
                   </motion.div>
                 )}
 
                 {/* Email Input */}
                 <div className="space-y-1.5 text-left">
-                  <label data-i18n="login_email_label" className="block text-xs font-bold text-slate-300">
+                  <label data-i18n="login_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('login_email_label', 'Correo Electrónico')}
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                       <Mail size={16} />
                     </div>
                     <input
@@ -502,7 +464,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       placeholder="ejemplo@vianova.edu.co"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0052cc] dark:focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
                     />
                   </div>
                 </div>
@@ -510,20 +472,20 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Password Input */}
                 <div className="space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <label data-i18n="login_password_label" className="block text-xs font-bold text-slate-300">
+                    <label data-i18n="login_password_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('login_password_label', 'Contraseña')}
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsForgotPasswordOpen(true)}
                       data-i18n="login_forgot_password"
-                      className="text-xs font-bold text-[#00AFFF] hover:text-[#00FF88] hover:underline transition-colors cursor-pointer"
+                      className="text-xs font-bold text-[#0052cc] dark:text-[#00AFFF] hover:text-[#0043a8] dark:hover:text-[#00FF88] hover:underline transition-colors cursor-pointer"
                     >
                       {t('login_forgot_password', '¿Olvidaste tu contraseña?')}
                     </button>
                   </div>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                       <Lock size={16} />
                     </div>
                     <input
@@ -532,12 +494,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
+                      className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0052cc] dark:focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setLoginShowPassword(!loginShowPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
                       aria-label="Ver contraseña"
                     >
                       {loginShowPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -566,15 +528,15 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 </button>
 
                 {/* Demo Test Account Shortcut */}
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                  <span data-i18n="login_demo_question" className="text-slate-400 font-medium">
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs transition-colors">
+                  <span data-i18n="login_demo_question" className="text-slate-500 dark:text-slate-400 font-medium">
                     {t('login_demo_question', '¿Deseas probar la plataforma?')}
                   </span>
                   <button
                     type="button"
                     onClick={handleFillDemo}
                     data-i18n="login_demo_btn"
-                    className="text-[#00FF88] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[#0052cc] dark:text-[#00FF88] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Zap size={13} />
                     <span data-i18n-text>{t('login_demo_btn', 'Cargar Cuenta Demo')}</span>
@@ -593,10 +555,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 className="space-y-3.5 text-left"
               >
                 <div className="text-center pb-1">
-                  <h2 data-i18n="gateway_reg_title" className="text-lg sm:text-xl font-black text-white">
+                  <h2 data-i18n="gateway_reg_title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                     {t('gateway_reg_title', 'Registro de Conductor en Colombia')}
                   </h2>
-                  <p data-i18n="gateway_reg_sub" className="text-xs text-slate-400 font-medium mt-0.5">
+                  <p data-i18n="gateway_reg_sub" className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
                     {t('gateway_reg_sub', 'Crea tu perfil oficial para acceder a simuladores y certificaciones')}
                   </p>
                 </div>
@@ -606,20 +568,20 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-200 text-xs flex items-start gap-2.5 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                    className="p-3 rounded-xl bg-red-500/15 border border-red-500/50 text-red-700 dark:text-red-200 text-xs flex items-start gap-2.5 shadow-sm"
                   >
-                    <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
-                    <span className="leading-snug">{regError}</span>
+                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                    <span className="leading-snug font-medium">{regError}</span>
                   </motion.div>
                 )}
 
                 {/* Full Name */}
                 <div className="space-y-1">
-                  <label data-i18n="reg_name_label" className="block text-xs font-bold text-slate-300">
+                  <label data-i18n="reg_name_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('reg_name_label', 'Nombre y Apellidos')}
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                       <User size={15} />
                     </div>
                     <input
@@ -628,7 +590,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
                       placeholder="Ej. Juan Carlos Pérez"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
                     />
                   </div>
                 </div>
@@ -636,11 +598,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Email & Phone in 2 Columns */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label data-i18n="reg_email_label" className="block text-xs font-bold text-slate-300">
+                    <label data-i18n="reg_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_email_label', 'Correo Electrónico')}
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <Mail size={15} />
                       </div>
                       <input
@@ -649,17 +611,17 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="tu-correo@gmail.com"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label data-i18n="reg_phone_label" className="block text-xs font-bold text-slate-300">
+                    <label data-i18n="reg_phone_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_phone_label', 'Celular (Colombia)')}
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <Phone size={15} />
                       </div>
                       <input
@@ -668,7 +630,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         value={regPhone}
                         onChange={(e) => setRegPhone(e.target.value)}
                         placeholder="300 123 4567"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
                       />
                     </div>
                   </div>
@@ -676,13 +638,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* User Type / Role */}
                 <div className="space-y-1">
-                  <label data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-300">
+                  <label data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('reg_user_type_label', 'Tipo de Perfil Vial')}
                   </label>
                   <select
                     value={regUserType}
                     onChange={(e) => setRegUserType(e.target.value as UserType)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm text-white focus:outline-none focus:border-[#00FF88] transition-all cursor-pointer"
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] transition-all cursor-pointer"
                   >
                     <option value="conductor">{t('reg_user_type_driver', 'Conductor de Automóvil / Servicio Público')}</option>
                     <option value="aspirante">{t('reg_user_type_instructor', 'Aspirante a Licencia de Conducción CEA')}</option>
@@ -694,11 +656,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Password & Confirm Password */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label data-i18n="reg_pass_label" className="block text-xs font-bold text-slate-300">
+                    <label data-i18n="reg_pass_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_pass_label', 'Contraseña')}
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <Lock size={15} />
                       </div>
                       <input
@@ -707,12 +669,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         placeholder="Mín. 8 caract."
-                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setRegShowPassword(!regShowPassword)}
-                        className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-white"
+                        className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-white"
                       >
                         {regShowPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -720,11 +682,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label data-i18n="reg_pass_confirm_label" className="block text-xs font-bold text-slate-300">
+                    <label data-i18n="reg_pass_confirm_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_pass_confirm_label', 'Confirmar Contraseña')}
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                         <Lock size={15} />
                       </div>
                       <input
@@ -733,12 +695,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         value={regConfirmPassword}
                         onChange={(e) => setRegConfirmPassword(e.target.value)}
                         placeholder="Repetir contraseña"
-                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setRegShowConfirmPassword(!regShowConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-white"
+                        className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-white"
                       >
                         {regShowConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -749,18 +711,18 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Password Strength Indicator */}
                 {regPassword && (
                   <div className="space-y-1 text-[11px]">
-                    <div className="flex items-center justify-between text-slate-400">
+                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                       <span>Fortaleza de seguridad:</span>
                       <span className={`font-bold ${
-                        passwordAnalysis.score >= 80 ? 'text-[#00FF88]' : passwordAnalysis.score >= 50 ? 'text-amber-400' : 'text-rose-400'
+                        passwordAnalysis.score >= 80 ? 'text-emerald-600 dark:text-[#00FF88]' : passwordAnalysis.score >= 50 ? 'text-amber-500 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                       }`}>
                         {passwordAnalysis.strengthLabel}
                       </span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-300 ${
-                          passwordAnalysis.score >= 80 ? 'bg-[#00FF88]' : passwordAnalysis.score >= 50 ? 'bg-amber-400' : 'bg-rose-500'
+                          passwordAnalysis.score >= 80 ? 'bg-emerald-500 dark:bg-[#00FF88]' : passwordAnalysis.score >= 50 ? 'bg-amber-500 dark:bg-amber-400' : 'bg-rose-500'
                         }`}
                         style={{ width: `${passwordAnalysis.score}%` }}
                       />
@@ -769,12 +731,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 )}
 
                 {/* Terms Acceptance */}
-                <label className="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer pt-1">
+                <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
                   <input
                     type="checkbox"
                     checked={regAcceptedTerms}
                     onChange={(e) => setRegAcceptedTerms(e.target.checked)}
-                    className="mt-0.5 rounded border-slate-700 text-[#00FF88] focus:ring-[#00FF88] bg-slate-900"
+                    className="mt-0.5 rounded border-slate-300 dark:border-slate-700 text-[#0052cc] dark:text-[#00FF88] focus:ring-[#0052cc] dark:focus:ring-[#00FF88] bg-white dark:bg-slate-900"
                   />
                   <span className="leading-snug">
                     <span data-i18n="reg_terms_agree">{t('reg_terms_agree', 'Acepto los')}</span>{' '}
@@ -782,7 +744,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       type="button"
                       data-i18n="reg_terms_service"
                       onClick={() => setTermsModalType('terms')}
-                      className="text-[#00AFFF] underline hover:text-[#00FF88]"
+                      className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
                     >
                       {t('reg_terms_service', 'Términos de Servicio')}
                     </button>{' '}
@@ -791,7 +753,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       type="button"
                       data-i18n="reg_terms_privacy"
                       onClick={() => setTermsModalType('privacy')}
-                      className="text-[#00AFFF] underline hover:text-[#00FF88]"
+                      className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
                     >
                       {t('reg_terms_privacy', 'Política de Privacidad')}
                     </button>
@@ -824,7 +786,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         </motion.div>
 
         {/* Footer info: Seguridad Vial Colombia */}
-        <p data-i18n="gateway_footer_legal" className="mt-6 text-xs text-slate-500 text-center font-medium">
+        <p data-i18n="gateway_footer_legal" className="mt-6 text-xs text-slate-500 dark:text-slate-400 text-center font-medium">
           {t('gateway_footer_legal', 'Sistema de Educación Vial y Movilidad Urbana • Ley 769 de 2002 & Ley 2251 de 2022')}
         </p>
       </div>
