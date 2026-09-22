@@ -552,7 +552,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium cursor-pointer flex items-center justify-center gap-1 mt-1"
                     >
                       <ArrowLeft size={13} />
-                      <span>Volver e ingresar con otra cuenta</span>
+                      <span>{t('login_back_switch_acc', 'Volver e ingresar con otra cuenta')}</span>
                     </button>
                   </div>
                 </form>

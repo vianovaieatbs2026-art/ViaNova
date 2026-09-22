@@ -4,14 +4,15 @@ import {
   Car, 
   Bike, 
   MapPin, 
-  Radio, 
   Navigation2, 
   Settings2,
   Cpu,
   Compass
 } from 'lucide-react';
+import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 export const FloatingDecorations: React.FC = () => {
+  const { t } = useThemeLanguage();
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
       {/* 1. Neon Glowing Orbs (Atmospheric Depth) */}
@@ -49,7 +50,7 @@ export const FloatingDecorations: React.FC = () => {
         </svg>
       </motion.div>
 
-      {/* 3. Floating Mobility Icon: Carro con estela luminosa */}
+      {/* 3. Floating Mobility Badge: Carro con telemetría */}
       <motion.div
         animate={{
           y: [-12, 14, -12],
@@ -57,18 +58,22 @@ export const FloatingDecorations: React.FC = () => {
           rotate: [-2, 3, -2]
         }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        className="hidden lg:flex items-center gap-2 absolute top-28 left-[6%] p-3 rounded-2xl bg-white/70 dark:bg-[#0A1931]/80 backdrop-blur-md border border-[#00AFFF]/40 shadow-[0_0_20px_rgba(0,175,255,0.25)] text-[#00AFFF]"
+        className="hidden sm:flex items-center gap-2.5 absolute top-28 left-[4%] lg:left-[6%] p-3 rounded-2xl bg-white/95 dark:bg-[#0c1b33]/95 backdrop-blur-md border-2 border-sky-400/60 dark:border-[#00AFFF]/50 shadow-lg dark:shadow-[0_0_20px_rgba(0,175,255,0.25)] text-[#0052cc] dark:text-[#00AFFF]"
       >
-        <div className="p-2 rounded-xl bg-[#00AFFF]/15">
-          <Car size={22} className="text-[#00AFFF]" />
+        <div className="p-2 rounded-xl bg-sky-100 dark:bg-[#00AFFF]/15">
+          <Car size={22} className="text-[#0052cc] dark:text-[#00AFFF]" />
         </div>
         <div className="text-left pr-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block leading-tight">Telemetría</span>
-          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Tránsito Fluido</span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#0052cc] dark:text-sky-300 block leading-tight">
+            {t('float_telemetry', 'Telemetría')}
+          </span>
+          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+            {t('float_traffic_flow', 'Tránsito Fluido')}
+          </span>
         </div>
       </motion.div>
 
-      {/* 4. Floating Mobility Icon: Motocicleta con destello Neón */}
+      {/* 4. Floating Mobility Badge: Motocicleta */}
       <motion.div
         animate={{
           y: [14, -10, 14],
@@ -76,24 +81,28 @@ export const FloatingDecorations: React.FC = () => {
           rotate: [2, -2, 2]
         }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-        className="hidden md:flex items-center gap-2 absolute bottom-40 right-[7%] p-3 rounded-2xl bg-white/70 dark:bg-[#0A1931]/80 backdrop-blur-md border border-[#00FF88]/40 shadow-[0_0_20px_rgba(0,255,136,0.22)] text-[#00FF88]"
+        className="hidden sm:flex items-center gap-2.5 absolute bottom-36 right-[4%] lg:right-[7%] p-3 rounded-2xl bg-white/95 dark:bg-[#0c1b33]/95 backdrop-blur-md border-2 border-emerald-400/60 dark:border-[#00FF88]/50 shadow-lg dark:shadow-[0_0_20px_rgba(0,255,136,0.22)] text-emerald-600 dark:text-[#00FF88]"
       >
-        <div className="p-2 rounded-xl bg-[#00FF88]/15">
-          <Bike size={22} className="text-[#00FF88]" />
+        <div className="p-2 rounded-xl bg-emerald-100 dark:bg-[#00FF88]/15">
+          <Bike size={22} className="text-emerald-600 dark:text-[#00FF88]" />
         </div>
         <div className="text-left pr-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block leading-tight">Movilidad 2 Ruedas</span>
-          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Casco Reglamentario</span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 block leading-tight">
+            {t('float_two_wheels', 'Movilidad 2 Ruedas')}
+          </span>
+          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+            {t('float_helmet_law', 'Casco Reglamentario')}
+          </span>
         </div>
       </motion.div>
 
-      {/* 5. Floating Mobility Icon: Semáforo Inteligente */}
+      {/* 5. Floating Mobility Badge: Semáforo Inteligente */}
       <motion.div
         animate={{
           y: [-8, 10, -8],
         }}
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 1.2 }}
-        className="hidden xl:flex items-center gap-2.5 absolute top-72 left-[8%] p-3 rounded-2xl bg-white/70 dark:bg-[#0A1931]/80 backdrop-blur-md border border-[#FF6B00]/40 shadow-[0_0_20px_rgba(255,107,0,0.2)]"
+        className="hidden sm:flex items-center gap-2.5 absolute top-72 left-[4%] lg:left-[8%] p-3 rounded-2xl bg-white/95 dark:bg-[#0c1b33]/95 backdrop-blur-md border-2 border-amber-400/60 dark:border-[#FF6B00]/50 shadow-lg dark:shadow-[0_0_20px_rgba(255,107,0,0.2)]"
       >
         <div className="flex flex-col gap-1 p-1.5 bg-slate-900 rounded-lg border border-slate-700">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500/40"></span>
@@ -101,24 +110,16 @@ export const FloatingDecorations: React.FC = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-pulse"></span>
         </div>
         <div className="text-left pr-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#FF6B00] block leading-tight">Semáforo IoT</span>
-          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Paso Seguro: 18s</span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-[#FF6B00] block leading-tight">
+            {t('float_traffic_light', 'Semáforo IoT')}
+          </span>
+          <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+            {t('float_safe_crossing', 'Paso Seguro: 18s')}
+          </span>
         </div>
       </motion.div>
 
-      {/* 6. Floating Mobility Icon: Radar & GPS con Ondas */}
-      <motion.div
-        animate={{
-          scale: [0.96, 1.04, 0.96],
-        }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="hidden md:flex items-center gap-2 absolute top-20 right-[32%] p-2 px-3 rounded-full bg-white/80 dark:bg-[#0A1931]/90 backdrop-blur-md border border-[#00AFFF]/50 shadow-[0_0_15px_rgba(0,175,255,0.3)] text-xs font-bold text-slate-900 dark:text-white"
-      >
-        <Radio size={14} className="text-[#00AFFF] animate-ping" />
-        <span>Radar RUNT: 100% Sincronizado</span>
-      </motion.div>
-
-      {/* 7. Animated Circuit Route Lines (Líneas de Ruta Vial tipo GPS) */}
+      {/* 6. Animated Circuit Route Lines (Líneas de Ruta Vial tipo GPS) */}
       <svg className="absolute inset-0 w-full h-full opacity-30 dark:opacity-20" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="routeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">

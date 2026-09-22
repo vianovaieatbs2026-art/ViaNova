@@ -62,8 +62,25 @@ export async function sendPasswordReset(email: string): Promise<{
   } catch (_) {}
 
   try {
-    // Real call to Firebase Auth sendPasswordResetEmail
-    await sendPasswordResetEmail(auth, trimmedEmail);
+    // Attempt with ActionCodeSettings so the link directs to the application
+    let sent = false;
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    if (currentOrigin) {
+      try {
+        await sendPasswordResetEmail(auth, trimmedEmail, {
+          url: currentOrigin,
+          handleCodeInApp: true,
+        });
+        sent = true;
+      } catch (acsError) {
+        console.warn('[Firebase Auth] sendPasswordResetEmail with ActionCodeSettings fallback:', acsError);
+      }
+    }
+
+    // Fallback to standard Firebase Auth reset email if ActionCodeSettings is not permitted
+    if (!sent) {
+      await sendPasswordResetEmail(auth, trimmedEmail);
+    }
 
     return {
       success: true,

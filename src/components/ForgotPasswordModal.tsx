@@ -7,12 +7,14 @@ interface ForgotPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialEmail?: string;
+  onOpenResetCode?: () => void;
 }
 
 export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   isOpen,
   onClose,
-  initialEmail = ''
+  initialEmail = '',
+  onOpenResetCode
 }) => {
   const { t } = useThemeLanguage();
   const [email, setEmail] = useState('');
@@ -149,7 +151,20 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </p>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
+              {onOpenResetCode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleClose();
+                    onOpenResetCode();
+                  }}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <KeyRound size={14} />
+                  <span>{t('forgot_modal_enter_code_btn', 'Ingresar código o enlace de recuperación')}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleClose}
@@ -184,6 +199,21 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 className="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[#0052cc] bg-white dark:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-60 transition-colors"
               />
             </div>
+
+            {onOpenResetCode && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleClose();
+                    onOpenResetCode();
+                  }}
+                  className="text-[11px] text-[#0052cc] dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+                >
+                  {t('forgot_modal_have_code_link', '¿Ya tienes el enlace o código? Ingrésalo aquí')}
+                </button>
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button

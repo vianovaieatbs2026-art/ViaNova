@@ -57,12 +57,13 @@ export const Navigation: React.FC<NavigationProps> = ({
     };
   }, []);
 
-  // Dashboard navigation items requested by user:
-  // Inicio, Servicios, Seguridad Vial, Storyboard, Reportes, Mi Perfil
+  // Dashboard navigation items:
+  // Inicio, Servicios, Seguridad Vial, Quiz, Storyboard, Reportes, Mi Perfil
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
     { id: 'servicios', labelKey: 'nav_services', defaultLabel: 'Servicios' },
     { id: 'educacion_vial', labelKey: 'nav_road_safety', defaultLabel: 'Seguridad Vial' },
+    { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
     { id: 'storyboard', labelKey: 'nav_storyboard', defaultLabel: 'Storyboard' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
     { id: 'perfil', labelKey: 'nav_profile', defaultLabel: 'Mi Perfil' },
@@ -271,14 +272,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
               </>
-            ) : (
-              /* Unauthenticated: Clean navbar without distracting duplicate buttons */
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-[#00AFFF] hidden sm:inline-block px-2.5 py-1 rounded-full bg-[#00AFFF]/10 border border-[#00AFFF]/30">
-                  Portal Oficial SENA 524704
-                </span>
-              </div>
-            )}
+            ) : null}
 
           </div>
         </div>

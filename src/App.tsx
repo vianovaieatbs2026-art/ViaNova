@@ -73,12 +73,20 @@ function AppContent() {
         if (!oobCode) oobCode = hashParams.get('oobCode');
       }
 
+      // Check entire URL as fallback
+      if (!oobCode && window.location.href.includes('oobCode=')) {
+        const match = window.location.href.match(/[?&]oobCode=([^&#]+)/);
+        if (match && match[1]) {
+          oobCode = decodeURIComponent(match[1]);
+        }
+      }
+
       return { mode, oobCode };
     };
 
     const { mode, oobCode } = parseParams();
 
-    if (mode === 'resetPassword' && oobCode) {
+    if (oobCode && (!mode || mode === 'resetPassword' || mode === 'signIn')) {
       setResetPasswordCode(oobCode);
       setIsResetPasswordModalOpen(true);
       setUnauthView('login');

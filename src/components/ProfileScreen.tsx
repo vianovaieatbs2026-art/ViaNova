@@ -105,7 +105,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             className="text-xs font-bold text-[#64748b] dark:text-slate-400 hover:underline flex items-center gap-1.5 transition-colors mb-2 cursor-pointer"
           >
             <ArrowLeft size={14} />
-            <span>Volver al Inicio</span>
+            <span>{t('prof_btn_back_dash', 'Volver al Inicio')}</span>
           </button>
           <h1 className="text-2xl sm:text-3xl font-black text-[#0f172a] dark:text-white">
             {t('profile_title', 'Credencial Digital & Perfil')}
@@ -122,7 +122,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             className="px-4 py-2 bg-white dark:bg-slate-800 border border-[#cbd5e1] dark:border-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs text-[#0f172a] dark:text-white"
           >
             <Share2 size={14} className="text-[#0052cc] dark:text-sky-400" />
-            <span>{copied ? '¡Copiado!' : 'Compartir'}</span>
+            <span>{copied ? t('common_copied', '¡Copiado!') : t('common_share', 'Compartir')}</span>
           </button>
         </div>
       </div>

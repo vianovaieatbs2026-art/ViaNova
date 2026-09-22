@@ -796,6 +796,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         isOpen={isForgotPasswordOpen}
         onClose={() => setIsForgotPasswordOpen(false)}
         initialEmail={loginEmail}
+        onOpenResetCode={onOpenResetCodeModal ? () => onOpenResetCodeModal() : undefined}
       />
 
       {/* Terms & Privacy Modal */}

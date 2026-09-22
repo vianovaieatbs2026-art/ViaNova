@@ -618,7 +618,26 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     common_points: 'puntos',
     common_hours: 'horas',
     common_minutes: 'minutos',
-    common_questions: 'preguntas'
+    common_questions: 'preguntas',
+    // Floating Background Elements & Buttons
+    float_telemetry: 'Telemetría',
+    float_traffic_flow: 'Tránsito Fluido',
+    float_two_wheels: 'Movilidad 2 Ruedas',
+    float_helmet_law: 'Casco Reglamentario',
+    float_traffic_light: 'Semáforo IoT',
+    float_safe_crossing: 'Paso Seguro: 18s',
+    login_back_switch_acc: 'Volver e ingresar con otra cuenta',
+    forgot_modal_enter_code_btn: 'Ingresar código o enlace de recuperación',
+    forgot_modal_have_code_link: '¿Ya tienes el enlace o código? Ingrésalo aquí',
+    landing_nav_services: 'Servicios Viales',
+    landing_nav_sim_2d: 'Ruta 2D Interactiva',
+    landing_nav_storyboard: 'Storyboard SENA',
+    landing_nav_videos: 'Cápsulas de Video',
+    landing_nav_contact: 'Contacto',
+    landing_hero_welcome: 'Bienvenido a',
+    landing_hero_desc: 'Plataforma multimedia de educación vial, simulación de normas de tránsito CEA/RUNT y reportes de movilidad colaborativa en Colombia.',
+    common_copied: '¡Copiado!',
+    common_share: 'Compartir'
   },
   en: {
     // Brand & App
@@ -1055,7 +1074,26 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     common_points: 'points',
     common_hours: 'hours',
     common_minutes: 'minutes',
-    common_questions: 'questions'
+    common_questions: 'questions',
+    // Floating Background Elements & Buttons
+    float_telemetry: 'Telemetry',
+    float_traffic_flow: 'Smooth Traffic',
+    float_two_wheels: '2-Wheel Mobility',
+    float_helmet_law: 'Mandatory Helmet',
+    float_traffic_light: 'IoT Traffic Light',
+    float_safe_crossing: 'Safe Crossing: 18s',
+    login_back_switch_acc: 'Go back and sign in with another account',
+    forgot_modal_enter_code_btn: 'Enter recovery code or link',
+    forgot_modal_have_code_link: 'Already have the link or code? Enter it here',
+    landing_nav_services: 'Road Services',
+    landing_nav_sim_2d: 'Interactive 2D Route',
+    landing_nav_storyboard: 'SENA Storyboard',
+    landing_nav_videos: 'Video Capsules',
+    landing_nav_contact: 'Contact',
+    landing_hero_welcome: 'Welcome to',
+    landing_hero_desc: 'Multimedia platform for road education, CEA/RUNT traffic rules simulation, and collaborative urban mobility reports in Colombia.',
+    common_copied: 'Copied!',
+    common_share: 'Share'
   },
   pt: {
     appName: 'ViaNova',
@@ -1366,7 +1404,26 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     common_points: 'pontos',
     common_hours: 'horas',
     common_minutes: 'minutos',
-    common_questions: 'questões'
+    common_questions: 'questões',
+    // Floating Background Elements & Buttons
+    float_telemetry: 'Telemetria',
+    float_traffic_flow: 'Tráfego Fluido',
+    float_two_wheels: 'Mobilidade 2 Rodas',
+    float_helmet_law: 'Capacete Obrigatório',
+    float_traffic_light: 'Semáforo IoT',
+    float_safe_crossing: 'Passagem Segura: 18s',
+    login_back_switch_acc: 'Voltar e entrar com outra conta',
+    forgot_modal_enter_code_btn: 'Inserir código ou link de recuperação',
+    forgot_modal_have_code_link: 'Já possui o link ou código? Digite aqui',
+    landing_nav_services: 'Serviços Rodoviários',
+    landing_nav_sim_2d: 'Rota 2D Interativa',
+    landing_nav_storyboard: 'Storyboard SENA',
+    landing_nav_videos: 'Cápsulas de Vídeo',
+    landing_nav_contact: 'Contato',
+    landing_hero_welcome: 'Bem-vindo ao',
+    landing_hero_desc: 'Plataforma multimídia de educação no trânsito, simulação de regras de trânsito e relatórios de mobilidade colaborativa.',
+    common_copied: 'Copiado!',
+    common_share: 'Compartilhar'
   },
   fr: {
     appName: 'ViaNova',
@@ -1677,6 +1734,25 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     common_points: 'points',
     common_hours: 'heures',
     common_minutes: 'minutes',
-    common_questions: 'questions'
+    common_questions: 'questions',
+    // Floating Background Elements & Buttons
+    float_telemetry: 'Télémétrie',
+    float_traffic_flow: 'Trafic Fluide',
+    float_two_wheels: 'Mobilité 2 Roues',
+    float_helmet_law: 'Casque Obligatoire',
+    float_traffic_light: 'Feu Tricolore IoT',
+    float_safe_crossing: 'Passage Sécurisé: 18s',
+    login_back_switch_acc: 'Revenir et se connecter avec un autre compte',
+    forgot_modal_enter_code_btn: 'Saisir le code ou lien de récupération',
+    forgot_modal_have_code_link: 'Vous avez déjà le lien ou code ? Entrez-le ici',
+    landing_nav_services: 'Services Routiers',
+    landing_nav_sim_2d: 'Itinéraire 2D Interactif',
+    landing_nav_storyboard: 'Storyboard SENA',
+    landing_nav_videos: 'Capsules Vidéo',
+    landing_nav_contact: 'Contact',
+    landing_hero_welcome: 'Bienvenue sur',
+    landing_hero_desc: 'Plateforme multimédia d’éducation routière, simulation des règles de circulation et signalements communautaires.',
+    common_copied: 'Copié !',
+    common_share: 'Partager'
   }
 };

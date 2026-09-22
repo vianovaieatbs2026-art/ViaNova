@@ -36,10 +36,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
   // Typewriter effect state
   const typewriterPhrases = [
-    'Inteligencia Vial para Colombia',
-    'Educación Interactiva y Certificada',
-    'Rutas Seguras, Vidas Salvadas',
-    'El Futuro de la Movilidad Urbana'
+    t('gateway_typewriter_1', 'Inteligencia Vial para Colombia'),
+    t('gateway_typewriter_2', 'Educación Interactiva y Certificada'),
+    t('gateway_typewriter_3', 'Rutas Seguras, Vidas Salvadas'),
+    t('gateway_typewriter_4', 'El Futuro de la Movilidad Urbana')
   ];
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
@@ -117,7 +117,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-[#0A1931]/90 backdrop-blur-md border border-[#00AFFF]/50 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-5 shadow-[0_0_18px_rgba(0,175,255,0.25)]"
           >
             <span className="w-2.5 h-2.5 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
-            <span>SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES</span>
+            <span>{t('gateway_badge', 'SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES')}</span>
           </motion.div>
 
           {/* Main H1 Headline */}
@@ -127,7 +127,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight max-w-3xl"
           >
-            Bienvenido a <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0052cc] via-[#00AFFF] to-[#00FF88] dark:drop-shadow-[0_0_25px_rgba(0,175,255,0.4)]">ViaNova</span>
+            {t('landing_hero_welcome', 'Bienvenido a')}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0052cc] via-[#00AFFF] to-[#00FF88] dark:drop-shadow-[0_0_25px_rgba(0,175,255,0.4)]">
+              ViaNova
+            </span>
           </motion.h1>
 
           {/* Dynamic Typewriter Subheadline */}
@@ -139,7 +142,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           </div>
 
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xl font-medium leading-relaxed">
-            Plataforma multimedia de educación vial, simulación de normas de tránsito CEA/RUNT y reportes de movilidad colaborativa en Colombia.
+            {t('landing_hero_desc', 'Plataforma multimedia de educación vial, simulación de normas de tránsito CEA/RUNT y reportes de movilidad colaborativa en Colombia.')}
           </p>
 
           {/* Sub-Navigation Quick Pill Tabs */}
@@ -149,35 +152,35 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               onClick={() => scrollToSection('servicios')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00AFFF] hover:text-[#00AFFF] transition-all cursor-pointer shadow-xs"
             >
-              Servicios Viales
+              {t('landing_nav_services', 'Servicios Viales')}
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('simulacion-2d')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
             >
-              Ruta 2D Interactiva
+              {t('landing_nav_sim_2d', 'Ruta 2D Interactiva')}
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('storyboard')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-all cursor-pointer shadow-xs"
             >
-              Storyboard SENA
+              {t('landing_nav_storyboard', 'Storyboard SENA')}
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('multimedia')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00AFFF] hover:text-[#00AFFF] transition-all cursor-pointer shadow-xs"
             >
-              Cápsulas de Video
+              {t('landing_nav_videos', 'Cápsulas de Video')}
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('contacto')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
             >
-              Contacto
+              {t('landing_nav_contact', 'Contacto')}
             </button>
           </div>
 
