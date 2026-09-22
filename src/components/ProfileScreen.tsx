@@ -312,7 +312,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               <span>Zona de Peligro: Eliminar Cuenta Permanentemente</span>
             </h4>
             <p className="text-[11px] text-rose-800/80 dark:text-rose-300/80 mt-0.5">
-              Borra de forma irreversible tu cuenta, certificaciones, expedientes y reportes. Requiere tu contraseña y validación "ELIMINAR".
+              Borra de forma irreversible tu cuenta y todos tus datos de las tablas profiles, progreso y quiz_results.
             </p>
           </div>
           <button
@@ -326,7 +326,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             className="w-full sm:w-auto px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black transition-colors flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-xs active:scale-95"
           >
             <Trash2 size={14} />
-            <span>Eliminar Cuenta</span>
+            <span>Eliminar cuenta permanentemente</span>
           </button>
         </div>
       </div>

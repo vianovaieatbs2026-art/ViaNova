@@ -36,6 +36,7 @@ import {
 import { executeInvisibleRecaptcha, RecaptchaVerificationResult } from '../utils/security';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { firebaseLogin } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { 
   sendVerificationCodeEmail, 
@@ -177,7 +178,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setIsSubmitting(true);
     setRecaptchaState('checking');
 
-    // 1. Execute Invisible reCAPTCHA v3
+    // 1. REQUISITO CRÍTICO: Antes de dejar iniciar sesión, verifica supabase.auth.getUser()
+    const { data: userCheck, error: userError } = await supabase.auth.getUser(normalizedEmail);
+
+    // Si no existe usuario en la base de datos de Supabase Auth, bloquea el acceso y redirige a /registro con el error "Debes crear una cuenta primero"
+    if (userError || !userCheck?.user) {
+      setIsSubmitting(false);
+      setRecaptchaState('idle');
+      setErrorMessage('Debes crear una cuenta primero');
+      onNavigateToRegister();
+      return;
+    }
+
+    // 2. Execute Invisible reCAPTCHA v3
     try {
       const captchaRes = await executeInvisibleRecaptcha('login');
       setRecaptchaResult(captchaRes);
@@ -189,7 +202,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // 2. Validate user credentials (check Firebase Auth first for freshly reset passwords)
+    // 3. Validate user credentials (check Firebase Auth first for freshly reset passwords)
     const triggerVerificationStep = async (targetProf: UserProfile) => {
       setPendingUser(targetProf);
       setActiveLoginEmail(normalizedEmail);
@@ -219,24 +232,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         const existingAccount = findRegisteredUserByEmail(normalizedEmail);
         if (existingAccount) {
           await triggerVerificationStep(existingAccount.profile);
-        } else {
-          const defaultProf: UserProfile = {
-            id: `usr-${Date.now()}`,
-            name: formatNameFromEmail(normalizedEmail),
-            email: normalizedEmail,
-            userType: 'conductor',
-            primer_ingreso: false,
-            emailVerified: true,
-            termsAccepted: true,
-            safetyScore: 88,
-            completedHours: 0,
-            passedExams: 0,
-            activeReports: 0
-          };
-          saveRegisteredUser(defaultProf, password);
-          await triggerVerificationStep(defaultProf);
+          return;
         }
-        return;
       }
     } catch (_) {}
 
@@ -247,7 +244,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       if (!existingAccount) {
         setIsSubmitting(false);
         setRecaptchaState('idle');
-        setErrorMessage(t('login_err_not_found', 'Esta cuenta no se encuentra registrada. Solo los usuarios registrados pueden iniciar sesión.'));
+        setErrorMessage('Debes crear una cuenta primero');
+        onNavigateToRegister();
         return;
       }
 

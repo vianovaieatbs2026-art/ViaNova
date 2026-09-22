@@ -55,22 +55,13 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
       if (result.success) {
         setIsSuccess(true);
-        setSuccessMessage(t('forgot_modal_success', 'Revisa tu correo, te enviamos un enlace para restablecer tu contraseña. Revisa también spam.'));
+        setSuccessMessage(result.message);
       } else {
         setErrorMessage(result.message);
       }
     } catch (err: any) {
       setIsLoading(false);
-      const code = err?.code || '';
-      if (code === 'auth/user-not-found') {
-        setErrorMessage(t('login_err_not_found', 'No existe una cuenta con ese correo'));
-      } else if (code === 'auth/invalid-email') {
-        setErrorMessage(t('login_err_empty_email', 'Correo inválido'));
-      } else if (code === 'auth/too-many-requests') {
-        setErrorMessage('Demasiados intentos, espera unos minutos');
-      } else {
-        setErrorMessage('Ocurrió un error al enviar el correo. Inténtalo de nuevo.');
-      }
+      setErrorMessage(err?.message || 'Error inesperado al contactar el servicio de autenticación.');
     }
   };
 
@@ -149,6 +140,14 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
                 Enviado a: <strong className="underline">{email}</strong>
               </p>
+              <div className="pt-2 border-t border-emerald-200/70 dark:border-emerald-800/70 text-[11px] text-emerald-800/90 dark:text-emerald-200/90 space-y-1">
+                <p>
+                  • El correo es generado y enviado directamente por <strong>Firebase Authentication</strong>.
+                </p>
+                <p>
+                  • Si no lo visualizas en 1-2 minutos, revisa tu carpeta de <strong>Spam</strong> o Correo no deseado.
+                </p>
+              </div>
             </div>
 
             <div className="pt-2 space-y-2">

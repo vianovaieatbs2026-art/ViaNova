@@ -201,7 +201,7 @@ export function completeUserFirstTimeOnboarding(
  * Finds a registered user by email for private authentication validation.
  */
 export function findRegisteredUserByEmail(email: string): StoredUserAccount | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined' || !email) return null;
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
 
@@ -211,15 +211,6 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
       return JSON.parse(raw);
     }
   } catch (_) {}
-
-  // Fallback check on active user session
-  const active = getActiveUserSession();
-  if (active && active.email.trim().toLowerCase() === normalizedEmail) {
-    return {
-      profile: active,
-      createdAt: new Date().toISOString()
-    };
-  }
 
   return null;
 }
@@ -277,6 +268,19 @@ export function getActiveUserSession(): UserProfile | null {
         } catch (_) {}
         return null;
       }
+
+      // Check if user is actually registered in storage to prevent ghost sessions
+      const normalizedEmail = parsed.email.trim().toLowerCase();
+      const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
+      const accountRaw = localStorage.getItem(storageKey);
+      if (!accountRaw) {
+        // Ghost or deleted session: clear it immediately
+        try {
+          localStorage.removeItem(ACTIVE_USER_STORAGE_KEY);
+        } catch (_) {}
+        return null;
+      }
+
       return parsed as UserProfile;
     }
     return null;

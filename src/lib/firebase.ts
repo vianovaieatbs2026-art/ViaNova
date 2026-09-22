@@ -5,21 +5,25 @@ import {
   verifyPasswordResetCode, 
   confirmPasswordReset,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  ActionCodeSettings
+  createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-// Initialize Firebase once
-const app = getApps().length > 0 ? getApp() : initializeApp({
-  apiKey: firebaseConfig.apiKey,
-  authDomain: firebaseConfig.authDomain,
-  projectId: firebaseConfig.projectId,
-  storageBucket: firebaseConfig.storageBucket,
-  messagingSenderId: firebaseConfig.messagingSenderId,
-  appId: firebaseConfig.appId,
-});
+// Read potential Vercel / environment overrides
+const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+
+const resolvedConfig = {
+  apiKey: (metaEnv?.VITE_FIREBASE_API_KEY as string) || firebaseConfig.apiKey,
+  authDomain: (metaEnv?.VITE_FIREBASE_AUTH_DOMAIN as string) || firebaseConfig.authDomain,
+  projectId: (metaEnv?.VITE_FIREBASE_PROJECT_ID as string) || firebaseConfig.projectId,
+  storageBucket: (metaEnv?.VITE_FIREBASE_STORAGE_BUCKET as string) || firebaseConfig.storageBucket,
+  messagingSenderId: (metaEnv?.VITE_FIREBASE_MESSAGING_SENDER_ID as string) || firebaseConfig.messagingSenderId,
+  appId: (metaEnv?.VITE_FIREBASE_APP_ID as string) || firebaseConfig.appId,
+};
+
+// Initialize Firebase once with production configuration (strictly no emulator)
+const app = getApps().length > 0 ? getApp() : initializeApp(resolvedConfig);
 
 export const auth = getAuth(app);
 export const db = firebaseConfig.firestoreDatabaseId 
@@ -36,17 +40,18 @@ export function getLastResetEmail(): string {
 }
 
 /**
- * Sends a real password reset email via Firebase Authentication:
- * uses sendPasswordResetEmail(auth, email) without invisible reCAPTCHA or fake OTPs.
- * Sets the email template language to Spanish and translates Firebase error codes.
+ * Sends a real password reset email via production Firebase Authentication:
+ * uses sendPasswordResetEmail(auth, email) without emulators or mock delays.
+ * Sets the email template language to Spanish and accurately handles Firebase error codes.
  */
 export async function sendPasswordReset(email: string): Promise<{ 
   success: boolean; 
   message: string; 
+  code?: string;
 }> {
   const trimmedEmail = email.trim().toLowerCase();
   if (!trimmedEmail || !trimmedEmail.includes('@')) {
-    return { success: false, message: 'Correo inválido' };
+    return { success: false, message: 'Por favor ingresa una dirección de correo electrónico válida.' };
   }
 
   // Save last reset email in session for reference
@@ -62,50 +67,44 @@ export async function sendPasswordReset(email: string): Promise<{
   } catch (_) {}
 
   try {
-    // Attempt with ActionCodeSettings so the link directs to the application
-    let sent = false;
-    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-    if (currentOrigin) {
-      try {
-        await sendPasswordResetEmail(auth, trimmedEmail, {
-          url: currentOrigin,
-          handleCodeInApp: true,
-        });
-        sent = true;
-      } catch (acsError) {
-        console.warn('[Firebase Auth] sendPasswordResetEmail with ActionCodeSettings fallback:', acsError);
-      }
-    }
+    console.log(`[Firebase Auth Production] Despachando correo de restablecimiento real para: ${trimmedEmail}`);
 
-    // Fallback to standard Firebase Auth reset email if ActionCodeSettings is not permitted
-    if (!sent) {
-      await sendPasswordResetEmail(auth, trimmedEmail);
-    }
+    // Call real Firebase Authentication sendPasswordResetEmail directly to Google Cloud Identity Platform
+    await sendPasswordResetEmail(auth, trimmedEmail);
+
+    console.log(`[Firebase Auth Production] Confirmado: Firebase procesó la solicitud para ${trimmedEmail}`);
 
     return {
       success: true,
-      message: 'Revisa tu correo, te enviamos un enlace para restablecer tu contraseña. Revisa también spam.'
+      message: `Firebase Authentication ha procesado y enviado el enlace de restablecimiento a ${trimmedEmail}.`
     };
   } catch (error: any) {
-    console.error('[Firebase Auth] sendPasswordResetEmail error:', error);
+    console.error('[Firebase Auth Production] Error en sendPasswordResetEmail:', error);
     const errorCode = error?.code || '';
 
-    let message = 'Ocurrió un error al enviar el correo. Inténtalo de nuevo.';
+    let message = 'Ocurrió un error al contactar Firebase Authentication. Inténtalo de nuevo.';
     if (errorCode === 'auth/user-not-found') {
-      message = 'No existe una cuenta con ese correo';
+      message = 'No existe ninguna cuenta registrada con este correo electrónico en Firebase Authentication.';
     } else if (errorCode === 'auth/invalid-email') {
-      message = 'Correo inválido';
+      message = 'El correo electrónico ingresado no tiene un formato válido.';
     } else if (errorCode === 'auth/too-many-requests') {
-      message = 'Demasiados intentos, espera unos minutos';
+      message = 'Demasiados intentos de restablecimiento en poco tiempo. Por seguridad, Firebase ha bloqueado temporalmente los envíos a este correo. Espera unos minutos e inténtalo de nuevo.';
+    } else if (errorCode === 'auth/operation-not-allowed') {
+      message = 'El método de acceso por correo y contraseña no está habilitado en la consola de Firebase. Debes activarlo en Authentication > Sign-in method.';
     } else if (errorCode === 'auth/network-request-failed') {
-      message = 'Error de red. Verifica tu conexión a internet.';
+      message = 'Error de conexión de red al conectar con los servidores de Firebase. Verifica tu conexión a internet.';
+    } else if (errorCode === 'auth/unauthorized-continue-uri') {
+      message = 'El dominio de la aplicación no está en la lista de dominios autorizados de Firebase Console.';
+    } else if (errorCode === 'auth/missing-email') {
+      message = 'Por favor ingresa un correo electrónico.';
     } else if (error?.message) {
       message = error.message;
     }
 
     return {
       success: false,
-      message
+      message,
+      code: errorCode
     };
   }
 }

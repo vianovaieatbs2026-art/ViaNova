@@ -39,6 +39,7 @@ function AppContent() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [authNoticeMessage, setAuthNoticeMessage] = useState<string>('');
 
   // Password reset recovery state (from email link or manual input)
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
@@ -110,6 +111,7 @@ function AppContent() {
 
   // Called from Login: direct entry to dashboard
   const handleLoginSuccess = (loggedUser: UserProfile) => {
+    setAuthNoticeMessage('');
     setActiveUserSession(loggedUser);
     setUser(loggedUser);
     setCurrentScreen('inicio');
@@ -191,6 +193,7 @@ function AppContent() {
             onAuthSuccess={handleLoginSuccess}
             initialTab={unauthView === 'registro' ? 'register' : 'login'}
             initialEmail={prefillLoginEmail}
+            initialMessage={authNoticeMessage}
             onOpenResetCodeModal={(code) => {
               setResetPasswordCode(code || '');
               setIsResetPasswordModalOpen(true);
@@ -281,12 +284,15 @@ function AppContent() {
       {user && (
         <DeleteAccountModal
           isOpen={isDeleteModalOpen}
+          userId={user.id}
           userEmail={user.email}
           onClose={() => setIsDeleteModalOpen(false)}
-          onSuccess={(msg) => {
+          onSuccess={() => {
             setIsDeleteModalOpen(false);
-            handleLogout();
-            showToast(msg);
+            setUser(null);
+            clearActiveUserSession();
+            setUnauthView('login');
+            setAuthNoticeMessage('');
           }}
         />
       )}

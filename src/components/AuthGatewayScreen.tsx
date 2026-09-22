@@ -26,6 +26,7 @@ import { FloatingDecorations } from './FloatingDecorations';
 import { UserProfile, UserType } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { firebaseLogin, firebaseRegister, sendPasswordReset } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { 
   findRegisteredUserByEmail, 
   saveRegisteredUser, 
@@ -39,6 +40,7 @@ interface AuthGatewayScreenProps {
   onAuthSuccess: (user: UserProfile) => void;
   initialTab?: 'login' | 'register';
   initialEmail?: string;
+  initialMessage?: string;
   onOpenResetCodeModal?: (code?: string) => void;
 }
 
@@ -46,10 +48,27 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   onAuthSuccess,
   initialTab = 'login',
   initialEmail = '',
+  initialMessage = '',
   onOpenResetCodeModal,
 }) => {
   const { t } = useThemeLanguage();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
+  const [systemNotice, setSystemNotice] = useState<string>(initialMessage);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (initialMessage) {
+      setSystemNotice(initialMessage);
+      if (initialTab === 'register' && initialMessage.toLowerCase().includes('crear una cuenta')) {
+        setRegError('Debes crear una cuenta primero');
+      }
+    }
+  }, [initialMessage, initialTab]);
 
   // Typewriter effect state for Hero Headline
   const typewriterPhrases = [
@@ -144,79 +163,46 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setLoginSubmitting(true);
 
     try {
-      // 1. Authenticate with Firebase Auth
-      const firebaseRes = await firebaseLogin(trimmedEmail, loginPassword);
+      // 1. REQUISITO CRÍTICO: Antes de dejar iniciar sesión, verifica supabase.auth.getUser()
+      const { data: userCheck, error: userError } = await supabase.auth.getUser(trimmedEmail);
 
-      if (firebaseRes.success && firebaseRes.user) {
-        // Check if we have an existing local profile for extra metadata
-        const existingAccount = findRegisteredUserByEmail(trimmedEmail);
-        let profile: UserProfile;
-        if (existingAccount) {
-          profile = existingAccount.profile;
-        } else {
-          profile = {
-            id: firebaseRes.user.uid || `user-${Date.now()}`,
-            name: firebaseRes.user.displayName || formatNameFromEmail(trimmedEmail),
-            email: trimmedEmail,
-            userType: 'conductor',
-            safetyScore: 85,
-            completedHours: 0,
-            passedExams: 0,
-            activeReports: 0,
-            emailVerified: firebaseRes.user.emailVerified ?? true
-          };
-          saveRegisteredUser(profile, loginPassword);
-        }
-
-        onAuthSuccess(profile);
+      // Si no existe usuario en la base de datos de Supabase Auth, bloquea el acceso y redirige a /registro con el error "Debes crear una cuenta primero"
+      if (userError || !userCheck?.user) {
+        setLoginSubmitting(false);
+        setActiveTab('register');
+        setRegError('Debes crear una cuenta primero');
         return;
       }
 
-      // Handle Firebase specific error codes
-      const errorCode = firebaseRes.code || '';
-      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
-        // Fallback check in local registered users (for offline or demo testing)
-        const localAccount = findRegisteredUserByEmail(trimmedEmail);
-        if (localAccount && localAccount.password === loginPassword) {
-          onAuthSuccess(localAccount.profile);
-          return;
-        }
+      // 2. Usuario existe en la base de datos: Verificar contraseña contra registro y Firebase Auth
+      const localAccount = findRegisteredUserByEmail(trimmedEmail);
 
-        // Demo fallback
-        if (trimmedEmail === 'conductor.demo@vianova.edu.co' && loginPassword === 'ViaNova2026*') {
-          const demoUser: UserProfile = {
-            id: 'demo-conductor-01',
-            name: 'Carlos Andrés Rodríguez',
-            email: 'conductor.demo@vianova.edu.co',
-            userType: 'conductor',
-            safetyScore: 92,
-            completedHours: 12,
-            passedExams: 3,
-            activeReports: 1,
-            licenseCategory: 'B1 / C1'
-          };
-          saveRegisteredUser(demoUser, loginPassword);
-          onAuthSuccess(demoUser);
-          return;
+      if (localAccount && localAccount.password) {
+        if (localAccount.password !== loginPassword) {
+          // Intentar sincronización con Firebase Auth antes de rechazar
+          const fbRes = await firebaseLogin(trimmedEmail, loginPassword);
+          if (!fbRes.success) {
+            setLoginSubmitting(false);
+            setLoginError('Contraseña incorrecta. Puedes restablecerla con el enlace inferior.');
+            return;
+          }
         }
-
-        setLoginError(t('login_err_invalid_credentials', 'Correo o contraseña incorrectos. Verifica tus datos o crea una cuenta nueva.'));
-      } else if (errorCode === 'auth/wrong-password') {
-        setLoginError('Contraseña incorrecta. Puedes restablecerla con el enlace inferior.');
-      } else if (errorCode === 'auth/too-many-requests') {
-        setLoginError('Demasiados intentos fallidos. Por seguridad, espera unos minutos o recupera tu contraseña.');
-      } else if (errorCode === 'auth/invalid-email') {
-        setLoginError('El formato de correo electrónico es inválido.');
-      } else {
-        // General fallback check
-        const localAccount = findRegisteredUserByEmail(trimmedEmail);
-        if (localAccount && localAccount.password === loginPassword) {
-          onAuthSuccess(localAccount.profile);
-          return;
-        }
-        setLoginError(firebaseRes.error || 'Error al iniciar sesión. Verifica tus credenciales.');
+        onAuthSuccess(localAccount.profile);
+        return;
       }
+
+      // Si tiene cuenta en Firebase Auth pero no password local cacheado
+      const firebaseRes = await firebaseLogin(trimmedEmail, loginPassword);
+      if (firebaseRes.success && localAccount) {
+        onAuthSuccess(localAccount.profile);
+        return;
+      }
+
+      // Si no coincide la contraseña
+      setLoginSubmitting(false);
+      setLoginError('Contraseña incorrecta. Por favor verifica tus credenciales.');
     } catch (err: any) {
+      setLoginSubmitting(false);
       setLoginError(err?.message || 'Error de conexión con el servicio de autenticación.');
     } finally {
       setLoginSubmitting(false);
@@ -365,6 +351,22 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             <span className="inline-block w-0.5 h-4 ml-1 bg-[#00FF88] animate-pulse align-middle" />
           </p>
         </div>
+
+        {/* System Notice Banner (e.g. Cuenta eliminada permanentemente) */}
+        {systemNotice && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`w-full mb-5 p-4 rounded-2xl border text-xs sm:text-sm font-bold flex items-center gap-3 shadow-md ${
+              systemNotice.toLowerCase().includes('eliminada')
+                ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+            }`}
+          >
+            <AlertCircle size={18} className="shrink-0 text-rose-600 dark:text-rose-400" />
+            <span>{systemNotice}</span>
+          </motion.div>
+        )}
 
         {/* ===================== THE 2 PROMINENT TABS ===================== */}
         <div className="w-full grid grid-cols-2 p-1.5 rounded-2xl bg-white/90 dark:bg-[#050B14]/90 backdrop-blur-md border-2 border-slate-200 dark:border-slate-700/80 mb-6 shadow-xl dark:shadow-2xl relative transition-colors">
