@@ -59,11 +59,10 @@ export function getRegisteredUsers(): StoredUserAccount[] {
  * Saves a user's private data indexed solely by their email.
  * Does NOT maintain a public list of accounts.
  */
-export function saveRegisteredUser(profile: UserProfile, password?: string): StoredUserAccount {
+export function saveRegisteredUser(profile: UserProfile, _password?: string): StoredUserAccount {
   if (typeof window === 'undefined') {
     return {
       profile,
-      password: password || '',
       createdAt: new Date().toISOString()
     };
   }

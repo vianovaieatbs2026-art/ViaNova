@@ -599,7 +599,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 )}
 
                 {/* Form */}
-                <form onSubmit={handleLogin} className="w-full space-y-4">
+                <form onSubmit={handleLogin} autoComplete="off" className="w-full space-y-4">
                   {/* Email */}
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-[#475569] dark:text-slate-300 uppercase tracking-wider block">
@@ -636,7 +636,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                         id="login-password"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
+                        autoComplete="new-password"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

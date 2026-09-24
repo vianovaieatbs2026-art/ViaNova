@@ -115,10 +115,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
-  // Guarantee password field is strictly empty on mount
+  // Guarantee credentials and password fields are strictly empty by default on load
   useEffect(() => {
     setLoginPassword('');
-  }, []);
+    if (!initialEmail) {
+      setLoginEmail('');
+    }
+  }, [initialEmail]);
 
   // ===================== REGISTER FORM STATE =====================
   const [regName, setRegName] = useState('');
@@ -434,6 +437,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.25 }}
                 onSubmit={handleLoginSubmit}
+                autoComplete="off"
                 className="space-y-4"
               >
                 <div className="text-center pb-2">
@@ -503,7 +507,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       id="login-password"
                       name="password"
                       type={loginShowPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                       required
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
