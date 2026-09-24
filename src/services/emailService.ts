@@ -241,3 +241,136 @@ export function verifyLoginCode(
     message: `Código incorrecto. Te quedan ${remaining} ${remaining === 1 ? 'intento' : 'intentos'}.`
   };
 }
+
+/**
+ * Sends a real 6-digit password recovery code to the registered email address.
+ * Fails honestly if email cannot be delivered or outgoing mail service is unconfigured.
+ */
+export async function requestPasswordReset(
+  email: string,
+  recipientName?: string
+): Promise<{ success: boolean; message: string; code?: string; expiresAt?: number }> {
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    const response = await fetch('/api/send-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: cleanEmail,
+        recipientName: recipientName || ''
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && data.success) {
+      return {
+        success: true,
+        message: data.message || 'Código enviado correctamente a tu correo electrónico.',
+        expiresAt: data.expiresAt
+      };
+    } else {
+      return {
+        success: false,
+        code: data.code || 'EMAIL_FAILED',
+        message: data.message || 'Error al enviar el correo. Por favor verifica las credenciales en .env o intenta de nuevo.'
+      };
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      code: 'NETWORK_ERROR',
+      message: 'Error de conexión con el servidor de correo. Verifica tu conexión e inténtalo de nuevo.'
+    };
+  }
+}
+
+/**
+ * Validates the 6-digit password recovery code.
+ */
+export async function verifyPasswordReset(
+  email: string,
+  code: string
+): Promise<{ success: boolean; message: string; code?: string }> {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanCode = code.trim().replace(/\D/g, '');
+
+  try {
+    const response = await fetch('/api/verify-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: cleanEmail,
+        code: cleanCode
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && data.success) {
+      return {
+        success: true,
+        message: data.message || 'Código verificado correctamente.'
+      };
+    } else {
+      return {
+        success: false,
+        code: data.code || 'VERIFICATION_FAILED',
+        message: data.message || 'El código ingresado es incorrecto o ha expirado.'
+      };
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      code: 'NETWORK_ERROR',
+      message: 'Error al contactar con el servidor. Inténtalo de nuevo.'
+    };
+  }
+}
+
+/**
+ * Confirms and updates the new password using the validated recovery code.
+ * The server invalidates the code immediately after.
+ */
+export async function confirmPasswordResetWithCode(
+  email: string,
+  code: string,
+  newPassword: string
+): Promise<{ success: boolean; message: string; code?: string }> {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanCode = code.trim().replace(/\D/g, '');
+
+  try {
+    const response = await fetch('/api/confirm-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: cleanEmail,
+        code: cleanCode,
+        newPassword
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && data.success) {
+      return {
+        success: true,
+        message: data.message || 'Contraseña cambiada correctamente.'
+      };
+    } else {
+      return {
+        success: false,
+        code: data.code || 'CONFIRM_FAILED',
+        message: data.message || 'Error al cambiar la contraseña. El código puede haber expirado o ya fue utilizado.'
+      };
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      code: 'NETWORK_ERROR',
+      message: 'Error de comunicación al actualizar la contraseña.'
+    };
+  }
+}

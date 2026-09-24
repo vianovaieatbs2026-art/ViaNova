@@ -110,15 +110,36 @@ export async function sendPasswordReset(email: string): Promise<{
 }
 
 /**
- * Verifies the validity of an action code (oobCode) from a Firebase password reset email link.
+ * Verifies the validity of an action code (oobCode or 6-digit recovery OTP).
  */
-export async function verifyResetCode(code: string, _emailCandidate?: string): Promise<{ success: boolean; email?: string; message?: string }> {
+export async function verifyResetCode(code: string, emailCandidate?: string): Promise<{ success: boolean; email?: string; message?: string }> {
   const trimmedCode = code.trim();
   if (!trimmedCode) {
     return { success: false, message: 'Código o enlace de recuperación no proporcionado.' };
   }
 
-  // Verify Firebase Auth action code (oobCode)
+  // 1. If it's a 6-digit numeric recovery code, verify with the backend API
+  if (/^\d{6}$/.test(trimmedCode)) {
+    try {
+      const res = await fetch('/api/verify-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: trimmedCode,
+          email: emailCandidate || ''
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        return { success: true, email: data.email || emailCandidate };
+      }
+      return { success: false, message: data.message || 'Código incorrecto o expirado.' };
+    } catch (err: any) {
+      return { success: false, message: 'Error de conexión al verificar el código.' };
+    }
+  }
+
+  // 2. Otherwise verify Firebase Auth action code (oobCode from link)
   try {
     const email = await verifyPasswordResetCode(auth, trimmedCode);
     return { success: true, email };
@@ -135,12 +156,12 @@ export async function verifyResetCode(code: string, _emailCandidate?: string): P
 }
 
 /**
- * Confirms and updates the user's password in Firebase Auth using the verified action code (oobCode).
+ * Confirms and updates the user's password using the verified code (6-digit OTP or Firebase oobCode).
  */
 export async function confirmNewPassword(
   code: string, 
   newPassword: string,
-  _emailCandidate?: string
+  emailCandidate?: string
 ): Promise<{ success: boolean; message: string }> {
   const trimmedCode = code.trim();
   if (!trimmedCode) {
@@ -150,7 +171,32 @@ export async function confirmNewPassword(
     return { success: false, message: 'La nueva contraseña debe tener al menos 6 caracteres.' };
   }
 
-  // Confirm via Firebase Auth action code
+  // 1. If it's a 6-digit numeric recovery code, confirm with backend API
+  if (/^\d{6}$/.test(trimmedCode)) {
+    try {
+      const res = await fetch('/api/confirm-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: trimmedCode,
+          email: emailCandidate || '',
+          newPassword
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        return {
+          success: true,
+          message: '¡Tu contraseña ha sido restablecida exitosamente!'
+        };
+      }
+      return { success: false, message: data.message || 'Error al restablecer la contraseña.' };
+    } catch (err: any) {
+      return { success: false, message: 'Error de comunicación al actualizar la contraseña.' };
+    }
+  }
+
+  // 2. Otherwise confirm via Firebase Auth action code
   try {
     await confirmPasswordReset(auth, trimmedCode, newPassword);
     return {

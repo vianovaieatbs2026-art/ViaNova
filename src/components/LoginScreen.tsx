@@ -729,11 +729,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
       </div>
 
-      {/* Forgot Password Modal (Real Firebase Authentication sendPasswordResetEmail) */}
+      {/* Forgot Password Modal (Real 6-digit code recovery flow) */}
       <ForgotPasswordModal
         isOpen={showForgotModal}
         initialEmail={resetEmail || email}
         onClose={() => setShowForgotModal(false)}
+        onSuccessLogin={(changedEmail) => {
+          setEmail(changedEmail);
+          setShowForgotModal(false);
+          setPassword('');
+        }}
       />
 
       {/* Email Service Configuration Guide & Live Tester Modal */}

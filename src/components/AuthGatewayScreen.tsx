@@ -793,12 +793,18 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         </p>
       </div>
 
-      {/* Forgot Password Modal (Firebase sendPasswordResetEmail) */}
+      {/* Forgot Password Modal (Real 6-digit code recovery flow) */}
       <ForgotPasswordModal
         isOpen={isForgotPasswordOpen}
         onClose={() => setIsForgotPasswordOpen(false)}
         initialEmail={loginEmail}
         onOpenResetCode={onOpenResetCodeModal ? () => onOpenResetCodeModal() : undefined}
+        onSuccessLogin={(changedEmail) => {
+          setLoginEmail(changedEmail);
+          setIsForgotPasswordOpen(false);
+          setActiveTab('login');
+          setLoginPassword('');
+        }}
       />
 
       {/* Terms & Privacy Modal */}
