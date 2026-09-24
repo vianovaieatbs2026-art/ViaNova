@@ -115,6 +115,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
+  // Guarantee password field is strictly empty on mount
+  useEffect(() => {
+    setLoginPassword('');
+  }, []);
+
   // ===================== REGISTER FORM STATE =====================
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
@@ -136,12 +141,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setActiveTab(tab);
     setLoginError('');
     setRegError('');
+    setLoginPassword('');
   };
 
-  // Quick fill test credentials
+  // Quick fill test credentials (email only, strictly no default password)
   const handleFillDemo = () => {
     setLoginEmail('conductor.demo@vianova.edu.co');
-    setLoginPassword('ViaNova2026*');
+    setLoginPassword('');
     setLoginError('');
   };
 
@@ -453,7 +459,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* Email Input */}
                 <div className="space-y-1.5 text-left">
-                  <label data-i18n="login_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="login-email" data-i18n="login_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('login_email_label', 'Correo Electrónico')}
                   </label>
                   <div className="relative">
@@ -461,7 +467,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       <Mail size={16} />
                     </div>
                     <input
+                      id="login-email"
+                      name="email"
                       type="email"
+                      autoComplete="username"
                       required
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
@@ -474,7 +483,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                 {/* Password Input */}
                 <div className="space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <label data-i18n="login_password_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="login-password" data-i18n="login_password_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('login_password_label', 'Contraseña')}
                     </label>
                     <button
@@ -491,7 +500,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       <Lock size={16} />
                     </div>
                     <input
+                      id="login-password"
+                      name="password"
                       type={loginShowPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       required
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}

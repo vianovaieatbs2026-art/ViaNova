@@ -88,6 +88,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     if (initialEmail) {
       setEmail(initialEmail);
     }
+    setPassword('');
   }, [initialEmail]);
 
   // Timer countdown for resend cooldown
@@ -612,6 +613,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                         id="login-email"
                         name="email"
                         type="email"
+                        autoComplete="username"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -623,7 +625,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
                   {/* Password */}
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-[#475569] dark:text-slate-300 uppercase tracking-wider block">
+                    <label htmlFor="login-password" className="text-[11px] font-bold text-[#475569] dark:text-slate-300 uppercase tracking-wider block">
                       {t('login_password_label', 'Contraseña')}
                     </label>
                     <div className="relative">
@@ -634,6 +636,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                         id="login-password"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

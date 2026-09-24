@@ -40,11 +40,11 @@ export function getLastResetEmail(): string {
 }
 
 /**
- * Sends a real password reset email via production Firebase Authentication:
- * uses sendPasswordResetEmail(auth, email) without emulators or mock delays.
- * Sets the email template language to Spanish and accurately handles Firebase error codes.
+ * Sends a real password reset email containing a secure recovery link.
+ * 1. Attempts Firebase Authentication sendPasswordResetEmail.
+ * 2. If user is in local database or Firebase requires backend delivery, dispatches via backend email service.
  */
-export async function sendPasswordReset(email: string): Promise<{ 
+export async function sendPasswordReset(email: string, recipientName?: string): Promise<{ 
   success: boolean; 
   message: string; 
   code?: string;
@@ -66,51 +66,56 @@ export async function sendPasswordReset(email: string): Promise<{
     auth.languageCode = 'es';
   } catch (_) {}
 
+  // 1. First, attempt Firebase Authentication directly
   try {
-    console.log(`[Firebase Auth Production] Despachando correo de restablecimiento real para: ${trimmedEmail}`);
-
-    // Call real Firebase Authentication sendPasswordResetEmail directly to Google Cloud Identity Platform
+    console.log(`[Firebase Auth] Solicitando restablecimiento para: ${trimmedEmail}`);
     await sendPasswordResetEmail(auth, trimmedEmail);
-
-    console.log(`[Firebase Auth Production] Confirmado: Firebase procesó la solicitud para ${trimmedEmail}`);
-
+    console.log(`[Firebase Auth] Firebase procesó y envió correo a ${trimmedEmail}`);
     return {
       success: true,
-      message: `Firebase Authentication ha procesado y enviado el enlace de restablecimiento a ${trimmedEmail}.`
+      message: `Hemos enviado el enlace de restablecimiento a ${trimmedEmail}. Por favor revisa tu bandeja de entrada y la carpeta de spam.`
     };
-  } catch (error: any) {
-    console.error('[Firebase Auth Production] Error en sendPasswordResetEmail:', error);
-    const errorCode = error?.code || '';
+  } catch (fbError: any) {
+    console.warn('[Firebase Auth] sendPasswordResetEmail requiere fallback de envío directo:', fbError?.code, fbError?.message);
+  }
 
-    let message = 'Ocurrió un error al contactar Firebase Authentication. Inténtalo de nuevo.';
-    if (errorCode === 'auth/user-not-found') {
-      message = 'No existe ninguna cuenta registrada con este correo electrónico en Firebase Authentication.';
-    } else if (errorCode === 'auth/invalid-email') {
-      message = 'El correo electrónico ingresado no tiene un formato válido.';
-    } else if (errorCode === 'auth/too-many-requests') {
-      message = 'Demasiados intentos de restablecimiento en poco tiempo. Por seguridad, Firebase ha bloqueado temporalmente los envíos a este correo. Espera unos minutos e inténtalo de nuevo.';
-    } else if (errorCode === 'auth/operation-not-allowed') {
-      message = 'El método de acceso por correo y contraseña no está habilitado en la consola de Firebase. Debes activarlo en Authentication > Sign-in method.';
-    } else if (errorCode === 'auth/network-request-failed') {
-      message = 'Error de conexión de red al conectar con los servidores de Firebase. Verifica tu conexión a internet.';
-    } else if (errorCode === 'auth/unauthorized-continue-uri') {
-      message = 'El dominio de la aplicación no está en la lista de dominios autorizados de Firebase Console.';
-    } else if (errorCode === 'auth/missing-email') {
-      message = 'Por favor ingresa un correo electrónico.';
-    } else if (error?.message) {
-      message = error.message;
+  // 2. Dispatch real recovery link via backend Express endpoint
+  try {
+    const originUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const res = await fetch('/api/send-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: trimmedEmail,
+        recipientName: recipientName || '',
+        originUrl
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return {
+        success: true,
+        message: data.message || `Hemos enviado el enlace de restablecimiento a ${trimmedEmail}. Revisa tu bandeja de entrada y la carpeta de spam.`
+      };
+    } else {
+      return {
+        success: false,
+        message: data.message || 'Error al enviar el correo de recuperación. Por favor verifica las credenciales de correo o intenta más tarde.',
+        code: data.code || 'EMAIL_FAILED'
+      };
     }
-
+  } catch (err: any) {
     return {
       success: false,
-      message,
-      code: errorCode
+      message: 'Error de conexión con el servidor. Por favor verifica tu conexión a internet e inténtalo de nuevo.',
+      code: 'NETWORK_ERROR'
     };
   }
 }
 
 /**
- * Verifies the validity of an action code (oobCode or 6-digit recovery OTP).
+ * Verifies the validity of an action code or recovery link token.
  */
 export async function verifyResetCode(code: string, emailCandidate?: string): Promise<{ success: boolean; email?: string; message?: string }> {
   const trimmedCode = code.trim();
@@ -118,28 +123,23 @@ export async function verifyResetCode(code: string, emailCandidate?: string): Pr
     return { success: false, message: 'Código o enlace de recuperación no proporcionado.' };
   }
 
-  // 1. If it's a 6-digit numeric recovery code, verify with the backend API
-  if (/^\d{6}$/.test(trimmedCode)) {
-    try {
-      const res = await fetch('/api/verify-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: trimmedCode,
-          email: emailCandidate || ''
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        return { success: true, email: data.email || emailCandidate };
-      }
-      return { success: false, message: data.message || 'Código incorrecto o expirado.' };
-    } catch (err: any) {
-      return { success: false, message: 'Error de conexión al verificar el código.' };
+  // 1. First check with backend (handles tokens from the recovery link)
+  try {
+    const res = await fetch('/api/verify-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: trimmedCode,
+        email: emailCandidate || ''
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return { success: true, email: data.email || emailCandidate };
     }
-  }
+  } catch (_) {}
 
-  // 2. Otherwise verify Firebase Auth action code (oobCode from link)
+  // 2. Otherwise verify Firebase Auth action code (oobCode from Firebase default emails)
   try {
     const email = await verifyPasswordResetCode(auth, trimmedCode);
     return { success: true, email };
@@ -156,7 +156,7 @@ export async function verifyResetCode(code: string, emailCandidate?: string): Pr
 }
 
 /**
- * Confirms and updates the user's password using the verified code (6-digit OTP or Firebase oobCode).
+ * Confirms and updates the user's password using the verified code or token.
  */
 export async function confirmNewPassword(
   code: string, 
@@ -171,30 +171,25 @@ export async function confirmNewPassword(
     return { success: false, message: 'La nueva contraseña debe tener al menos 6 caracteres.' };
   }
 
-  // 1. If it's a 6-digit numeric recovery code, confirm with backend API
-  if (/^\d{6}$/.test(trimmedCode)) {
-    try {
-      const res = await fetch('/api/confirm-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: trimmedCode,
-          email: emailCandidate || '',
-          newPassword
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        return {
-          success: true,
-          message: '¡Tu contraseña ha sido restablecida exitosamente!'
-        };
-      }
-      return { success: false, message: data.message || 'Error al restablecer la contraseña.' };
-    } catch (err: any) {
-      return { success: false, message: 'Error de comunicación al actualizar la contraseña.' };
+  // 1. First try backend
+  try {
+    const res = await fetch('/api/confirm-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: trimmedCode,
+        email: emailCandidate || '',
+        newPassword
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return {
+        success: true,
+        message: '¡Tu contraseña ha sido restablecida exitosamente!'
+      };
     }
-  }
+  } catch (_) {}
 
   // 2. Otherwise confirm via Firebase Auth action code
   try {

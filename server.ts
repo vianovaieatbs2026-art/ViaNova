@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
@@ -370,9 +371,9 @@ async function startServer() {
     });
   });
 
-  // 4. Send Password Reset Code Endpoint (Strict 6-digit code with real delivery)
+  // 4. Send Password Reset Link Endpoint (Dispatches secure recovery email with clickable link)
   app.post('/api/send-password-reset', async (req, res) => {
-    const { email, recipientName } = req.body || {};
+    const { email, recipientName, originUrl } = req.body || {};
 
     if (!email || typeof email !== 'string') {
       return res.status(400).json({
@@ -392,8 +393,8 @@ async function startServer() {
       });
     }
 
-    // Generate random 6-digit numeric recovery code (100000 - 999999)
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate cryptographically secure unique recovery token
+    const resetToken = crypto.randomBytes(24).toString('hex');
 
     // Friendly recipient name
     let cleanName = (recipientName && typeof recipientName === 'string') ? recipientName.trim() : '';
@@ -402,7 +403,13 @@ async function startServer() {
       cleanName = localPart ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : 'Usuario';
     }
 
-    const emailSubject = `${resetCode} es tu código de recuperación de contraseña - ViaNova Colombia`;
+    // Determine base URL for recovery link
+    const baseUrl = (originUrl && typeof originUrl === 'string' && originUrl.startsWith('http'))
+      ? originUrl.replace(/\/$/, '')
+      : (process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : 'https://ais-dev-v52mrzei7xv5vmnnald77k-822053106516.us-east1.run.app');
+
+    const resetUrl = `${baseUrl}/?mode=resetPassword&oobCode=${resetToken}`;
+    const emailSubject = `Enlace para recuperar tu contraseña - ViaNova Colombia`;
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -433,31 +440,40 @@ async function startServer() {
               <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0;">
                 Recuperación de Contraseña
               </h1>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0;">
+                Hola <strong>${cleanName}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>ViaNova Colombia</strong>.
+              </p>
               <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
-                Hola <strong>${cleanName}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>ViaNova Colombia</strong>. Usa el siguiente código de verificación de 6 dígitos para ingresar tu nueva contraseña:
+                Haz clic en el siguiente botón seguro para definir tu nueva contraseña:
               </p>
 
-              <div style="background-color: #eff6ff; border: 2px dashed #93c5fd; border-radius: 16px; padding: 22px; text-align: center; margin: 24px 0;">
-                <div style="font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
-                  Código de Recuperación de 6 Dígitos
-                </div>
-                <div style="font-size: 40px; font-weight: 900; color: #0052cc; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace;">
-                  ${resetCode}
-                </div>
-                <div style="font-size: 12px; color: #64748b; margin-top: 8px;">
-                  ⏱️ Válido durante los próximos <strong>10 minutos</strong>
-                </div>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #0052cc; color: #ffffff; padding: 14px 34px; font-weight: 800; font-size: 15px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 14px rgba(0,82,204,0.35); text-transform: uppercase; letter-spacing: 0.5px;">
+                  Restablecer Contraseña
+                </a>
               </div>
 
-              <div style="background-color: #f8fafc; border-radius: 12px; padding: 14px 16px; border-left: 4px solid #f59e0b; margin: 24px 0 16px 0;">
-                <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.5;">
-                  <strong>⚠️ Aviso de Seguridad:</strong> No compartas este código con ninguna persona. Si tú no solicitaste cambiar tu contraseña, puedes ignorar este mensaje; tu cuenta y contraseña actual permanecen seguras.
+              <div style="background-color: #eff6ff; border-radius: 12px; padding: 14px 16px; border: 1px solid #bfdbfe; margin: 24px 0;">
+                <p style="font-size: 12px; color: #1e40af; margin: 0 0 6px 0; font-weight: 700;">
+                  ⏱️ Enlace con tiempo limitado:
+                </p>
+                <p style="font-size: 12px; color: #3b82f6; margin: 0; line-height: 1.5;">
+                  Este enlace es de uso único y tiene una validez de <strong>15 minutos</strong> por motivos de seguridad.
                 </p>
               </div>
 
-              <p style="font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.5;">
-                Revisa tu bandeja de entrada y la carpeta de spam o correo no deseado.
+              <p style="font-size: 12px; color: #64748b; margin: 16px 0 6px 0;">
+                Si el botón no funciona, puedes copiar y pegar este enlace directamente en tu navegador:
               </p>
+              <p style="font-size: 11px; word-break: break-all; color: #0052cc; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: monospace; margin: 0 0 20px 0;">
+                ${resetUrl}
+              </p>
+
+              <div style="background-color: #f8fafc; border-radius: 12px; padding: 12px 16px; border-left: 4px solid #f59e0b; margin: 20px 0 0 0;">
+                <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.5;">
+                  <strong>⚠️ Aviso de Seguridad:</strong> Si tú no solicitaste cambiar tu contraseña, puedes ignorar este mensaje de forma segura. Tu cuenta permanece protegida.
+                </p>
+              </div>
             </td>
           </tr>
 
@@ -477,18 +493,21 @@ async function startServer() {
 </html>
     `.trim();
 
-    // 10 minutes expiration (strictly enforcing requirement 7)
-    const expiresAt = Date.now() + 10 * 60 * 1000;
+    // 15 minutes expiration
+    const expiresAt = Date.now() + 15 * 60 * 1000;
 
-    // Save in temporary recovery store
-    passwordResetStore.set(cleanEmail, {
+    const record = {
       email: cleanEmail,
-      code: resetCode,
+      code: resetToken,
       expiresAt,
       attempts: 0,
       used: false,
       createdAt: Date.now()
-    });
+    };
+
+    // Save in recovery store indexed by both email and token
+    passwordResetStore.set(cleanEmail, record);
+    passwordResetStore.set(resetToken, record);
 
     // Real email dispatch attempt
     const dispatchResult = await dispatchEmailToUser({
@@ -496,117 +515,99 @@ async function startServer() {
       recipientName: cleanName,
       subject: emailSubject,
       html: emailHtml,
-      text: `Hola ${cleanName}, tu código de recuperación de contraseña en ViaNova Colombia es: ${resetCode}. Válido durante 10 minutos.`
+      text: `Hola ${cleanName}, recibimos una solicitud para restablecer tu contraseña en ViaNova Colombia. Abre este enlace para cambiar tu contraseña: ${resetUrl} (Válido por 15 minutos).`
     });
 
     if (!dispatchResult.success) {
-      // Remove entry if email delivery failed so no phantom or unreachable code exists
       passwordResetStore.delete(cleanEmail);
+      passwordResetStore.delete(resetToken);
       console.warn(`[Email Service] Falló la entrega del correo a ${cleanEmail}:`, dispatchResult.error);
       return res.status(500).json({
         success: false,
         code: 'EMAIL_SEND_FAILED',
         provider: dispatchResult.provider,
-        message: dispatchResult.error || 'Error al enviar el correo. El servidor de correo saliente no está configurado o rechazó la entrega. Por favor verifica las credenciales SMTP/Resend en .env.'
+        message: dispatchResult.error || 'Error al enviar el correo. Por favor verifica las credenciales de correo o intenta más tarde.'
       });
     }
 
-    // Success response: We NEVER leak the code in the response body!
     return res.json({
       success: true,
-      code: 'CODE_SENT',
+      code: 'LINK_SENT',
       provider: dispatchResult.provider,
-      message: 'Código enviado correctamente. Revisa tu correo electrónico (incluyendo la carpeta de spam).',
+      message: `Hemos enviado el enlace de restablecimiento a ${cleanEmail}. Por favor revisa tu bandeja de entrada y la carpeta de spam.`,
       expiresAt
     });
   });
 
-  // 5. Verify Password Reset Code Endpoint
+  // 5. Verify Password Reset Code / Token Endpoint
   app.post('/api/verify-password-reset', (req, res) => {
     const { email, code } = req.body || {};
-
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({
-        success: false,
-        code: 'MISSING_EMAIL',
-        message: 'Correo electrónico requerido.'
-      });
-    }
 
     if (!code) {
       return res.status(400).json({
         success: false,
         code: 'MISSING_CODE',
-        message: 'Por favor ingresa el código de 6 dígitos recibido en tu correo.'
+        message: 'Código o token de recuperación no proporcionado.'
       });
     }
 
-    const cleanCode = String(code).trim().replace(/\D/g, '');
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = String(code).trim();
+    const cleanEmail = email ? String(email).trim().toLowerCase() : '';
 
-    if (cleanCode.length !== 6) {
-      return res.status(400).json({
-        success: false,
-        code: 'INVALID_CODE_FORMAT',
-        message: 'El código debe tener exactamente 6 dígitos numéricos.'
-      });
+    // 1. Check direct lookup by code/token
+    let entry = passwordResetStore.get(cleanCode);
+
+    // 2. Fallback lookup by email
+    if (!entry && cleanEmail) {
+      const emailEntry = passwordResetStore.get(cleanEmail);
+      if (emailEntry && (emailEntry.code === cleanCode || emailEntry.code.replace(/\D/g, '') === cleanCode.replace(/\D/g, ''))) {
+        entry = emailEntry;
+      }
     }
 
-    const entry = passwordResetStore.get(cleanEmail);
+    // 3. Fallback scan across all active tokens
+    if (!entry) {
+      for (const [, candidate] of passwordResetStore.entries()) {
+        if (candidate.code === cleanCode || (cleanCode.length === 6 && candidate.code.replace(/\D/g, '') === cleanCode)) {
+          entry = candidate;
+          break;
+        }
+      }
+    }
+
     if (!entry) {
       return res.status(404).json({
         success: false,
         code: 'CODE_NOT_FOUND',
-        message: 'No existe ningún código de recuperación activo para este correo. Por favor solicita uno nuevo.'
+        message: 'El enlace o código de recuperación no es válido o ha expirado. Solicita uno nuevo.'
       });
     }
 
-    // Check if code was already consumed/used (requirement 9 & 13)
+    // Check if used
     if (entry.used) {
       return res.status(400).json({
         success: false,
         code: 'CODE_ALREADY_USED',
-        message: 'Este código ya ha sido utilizado anteriormente. Por seguridad no puede volver a usarse. Solicita uno nuevo si necesitas restablecer tu contraseña.'
+        message: 'Este enlace de recuperación ya ha sido utilizado para cambiar la contraseña.'
       });
     }
 
-    // Check if expired (requirement 7, 9 & 13)
+    // Check expiration
     if (Date.now() > entry.expiresAt) {
-      passwordResetStore.delete(cleanEmail);
+      passwordResetStore.delete(entry.code);
+      passwordResetStore.delete(entry.email);
       return res.status(400).json({
         success: false,
         code: 'CODE_EXPIRED',
-        message: 'El código de recuperación ha expirado (validez de 10 minutos). Por favor solicita uno nuevo.'
+        message: 'El enlace de recuperación ha expirado. Por favor solicita uno nuevo.'
       });
     }
 
-    // Check maximum attempts limit
-    if (entry.attempts >= 5) {
-      passwordResetStore.delete(cleanEmail);
-      return res.status(400).json({
-        success: false,
-        code: 'MAX_ATTEMPTS_EXCEEDED',
-        message: 'Has superado el límite de 5 intentos fallidos. Por seguridad este código ha sido cancelado. Solicita un nuevo código.'
-      });
-    }
-
-    // Validate matching code
-    if (entry.code !== cleanCode) {
-      entry.attempts += 1;
-      const remaining = 5 - entry.attempts;
-      return res.status(400).json({
-        success: false,
-        code: 'CODE_INCORRECT',
-        message: `Código incorrecto. Verifica los 6 dígitos recibidos en tu correo. Intentos restantes: ${remaining}.`
-      });
-    }
-
-    // Valid code!
     return res.json({
       success: true,
       code: 'CODE_VERIFIED',
-      email: cleanEmail,
-      message: 'Código verificado correctamente. Ahora puedes crear tu nueva contraseña.'
+      email: entry.email,
+      message: 'Enlace verificado correctamente. Ahora puedes crear tu nueva contraseña.'
     });
   });
 
@@ -622,23 +623,31 @@ async function startServer() {
       });
     }
 
+    const cleanCode = String(code || '').trim();
     const cleanEmail = email ? String(email).trim().toLowerCase() : '';
-    const cleanCode = code ? String(code).trim().replace(/\D/g, '') : '';
 
-    if (!cleanEmail) {
-      return res.status(400).json({
-        success: false,
-        code: 'MISSING_EMAIL',
-        message: 'Correo electrónico requerido.'
-      });
+    let entry = passwordResetStore.get(cleanCode);
+    if (!entry && cleanEmail) {
+      const emailEntry = passwordResetStore.get(cleanEmail);
+      if (emailEntry && (emailEntry.code === cleanCode || emailEntry.code.replace(/\D/g, '') === cleanCode.replace(/\D/g, ''))) {
+        entry = emailEntry;
+      }
     }
 
-    const entry = passwordResetStore.get(cleanEmail);
+    if (!entry) {
+      for (const [, candidate] of passwordResetStore.entries()) {
+        if (candidate.code === cleanCode || (cleanCode.length === 6 && candidate.code.replace(/\D/g, '') === cleanCode)) {
+          entry = candidate;
+          break;
+        }
+      }
+    }
+
     if (!entry) {
       return res.status(404).json({
         success: false,
         code: 'CODE_NOT_FOUND',
-        message: 'Sesión de recuperación no encontrada o expirada. Por favor solicita un nuevo código.'
+        message: 'Sesión de recuperación no encontrada o expirada. Por favor solicita un nuevo enlace.'
       });
     }
 
@@ -646,38 +655,32 @@ async function startServer() {
       return res.status(400).json({
         success: false,
         code: 'CODE_ALREADY_USED',
-        message: 'Este código ya ha sido utilizado para cambiar la contraseña.'
+        message: 'Este enlace ya ha sido utilizado para cambiar la contraseña.'
       });
     }
 
     if (Date.now() > entry.expiresAt) {
-      passwordResetStore.delete(cleanEmail);
+      passwordResetStore.delete(entry.code);
+      passwordResetStore.delete(entry.email);
       return res.status(400).json({
         success: false,
         code: 'CODE_EXPIRED',
-        message: 'El código ha expirado. Por favor solicita uno nuevo.'
+        message: 'El enlace ha expirado. Por favor solicita uno nuevo.'
       });
     }
 
-    if (entry.code !== cleanCode) {
-      return res.status(400).json({
-        success: false,
-        code: 'CODE_INCORRECT',
-        message: 'Código de recuperación incorrecto.'
-      });
-    }
-
-    // Mark as used immediately to prevent replay attacks (requirement 12)
+    // Mark as used immediately to prevent replay attacks
     entry.used = true;
 
-    // Invalidate and delete after 5 minutes so subsequent attempts receive CODE_ALREADY_USED
     setTimeout(() => {
-      passwordResetStore.delete(cleanEmail);
+      passwordResetStore.delete(entry!.code);
+      passwordResetStore.delete(entry!.email);
     }, 5 * 60 * 1000);
 
     return res.json({
       success: true,
       code: 'PASSWORD_CHANGED_SUCCESS',
+      email: entry.email,
       message: 'Contraseña cambiada correctamente. Ahora puedes iniciar sesión con tus nuevas credenciales.'
     });
   });

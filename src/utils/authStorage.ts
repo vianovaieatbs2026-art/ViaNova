@@ -9,10 +9,25 @@ export interface StoredUserAccount {
   createdAt: string;
 }
 
-// Immediately purge any legacy multi-user list from localStorage to protect user privacy
+// Immediately purge any legacy multi-user list and any stored passwords from localStorage to protect user privacy
 if (typeof window !== 'undefined') {
   try {
     localStorage.removeItem('vianova_registered_users');
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(USER_KEY_PREFIX)) {
+        try {
+          const item = localStorage.getItem(key);
+          if (item) {
+            const parsed = JSON.parse(item);
+            if (parsed && 'password' in parsed) {
+              delete parsed.password;
+              localStorage.setItem(key, JSON.stringify(parsed));
+            }
+          }
+        } catch (_) {}
+      }
+    }
   } catch (_) {}
 }
 
@@ -72,7 +87,7 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
       ...profile,
       primer_ingreso: isFirstTime,
     },
-    password: password || existingData?.password || '',
+    // Strictly do not store passwords in localStorage - Requirement 4 & 5
     createdAt: existingData?.createdAt || new Date().toISOString()
   };
 
@@ -88,9 +103,9 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
 }
 
 /**
- * Updates the stored password for an account.
+ * Updates the stored profile for an account after password reset (passwords are handled securely via Firebase Auth / backend).
  */
-export function updateRegisteredUserPassword(email: string, newPassword: string): boolean {
+export function updateRegisteredUserPassword(email: string, _newPassword?: string): boolean {
   if (typeof window === 'undefined') return false;
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
@@ -120,11 +135,10 @@ export function updateRegisteredUserPassword(email: string, newPassword: string)
           licenseCategory: 'Aspirante / Particular',
           city: 'Medellín, Antioquia'
         },
-        password: newPassword,
         createdAt: new Date().toISOString()
       };
     } else {
-      account.password = newPassword;
+      delete account.password;
     }
 
     localStorage.setItem(storageKey, JSON.stringify(account));
@@ -137,7 +151,7 @@ export function updateRegisteredUserPassword(email: string, newPassword: string)
 
     return true;
   } catch (e) {
-    console.error('Error saving updated password:', e);
+    console.error('Error updating account profile:', e);
     return false;
   }
 }
@@ -148,7 +162,7 @@ export function updateRegisteredUserPassword(email: string, newPassword: string)
 export function completeUserFirstTimeOnboarding(
   email: string, 
   updatedData: Partial<UserProfile>, 
-  newPassword?: string
+  _newPassword?: string
 ): UserProfile | null {
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
@@ -169,7 +183,6 @@ export function completeUserFirstTimeOnboarding(
         passedExams: 0,
         activeReports: 0
       },
-      password: newPassword || '',
       createdAt: new Date().toISOString()
     };
 
@@ -183,9 +196,8 @@ export function completeUserFirstTimeOnboarding(
     };
 
     const updatedAccount: StoredUserAccount = {
-      ...current,
       profile: finalProfile,
-      password: newPassword || current.password,
+      createdAt: current.createdAt || new Date().toISOString()
     };
 
     localStorage.setItem(storageKey, JSON.stringify(updatedAccount));
@@ -199,6 +211,7 @@ export function completeUserFirstTimeOnboarding(
 
 /**
  * Finds a registered user by email for private authentication validation.
+ * Strips any legacy password property to prevent restoring passwords from storage.
  */
 export function findRegisteredUserByEmail(email: string): StoredUserAccount | null {
   if (typeof window === 'undefined' || !email) return null;
@@ -208,7 +221,11 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
   try {
     const raw = localStorage.getItem(storageKey);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && 'password' in parsed) {
+        delete parsed.password;
+      }
+      return parsed;
     }
   } catch (_) {}
 
