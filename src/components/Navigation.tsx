@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { ScreenId, UserProfile } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import { HeaderSearchBar } from './HeaderSearchBar';
 
 interface NavigationProps {
   currentScreen: ScreenId;
@@ -71,7 +70,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   // Dashboard navigation items:
-  // Inicio, Aprende, Señales, Quiz, Simulador, Reportes, Mi Perfil
+  // Inicio, Aprende, Señales, Quiz, Simulador, Reportes
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
     { id: 'educacion_vial', labelKey: 'nav_aprende', defaultLabel: 'Aprende' },
@@ -79,7 +78,6 @@ export const Navigation: React.FC<NavigationProps> = ({
     { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
     { id: 'simulador', labelKey: 'nav_simulator', defaultLabel: 'Simulador' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
-    { id: 'perfil', labelKey: 'nav_profile', defaultLabel: 'Mi Perfil' },
   ];
 
   const handleNavClick = (screen: ScreenId) => {
@@ -120,16 +118,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             </div>
           </div>
 
-          {/* Autocomplete Search Bar (Center / Desktop) */}
-          {user && (
-            <div className="hidden md:block flex-1 max-w-xs lg:max-w-sm">
-              <HeaderSearchBar onNavigate={handleNavClick} />
-            </div>
-          )}
-
-          {/* Center Nav Items */}
+          {/* Center Nav Items (Clean, without scrollbar, nicely spaced) */}
           {user ? (
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 overflow-x-auto no-scrollbar py-2">
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 py-2">
               {navItems.map((item) => {
                 const isActive = currentScreen === item.id;
 
@@ -324,17 +315,9 @@ export const Navigation: React.FC<NavigationProps> = ({
           </div>
         </div>
 
-        {/* Mobile Search Bar & Menu Drawer */}
-        {user ? (
-          <>
-            {/* Mobile Search Bar row */}
-            <div className="block md:hidden pb-3">
-              <HeaderSearchBar onNavigate={handleNavClick} />
-            </div>
-
-            {/* Mobile Navigation Drawer */}
-            {mobileMenuOpen && (
-              <div className="lg:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
+        {/* Mobile Navigation Drawer */}
+        {user && mobileMenuOpen && (
+          <div className="lg:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
                 <div className="grid grid-cols-2 gap-2">
                   {navItems.map((item) => {
                     const isActive = currentScreen === item.id;
@@ -366,9 +349,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   </button>
                 </div>
               </div>
-            )}
-          </>
-        ) : null}
+        )}
       </div>
     </header>
   );

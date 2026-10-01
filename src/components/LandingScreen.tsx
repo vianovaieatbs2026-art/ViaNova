@@ -20,7 +20,6 @@ import { CityRouteSimulator2D } from './CityRouteSimulator2D';
 import { InteractiveStoryboard } from './InteractiveStoryboard';
 import { AnimatedServicesGrid } from './AnimatedServicesGrid';
 import { MultimediaVideoSection } from './MultimediaVideoSection';
-import { InteractiveWireframeSection } from './InteractiveWireframeSection';
 import { soundEngine } from '../utils/soundEffects';
 
 interface LandingScreenProps {
@@ -149,13 +148,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-2 mt-6 max-w-2xl">
             <button
               type="button"
-              onClick={() => scrollToSection('servicios')}
-              className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00AFFF] hover:text-[#00AFFF] transition-all cursor-pointer shadow-xs"
-            >
-              {t('landing_nav_services', 'Servicios Viales')}
-            </button>
-            <button
-              type="button"
               onClick={() => scrollToSection('simulacion-2d')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
             >
@@ -166,7 +158,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               onClick={() => scrollToSection('storyboard')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-all cursor-pointer shadow-xs"
             >
-              {t('landing_nav_storyboard', 'Ruta de Aprendizaje')}
+              {t('landing_nav_storyboard', 'Guía del Conductor')}
             </button>
             <button
               type="button"
@@ -180,7 +172,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               onClick={() => scrollToSection('contacto')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
             >
-              {t('landing_nav_contact', 'Contacto')}
+              {t('landing_nav_contact', 'Soporte y Contacto')}
             </button>
           </div>
 
@@ -288,11 +280,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* ===================== 5. CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
       <section id="multimedia" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <MultimediaVideoSection />
-      </section>
-
-      {/* ===================== 6. GUÍA DE NAVEGACIÓN Y CONTACTO CIUDADANO ===================== */}
-      <section id="contacto" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <InteractiveWireframeSection />
       </section>
 
     </div>

@@ -42,7 +42,6 @@ import { CityRouteSimulator2D } from './CityRouteSimulator2D';
 import { AnimatedServicesGrid } from './AnimatedServicesGrid';
 import { InteractiveStoryboard } from './InteractiveStoryboard';
 import { MultimediaVideoSection } from './MultimediaVideoSection';
-import { InteractiveWireframeSection } from './InteractiveWireframeSection';
 
 interface CorridorItem {
   id: string;
@@ -1718,11 +1717,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       {/* ===================== CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
       <div id="multimedia" className="pt-6">
         <MultimediaVideoSection />
-      </div>
-
-      {/* ===================== GUÍA DE NAVEGACIÓN Y ATENCIÓN CIUDADANA ===================== */}
-      <div id="contacto" className="pt-6">
-        <InteractiveWireframeSection />
       </div>
     </div>
   );

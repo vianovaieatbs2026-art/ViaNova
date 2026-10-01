@@ -332,8 +332,8 @@ function AppContent() {
         currentScreen={currentScreen} 
       />
 
-      {/* Institutional Footer with Dark/Light Mode Switch & Language */}
-      <Footer />
+      {/* Standard Conventional Footer */}
+      <Footer onNavigate={setCurrentScreen} />
     </div>
   );
 }
