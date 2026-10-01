@@ -120,7 +120,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Center Nav Items (Clean, without scrollbar, nicely spaced) */}
           {user ? (
-            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 py-2">
+            <nav className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8 py-2">
               {navItems.map((item) => {
                 const isActive = currentScreen === item.id;
 
@@ -130,7 +130,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     type="button"
                     id={`nav-item-${item.id}`}
                     onClick={() => handleNavClick(item.id)}
-                    className={`relative py-1.5 px-1 text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`relative py-1.5 px-1 text-xs lg:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                       isActive
                         ? 'text-[#0052cc] dark:text-sky-400'
                         : 'text-[#475569] dark:text-slate-300 hover:text-[#0052cc] dark:hover:text-white'
@@ -304,7 +304,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="p-2 text-slate-700 dark:text-slate-200 md:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   aria-label="Abrir menú"
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -317,7 +317,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* Mobile Navigation Drawer */}
         {user && mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
+          <div className="md:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
                 <div className="grid grid-cols-2 gap-2">
                   {navItems.map((item) => {
                     const isActive = currentScreen === item.id;

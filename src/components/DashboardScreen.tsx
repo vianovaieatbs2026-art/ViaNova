@@ -39,7 +39,6 @@ import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { getUserDashboardProgress } from '../utils/userProgress';
 import { CityRouteSimulator2D } from './CityRouteSimulator2D';
-import { AnimatedServicesGrid } from './AnimatedServicesGrid';
 import { InteractiveStoryboard } from './InteractiveStoryboard';
 import { MultimediaVideoSection } from './MultimediaVideoSection';
 
@@ -1434,21 +1433,21 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                     borderColor: activeThemeConfig.borderLightHex 
                   }}
                 >
-                  {t('dash_badge_law', 'Ley 769 & 2251')}
+                  {t('dash_badge_law', 'Fundamentos & Teoría')}
                 </span>
               </div>
               <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-sky-500 transition-colors">
-                {t('nav_education', 'Educación Vial')}
+                Aprende: Teoría y Normas Viales
               </h3>
               <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
-                {t('dash_mod_edu_desc', 'Módulos de formación con la Ley Julián Esteban (límites 50/30 km/h), prelación en glorietas, cascos en motos y protección a ciclistas.')}
+                Insumos teóricos indispensables antes de realizar las actividades y simuladores: Ley Julián Esteban (50/30 km/h), glorietas, cascos y ciclistas a 1.5m.
               </p>
             </div>
             <div 
               className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
               style={{ color: activeThemeConfig.primaryHex }}
             >
-              <span>{t('dash_study_modules', 'Estudiar módulos')}</span>
+              <span>Aprender teoría y normas</span>
               <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
@@ -1696,20 +1695,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
         <CityRouteSimulator2D />
       </div>
 
-      {/* ===================== TARJETAS DE SERVICIOS 3D CON PRINCIPIOS DE ANIMACIÓN ===================== */}
-      <div id="servicios" className="pt-6">
-        <AnimatedServicesGrid 
-          onNavigate={onNavigate}
-          onActionClick={(id) => {
-            if (id === 'simulador') onNavigate('simulador');
-            else if (id === 'senales') onNavigate('senales');
-            else if (id === 'educacion') onNavigate('educacion_vial');
-            else if (id === 'reportes') onNavigate('reportes');
-          }}
-        />
-      </div>
-
-      {/* ===================== STORYBOARD INTERACTIVO "CÓMO FUNCIONA VIANOVA" EN 4 PASOS ===================== */}
+      {/* ===================== RUTA DE APRENDIZAJE "CÓMO FUNCIONA VIANOVA" EN 4 PASOS ===================== */}
       <div id="storyboard" className="pt-6">
         <InteractiveStoryboard />
       </div>

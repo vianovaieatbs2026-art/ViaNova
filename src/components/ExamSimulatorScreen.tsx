@@ -806,7 +806,7 @@ export const ExamSimulatorScreen: React.FC<ExamSimulatorScreenProps> = ({
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
             <h3 className="font-black text-base text-[#0f172a] dark:text-white flex items-center gap-2">
               <BarChart3 size={18} className="text-[#0052cc] dark:text-sky-400" />
-              <span>Desempeño por Áreas de Competencia</span>
+              <span>Desempeño por Áreas Temáticas</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

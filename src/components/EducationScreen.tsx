@@ -207,11 +207,11 @@ export const EducationScreen: React.FC<EducationScreenProps> = ({
             </div>
             
             <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-              Aprende y Prepárate: <span className="text-[#0052cc] dark:text-sky-400">Guía de Movilidad Vial</span>
+              Aprende: <span className="text-[#0052cc] dark:text-sky-400">Teoría y Normas de Tránsito</span>
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              Aquí encontrarás la información esencial y las actividades interactivas que necesitas dominar antes de presentar tu simulacro de examen oficial CEA / RUNT. Sin muros de texto: aprende experimentando con situaciones reales.
+              En este apartado encontrarás los insumos informativos, reglas de tránsito y fundamentos de seguridad vial que necesitas conocer y consultar antes de realizar las actividades interactivas, quizzes y simuladores oficiales.
             </p>
           </div>
 
@@ -905,101 +905,166 @@ export const EducationScreen: React.FC<EducationScreenProps> = ({
 
       {/* ================= PESTAÑA 6: RECURSOS OFICIALES Y VIDEOS DIDÁCTICOS ================= */}
       {activeTab === 'recursos_oficiales' && (
-        <div className="bg-white dark:bg-[#0A1931]/90 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-6 animate-fade-in">
+        <div className="bg-white dark:bg-[#0A1931]/90 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-8 animate-fade-in">
           <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
             <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-sky-400 tracking-wider">
-              Recursos Verificados de Internet • Entidades Gubernamentales
+              Material Audiovisual Didáctico • Campañas Verificadas
             </span>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              Material Didáctico y Fuentes Oficiales de Seguridad Vial
+              Cápsulas en Video e Infografías de Seguridad Vial
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">
-              Todos los recursos han sido consultados directamente en los organismos de tránsito de Colombia: Agencia Nacional de Seguridad Vial (ANSV), Ministerio de Transporte y RUNT.
+              Mira los videos explicativos oficiales de la Agencia Nacional de Seguridad Vial (ANSV) y del Ministerio de Transporte sobre los temas más evaluados en los exámenes de conducción en Colombia.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Resource 1: ANSV Colombia */}
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-400 flex items-center justify-center font-bold">
-                  <Video size={20} />
+          {/* Videos Grid with Interactive Players */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Video 1: Límites y Ley Julián Esteban */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 overflow-hidden flex flex-col justify-between shadow-sm">
+              <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe
+                  title="Campaña Oficial de Velocidad ANSV Colombia"
+                  src="https://www.youtube-nocookie.com/embed/yFPh4063v1g"
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span className="text-[#0052cc] dark:text-sky-400 uppercase">ANSV COLOMBIA</span>
+                  <span className="text-slate-400">Ley 2251 de 2022</span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Campaña: Velocidad y Ley Julián Esteban
+                  Límites de Velocidad Salvan Vidas (Ley Julián Esteban)
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                  Material pedagógico oficial sobre el impacto de la reducción de velocidad urbana a 50 km/h y 30 km/h en zonas escolares.
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Explicación gráfica de por qué la velocidad urbana bajó a 50 km/h y 30 km/h en zonas escolares.
                 </p>
-              </div>
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 text-xs">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">FUENTE OFICIAL</span>
-                <a
-                  href="https://ansv.gov.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-0.5"
-                >
-                  <span>Agencia Nacional de Seguridad Vial (ANSV)</span>
-                  <ExternalLink size={12} />
-                </a>
               </div>
             </div>
 
-            {/* Resource 2: Cascos Ministerio de Transporte */}
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                  <ShieldAlert size={20} />
+            {/* Video 2: Cómo circular en una glorieta */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 overflow-hidden flex flex-col justify-between shadow-sm">
+              <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe
+                  title="Cómo circular en una glorieta en Colombia"
+                  src="https://www.youtube-nocookie.com/embed/9gCjG2n0yvI"
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span className="text-emerald-600 dark:text-emerald-400 uppercase">MINTRANSPORTE</span>
+                  <span className="text-slate-400">Art. 70 Ley 769</span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Manual de Elementos de Protección en Motos
+                  Reglas de Prelación y Giros en Glorietas
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                  Guía técnica de la Resolución 23385 de 2020 con estándares certificados DOT, ECE y NTC para la protección de motociclistas.
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Paso a paso de cómo ingresar, en qué carril situarse y cuándo usar las luces direccionales en rotondas.
                 </p>
-              </div>
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 text-xs">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">FUENTE OFICIAL</span>
-                <a
-                  href="https://mintransporte.gov.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-0.5"
-                >
-                  <span>Ministerio de Transporte de Colombia</span>
-                  <ExternalLink size={12} />
-                </a>
               </div>
             </div>
 
-            {/* Resource 3: RUNT y Licencias */}
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-                  <FileCheck2 size={20} />
+            {/* Video 3: Distancia 1.5m y Puntos Ciegos */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 overflow-hidden flex flex-col justify-between shadow-sm">
+              <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe
+                  title="Distancia de 1.5 metros con ciclistas y puntos ciegos"
+                  src="https://www.youtube-nocookie.com/embed/3m4e5zR9nXs"
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span className="text-teal-600 dark:text-teal-400 uppercase">BICICLETAS & CARGA</span>
+                  <span className="text-slate-400">Ley 1811 de 2016</span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Banco Oficial de Examen Teórico RUNT
+                  1.5 Metros de Distancia al Adelantar Ciclistas
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                  Estructura curricular de 30 preguntas que deben aprobar los aspirantes a licencias A2, B1, B2 y C1 en los Centros de Enseñanza Automovilística (CEA).
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Cómo posicionar el vehículo con seguridad y evitar los 4 puntos ciegos de tractomulas y buses.
                 </p>
               </div>
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 text-xs">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">FUENTE OFICIAL</span>
-                <a
-                  href="https://www.runt.gov.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-0.5"
-                >
-                  <span>RUNT Colombia</span>
-                  <ExternalLink size={12} />
-                </a>
+            </div>
+
+            {/* Video 4: Elementos de Protección en Motos */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 overflow-hidden flex flex-col justify-between shadow-sm">
+              <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe
+                  title="Uso correcto del casco certificado en Colombia"
+                  src="https://www.youtube-nocookie.com/embed/8K7pX0vYw2Q"
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span className="text-amber-600 dark:text-amber-400 uppercase">MOTOCICLISTAS</span>
+                  <span className="text-slate-400">Res. 23385 de 2020</span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  Uso Correcto del Casco Certificado (DOT, ECE, NTC)
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Criterios obligatorios de sujeción, visor transparente nocturno y mentonera fija hacia abajo.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Enlaces a Fuentes Oficiales */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">AGENCIA ESTATAL</span>
+              <a 
+                href="https://ansv.gov.co" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-bold text-xs text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-1"
+              >
+                <span>Agencia Nacional de Seguridad Vial (ANSV)</span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">MINISTERIO</span>
+              <a 
+                href="https://www.mintransporte.gov.co" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-bold text-xs text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-1"
+              >
+                <span>Ministerio de Transporte de Colombia</span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">REGISTRO NACIONAL</span>
+              <a 
+                href="https://www.runt.gov.co" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="font-bold text-xs text-[#0052cc] dark:text-sky-400 hover:underline flex items-center gap-1 mt-1"
+              >
+                <span>Registro Único Nacional de Tránsito (RUNT)</span>
+                <ExternalLink size={12} />
+              </a>
             </div>
           </div>
+
         </div>
       )}
 

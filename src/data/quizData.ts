@@ -1213,3 +1213,244 @@ export const COLOMBIAN_QUIZ_TOPICS_EN: QuizTopic[] = [
 export function getQuizTopics(lang: string): QuizTopic[] {
   return lang === 'en' ? COLOMBIAN_QUIZ_TOPICS_EN : COLOMBIAN_QUIZ_TOPICS_ES;
 }
+
+// =========================================================================
+// EDUCAPLAY-STYLE INTERACTIVE DATASETS FOR GAMIFIED QUIZZES
+// =========================================================================
+
+export interface MatchSignItem {
+  id: string;
+  signCode: string;
+  signName: string;
+  category: 'reglamentaria' | 'preventiva' | 'informativa';
+  rule: string;
+  legalBasis: string;
+}
+
+export const MATCH_SIGNS_DATA: MatchSignItem[] = [
+  {
+    id: 'm-sr01',
+    signCode: 'SR-01',
+    signName: 'PARE (SR-01)',
+    category: 'reglamentaria',
+    rule: 'Detención total obligatoria a 0 km/h antes de la línea demarcada en el pavimento.',
+    legalBasis: 'Art. 109 Ley 769 de 2002'
+  },
+  {
+    id: 'm-sr02',
+    signCode: 'SR-02',
+    signName: 'Ceda el Paso (SR-02)',
+    category: 'reglamentaria',
+    rule: 'Reducir la velocidad y detenerse si es necesario para dar paso a la corriente vehicular preferente.',
+    legalBasis: 'Art. 110 Ley 769 de 2002'
+  },
+  {
+    id: 'm-sr30',
+    signCode: 'SR-30',
+    signName: 'Velocidad Máxima 50 km/h (SR-30)',
+    category: 'reglamentaria',
+    rule: 'Límite máximo general en vías urbanas de Colombia para proteger a peatones y ciclistas.',
+    legalBasis: 'Ley 2251 de 2022 (Ley Julián Esteban)'
+  },
+  {
+    id: 'm-sp33',
+    signCode: 'SP-33',
+    signName: 'Curva Peligrosa a la Izquierda (SP-33)',
+    category: 'preventiva',
+    rule: 'Advertencia de curvatura cerrada; el conductor debe desacelerar antes de entrar en la curva.',
+    legalBasis: 'Manual de Señalización Mintransporte'
+  },
+  {
+    id: 'm-sp47',
+    signCode: 'SP-47',
+    signName: 'Zona Escolar (SP-47)',
+    category: 'preventiva',
+    rule: 'Reducción de velocidad estricta a 30 km/h por alta concentración de niños y peatones.',
+    legalBasis: 'Art. 106 Ley 769 & Ley 2251'
+  },
+  {
+    id: 'm-si01',
+    signCode: 'SI-01',
+    signName: 'Primeros Auxilios (SI-01)',
+    category: 'informativa',
+    rule: 'Guía sobre ubicación de puesto médico o centro de atención asistencial en carretera.',
+    legalBasis: 'Manual de Señalización Mintransporte'
+  }
+];
+
+export interface FillBlankChallenge {
+  id: string;
+  title: string;
+  topic: string;
+  sentenceParts: string[];
+  correctWords: string[];
+  optionsPool: string[];
+  explanation: string;
+  legalReference: string;
+}
+
+export const FILL_BLANKS_CHALLENGES: FillBlankChallenge[] = [
+  {
+    id: 'fb-1',
+    title: 'Límites de Velocidad Urbana y Escolar',
+    topic: 'Ley Julián Esteban (Ley 2251)',
+    sentenceParts: [
+      'En Colombia, la velocidad máxima en zonas escolares es de ',
+      ', mientras que en vías urbanas generales el límite es de ',
+      '.'
+    ],
+    correctWords: ['30 km/h', '50 km/h'],
+    optionsPool: ['30 km/h', '50 km/h', '80 km/h', '60 km/h', '20 km/h', '100 km/h'],
+    explanation: 'La Ley 2251 de 2022 reformó los límites: 30 km/h en zonas residenciales y escolares, y 50 km/h en vías urbanas para reducir la mortalidad.',
+    legalReference: 'Ley 2251 de 2022 Art. 106'
+  },
+  {
+    id: 'fb-2',
+    title: 'Distancia Segura con Ciclistas',
+    topic: 'Protección al Actor Vulnerable',
+    sentenceParts: [
+      'Al realizar la maniobra de adelantamiento a un ciclista, todo conductor debe guardar una distancia lateral mínima de ',
+      ' y está prohibido ',
+      '.'
+    ],
+    correctWords: ['1.5 metros', 'usar la bocina'],
+    optionsPool: ['1.5 metros', 'usar la bocina', '0.5 metros', 'encender luces altas', 'frenar en seco', '2.5 metros'],
+    explanation: 'La Ley 1811 de 2016 exige dejar al menos 1.5 metros al sobrepasar a un ciclista y no hacer sonar la bocina para no desestabilizarlo.',
+    legalReference: 'Ley 1811 de 2016'
+  },
+  {
+    id: 'fb-3',
+    title: 'Prelación en Glorietas y Rotondas',
+    topic: 'Reglas de Circulación (Art. 70 CNT)',
+    sentenceParts: [
+      'En una glorieta o rotonda, la prelación absoluta de paso corresponde al vehículo que ',
+      ' frente a los vehículos que ',
+      '.'
+    ],
+    correctWords: ['ya circula dentro', 'van a ingresar'],
+    optionsPool: ['ya circula dentro', 'van a ingresar', 'viaja a mayor velocidad', 'toca primero la bocina', 'es de mayor tamaño'],
+    explanation: 'El Art. 70 del Código Nacional de Tránsito establece que quien circula dentro de la glorieta tiene prelación sobre quien va a ingresar.',
+    legalReference: 'Art. 70 Ley 769 de 2002'
+  },
+  {
+    id: 'fb-4',
+    title: 'Estándar Obligatorio para Cascos de Motocicleta',
+    topic: 'Resolución 23385 de Mintransporte',
+    sentenceParts: [
+      'Los conductores y parrilleros de moto deben portar cascos certificados bajo norma ',
+      ' y llevar la mentonera ',
+      ' durante todo el trayecto.',
+      '.'
+    ],
+    correctWords: ['DOT o ECE', 'bloqueada hacia abajo'],
+    optionsPool: ['DOT o ECE', 'bloqueada hacia abajo', 'bicicleta infantil', 'levantada y abierta', 'sin broche'],
+    explanation: 'La Resolución 23385 de 2020 exige cascos certificados (DOT, ECE, NTC) bien abrochados y con la mentonera asegurada en cascos modulares.',
+    legalReference: 'Resolución 23385 de 2020'
+  },
+  {
+    id: 'fb-5',
+    title: 'Cero Tolerancia con el Alcohol al Volante',
+    topic: 'Ley de Alcoholemia (Ley 1696)',
+    sentenceParts: [
+      'En Colombia rige la política de ',
+      ' de alcohol al conducir, acarreando la suspensión de la licencia y multas superiores a ',
+      '.'
+    ],
+    correctWords: ['Cero Tolerancia', 'varios millones de pesos'],
+    optionsPool: ['Cero Tolerancia', 'varios millones de pesos', 'dos cervezas permitidas', 'solo una amonestación verbal', 'tres copas'],
+    explanation: 'La Ley 1696 de 2013 sanciona con severidad cualquier grado de alcohol: desde el grado 0 (20-39 mg de etanol/100 ml de sangre) se suspende la licencia.',
+    legalReference: 'Ley 1696 de 2013'
+  }
+];
+
+export interface RapidFireQuestion {
+  id: string;
+  statement: string;
+  isTrue: boolean;
+  explanation: string;
+  legalArticle: string;
+  icon: string;
+}
+
+export const RAPID_FIRE_QUESTIONS: RapidFireQuestion[] = [
+  {
+    id: 'rf-1',
+    statement: 'En una glorieta en Colombia, ¿el vehículo que va a entrar tiene prioridad de paso sobre el que ya está girando adentro?',
+    isTrue: false,
+    explanation: 'FALSO: Quien ya circula dentro de la glorieta tiene prelación absoluta sobre cualquier vehículo que pretenda ingresar.',
+    legalArticle: 'Art. 70 Ley 769 de 2002',
+    icon: '🔄'
+  },
+  {
+    id: 'rf-2',
+    statement: 'Al adelantar a un ciclista en cualquier vía del país, ¿es obligatorio conservar mínimo 1.5 metros de distancia lateral?',
+    isTrue: true,
+    explanation: 'VERDADERO: La Ley 1811 de 2016 establece 1.5 metros de separación obligatoria para proteger la vida del ciclista.',
+    legalArticle: 'Ley 1811 de 2016',
+    icon: '🚲'
+  },
+  {
+    id: 'rf-3',
+    statement: 'En zonas residenciales y escolares de Colombia, ¿la velocidad máxima autorizada por la Ley Julián Esteban es de 50 km/h?',
+    isTrue: false,
+    explanation: 'FALSO: En zonas escolares y residenciales el límite estricto es de 30 km/h. Los 50 km/h aplican en vías urbanas generales.',
+    legalArticle: 'Ley 2251 de 2022 (Ley Julián Esteban)',
+    icon: '⚡'
+  },
+  {
+    id: 'rf-4',
+    statement: '¿Es obligatorio en Colombia que los ocupantes de los asientos traseros de un automóvil utilicen el cinturón de seguridad?',
+    isTrue: true,
+    explanation: 'VERDADERO: El Art. 82 del Código Nacional de Tránsito hace obligatorio el cinturón en asientos traseros para vehículos modelo 2004 en adelante.',
+    legalArticle: 'Art. 82 Ley 769 de 2002',
+    icon: '🛡️'
+  },
+  {
+    id: 'rf-5',
+    statement: '¿Las señales preventivas amarillas (SP) generan comparendo e inmovilización inmediata si no se acatan?',
+    isTrue: false,
+    explanation: 'FALSO: Las señales preventivas advierten peligros en la vía. Las señales reglamentarias rojas (SR) son las que imponen órdenes de obligatorio cumplimiento con sanción.',
+    legalArticle: 'Manual de Señalización Mintransporte',
+    icon: '🛑'
+  },
+  {
+    id: 'rf-6',
+    statement: '¿En Colombia está permitido que un conductor de moto viaje con un casco de bicicleta si conduce despacio?',
+    isTrue: false,
+    explanation: 'FALSO: Todo usuario de moto debe usar casco certificado para motocicleta (DOT, ECE 22.05/22.06 o NTC 4533).',
+    legalArticle: 'Resolución 23385 de 2020',
+    icon: '🏍️'
+  },
+  {
+    id: 'rf-7',
+    statement: '¿Un peatón en Colombia tiene prelación de paso sobre cualquier vehículo al cruzar por una cebra demarcada?',
+    isTrue: true,
+    explanation: 'VERDADERO: El peatón es el actor más vulnerable en la pirámide de movilidad y tiene prelación absoluta en todas las zonas peatonales y cebras.',
+    legalArticle: 'Art. 105 Ley 769 de 2002',
+    icon: '🚶'
+  },
+  {
+    id: 'rf-8',
+    statement: '¿La señal octagonal roja de PARE (SR-01) permite pasar sin detenerse si el conductor observa que no viene ningún carro?',
+    isTrue: false,
+    explanation: 'FALSO: La señal de PARE exige la detención total a 0 km/h de manera inequívoca. Pasar despacio sin parar genera comparendo.',
+    legalArticle: 'Art. 109 Ley 769 de 2002',
+    icon: '🛑'
+  },
+  {
+    id: 'rf-9',
+    statement: '¿En Colombia rige la Cero Tolerancia con el consumo de alcohol para todos los conductores?',
+    isTrue: true,
+    explanation: 'VERDADERO: La Ley 1696 de 2013 no permite ningún nivel de alcohol al volante; desde el grado 0 se sanciona con suspensión de licencia y cuantiosas multas.',
+    legalArticle: 'Ley 1696 de 2013',
+    icon: '⚖️'
+  },
+  {
+    id: 'rf-10',
+    statement: '¿En una intersección sin semáforos ni señales, tiene prelación el vehículo que se aproxima por la derecha?',
+    isTrue: true,
+    explanation: 'VERDADERO: Por norma general de tránsito, en intersecciones no señalizadas la prelación corresponde al vehículo que aparece por la derecha.',
+    legalArticle: 'Art. 70 Ley 769 de 2002',
+    icon: '🚦'
+  }
+];
