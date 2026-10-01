@@ -17,6 +17,7 @@ import {
 import { verifyResetCode, confirmNewPassword, getLastResetEmail } from '../lib/firebase';
 import { updateRegisteredUserPassword } from '../utils/authStorage';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { verifyRecoveryCodeInStorage, clearRecoveryCodeFromStorage } from '../services/emailjsService';
 
 interface PasswordResetModalProps {
   isOpen: boolean;
@@ -79,6 +80,18 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     setStep('verifying');
 
     const emailToUse = (emailHint || candidateEmail || getLastResetEmail()).trim().toLowerCase();
+
+    // Check localStorage recovery code (from EmailJS)
+    const storageCheck = verifyRecoveryCodeInStorage(emailToUse, cleanCode);
+    if (storageCheck.success) {
+      setIsLoading(false);
+      setActiveCode(cleanCode);
+      const storedEmail = localStorage.getItem('correo_real') || emailToUse;
+      setVerifiedEmail(storedEmail);
+      setStep('set_password');
+      return;
+    }
+
     const res = await verifyResetCode(cleanCode, emailToUse);
     setIsLoading(false);
 
@@ -131,6 +144,28 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
 
     try {
       const emailToUse = (verifiedEmail || candidateEmail || getLastResetEmail()).trim().toLowerCase();
+
+      // If active code matches stored EmailJS code
+      const storedCode = localStorage.getItem('codigo_real');
+      if (storedCode && storedCode === activeCode.replace(/\D/g, '')) {
+        if (emailToUse) {
+          updateRegisteredUserPassword(emailToUse, newPassword);
+        }
+        clearRecoveryCodeFromStorage();
+        setIsLoading(false);
+
+        if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+          try {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          } catch (_) {}
+        }
+
+        setSuccessMessage('¡Tu contraseña ha sido restablecida exitosamente! Ya puedes iniciar sesión con tus nuevas credenciales.');
+        setStep('success');
+        return;
+      }
+
       const res = await confirmNewPassword(activeCode, newPassword, emailToUse);
       setIsLoading(false);
 

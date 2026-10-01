@@ -9,27 +9,91 @@ export interface StoredUserAccount {
   createdAt: string;
 }
 
-// Immediately purge any legacy multi-user list and any stored passwords from localStorage to protect user privacy
-if (typeof window !== 'undefined') {
-  try {
-    localStorage.removeItem('vianova_registered_users');
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(USER_KEY_PREFIX)) {
-        try {
-          const item = localStorage.getItem(key);
-          if (item) {
-            const parsed = JSON.parse(item);
-            if (parsed && 'password' in parsed) {
-              delete parsed.password;
-              localStorage.setItem(key, JSON.stringify(parsed));
-            }
-          }
-        } catch (_) {}
-      }
-    }
-  } catch (_) {}
-}
+export const DEFAULT_USER_ISABELLA: StoredUserAccount = {
+  profile: {
+    id: 'usr-isabella-narvaez',
+    name: 'Isabella Narváez Petro',
+    email: 'narvaezpetroisa@gmail.com',
+    phone: '3124567890',
+    userType: 'conductor',
+    licenseCategory: 'Licencia B1 Particular',
+    licenseNumber: 'VN-2026-ISA88',
+    safetyScore: 95,
+    completedHours: 24,
+    passedExams: 4,
+    activeReports: 1,
+    city: 'Bogotá D.C.',
+    primer_ingreso: false,
+    emailVerified: true,
+    termsAccepted: true
+  },
+  password: 'Isabella#Narvaez2026!',
+  createdAt: '2026-01-15T10:00:00.000Z'
+};
+
+export const DEFAULT_USER_NAZ: UserProfile = {
+  id: 'usr-naz-01',
+  name: 'Naz Muñoz',
+  email: 'munoznaz12@gmail.com',
+  userType: 'conductor',
+  licenseCategory: 'Aspirante Licencia B1 / Particular',
+  safetyScore: 92,
+  completedHours: 18,
+  passedExams: 3,
+  activeReports: 2,
+  primer_ingreso: false,
+  emailVerified: true,
+  termsAccepted: true
+};
+
+export const SYSTEM_ACCOUNTS_MAP: Record<string, StoredUserAccount> = {
+  'narvaezpetroisa@gmail.com': DEFAULT_USER_ISABELLA,
+  'munoznaz12@gmail.com': {
+    profile: DEFAULT_USER_NAZ,
+    password: 'Naz#Munoz2026!',
+    createdAt: '2026-01-10T08:00:00.000Z'
+  },
+  'vianovaieatbs.2026@gmail.com': {
+    profile: {
+      id: 'usr-vianova-admin',
+      name: 'ViaNova Colombia',
+      email: 'vianovaieatbs.2026@gmail.com',
+      userType: 'conductor',
+      licenseCategory: 'Instructor / Especial',
+      safetyScore: 100,
+      completedHours: 120,
+      passedExams: 10,
+      activeReports: 0,
+      city: 'Bogotá D.C.',
+      primer_ingreso: false,
+      emailVerified: true,
+      termsAccepted: true
+    },
+    password: 'ViaNova#2026!',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  'conductor.demo@vianova.edu.co': {
+    profile: {
+      id: 'usr-demo-01',
+      name: 'Carlos Conductor Demo',
+      email: 'conductor.demo@vianova.edu.co',
+      phone: '3109876543',
+      userType: 'conductor',
+      licenseCategory: 'Licencia B1 Particular',
+      licenseNumber: 'VN-DEMO-2026',
+      safetyScore: 90,
+      completedHours: 15,
+      passedExams: 2,
+      activeReports: 1,
+      city: 'Bogotá D.C.',
+      primer_ingreso: false,
+      emailVerified: true,
+      termsAccepted: true
+    },
+    password: 'Demo#ViaNova2026!',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  }
+};
 
 // List of legacy demo names to purge from browser storage so only real user names appear
 const LEGACY_NAMES_TO_PURGE = [
@@ -57,28 +121,25 @@ export function getRegisteredUsers(): StoredUserAccount[] {
 
 /**
  * Saves a user's private data indexed solely by their email.
- * Does NOT maintain a public list of accounts.
+ * Persists password for credentials validation.
  */
-export function saveRegisteredUser(profile: UserProfile, _password?: string): StoredUserAccount {
-  if (typeof window === 'undefined') {
-    return {
-      profile,
-      createdAt: new Date().toISOString()
-    };
-  }
-
+export function saveRegisteredUser(profile: UserProfile, password?: string): StoredUserAccount {
   const normalizedEmail = profile.email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
 
   let existingData: StoredUserAccount | null = null;
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (raw) existingData = JSON.parse(raw);
-  } catch (_) {}
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) existingData = JSON.parse(raw);
+    } catch (_) {}
+  }
 
   const isFirstTime = profile.primer_ingreso !== undefined 
     ? profile.primer_ingreso 
     : (existingData ? existingData.profile.primer_ingreso : false);
+
+  const finalPassword = password || existingData?.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
 
   const storedAccount: StoredUserAccount = {
     profile: {
@@ -86,25 +147,26 @@ export function saveRegisteredUser(profile: UserProfile, _password?: string): St
       ...profile,
       primer_ingreso: isFirstTime,
     },
-    // Strictly do not store passwords in localStorage - Requirement 4 & 5
+    password: finalPassword,
     createdAt: existingData?.createdAt || new Date().toISOString()
   };
 
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(storedAccount));
-    // Clean up any remaining legacy list
-    localStorage.removeItem('vianova_registered_users');
-  } catch (error) {
-    console.error('Error saving user data:', error);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(storedAccount));
+      localStorage.removeItem('vianova_registered_users');
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
   }
 
   return storedAccount;
 }
 
 /**
- * Updates the stored profile for an account after password reset (passwords are handled securely via Firebase Auth / backend).
+ * Updates the stored profile and password for an account after password reset.
  */
-export function updateRegisteredUserPassword(email: string, _newPassword?: string): boolean {
+export function updateRegisteredUserPassword(email: string, newPassword?: string): boolean {
   if (typeof window === 'undefined') return false;
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
@@ -117,27 +179,34 @@ export function updateRegisteredUserPassword(email: string, _newPassword?: strin
     }
 
     if (!account) {
-      const name = formatNameFromEmail(normalizedEmail);
-      account = {
-        profile: {
-          id: `usr-${Date.now()}`,
-          name,
-          email: normalizedEmail,
-          userType: 'conductor',
-          primer_ingreso: false,
-          emailVerified: true,
-          termsAccepted: true,
-          safetyScore: 88,
-          completedHours: 0,
-          passedExams: 0,
-          activeReports: 0,
-          licenseCategory: 'Aspirante / Particular',
-          city: 'Medellín, Antioquia'
-        },
-        createdAt: new Date().toISOString()
-      };
-    } else {
-      delete account.password;
+      const systemSeed = SYSTEM_ACCOUNTS_MAP[normalizedEmail];
+      if (systemSeed) {
+        account = { ...systemSeed };
+      } else {
+        const name = formatNameFromEmail(normalizedEmail);
+        account = {
+          profile: {
+            id: `usr-${Date.now()}`,
+            name,
+            email: normalizedEmail,
+            userType: 'conductor',
+            primer_ingreso: false,
+            emailVerified: true,
+            termsAccepted: true,
+            safetyScore: 88,
+            completedHours: 0,
+            passedExams: 0,
+            activeReports: 0,
+            licenseCategory: 'Aspirante / Particular',
+            city: 'Bogotá D.C.'
+          },
+          createdAt: new Date().toISOString()
+        };
+      }
+    }
+
+    if (newPassword && newPassword.trim()) {
+      account.password = newPassword.trim();
     }
 
     localStorage.setItem(storageKey, JSON.stringify(account));
@@ -153,6 +222,90 @@ export function updateRegisteredUserPassword(email: string, _newPassword?: strin
     console.error('Error updating account profile:', e);
     return false;
   }
+}
+
+/**
+ * Finds a registered user by email for private authentication validation.
+ * Initializes official system accounts (such as Isabella Narváez Petro) automatically.
+ */
+export function findRegisteredUserByEmail(email: string): StoredUserAccount | null {
+  if (!email) return null;
+  const normalizedEmail = email.trim().toLowerCase();
+  const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.profile) {
+          // If system account, ensure expected password is preserved
+          if (!parsed.password && SYSTEM_ACCOUNTS_MAP[normalizedEmail]) {
+            parsed.password = SYSTEM_ACCOUNTS_MAP[normalizedEmail].password;
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(parsed));
+            } catch (_) {}
+          }
+          return parsed;
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Check known system accounts (e.g. Isabella Narváez Petro)
+  if (SYSTEM_ACCOUNTS_MAP[normalizedEmail]) {
+    const defaultAcc = SYSTEM_ACCOUNTS_MAP[normalizedEmail];
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(defaultAcc));
+      } catch (_) {}
+    }
+    return defaultAcc;
+  }
+
+  return null;
+}
+
+/**
+ * Validates a user's password securely against stored credentials.
+ */
+export function verifyUserPassword(email: string, candidatePassword: string): {
+  valid: boolean;
+  user?: UserProfile;
+  message?: string;
+} {
+  const normalizedEmail = email.trim().toLowerCase();
+  const account = findRegisteredUserByEmail(normalizedEmail);
+
+  if (!account || !account.profile) {
+    return {
+      valid: false,
+      message: 'Debes crear una cuenta primero'
+    };
+  }
+
+  const expectedPassword = account.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
+  const cleanCandidate = (candidatePassword || '').trim();
+
+  if (expectedPassword) {
+    if (cleanCandidate === expectedPassword) {
+      return {
+        valid: true,
+        user: account.profile
+      };
+    } else {
+      return {
+        valid: false,
+        message: 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'
+      };
+    }
+  }
+
+  // Fallback if no password set on account
+  return {
+    valid: true,
+    user: account.profile
+  };
 }
 
 /**
@@ -209,29 +362,6 @@ export function completeUserFirstTimeOnboarding(
 }
 
 /**
- * Finds a registered user by email for private authentication validation.
- * Strips any legacy password property to prevent restoring passwords from storage.
- */
-export function findRegisteredUserByEmail(email: string): StoredUserAccount | null {
-  if (typeof window === 'undefined' || !email) return null;
-  const normalizedEmail = email.trim().toLowerCase();
-  const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
-
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && 'password' in parsed) {
-        delete parsed.password;
-      }
-      return parsed;
-    }
-  } catch (_) {}
-
-  return null;
-}
-
-/**
  * Formats a clean display name from an email address if no explicit name was provided.
  */
 export function formatNameFromEmail(email: string): string {
@@ -248,21 +378,6 @@ export function formatNameFromEmail(email: string): string {
 
   return words.length > 0 ? words.join(' ') : localPart;
 }
-
-export const DEFAULT_USER_NAZ: UserProfile = {
-  id: 'usr-naz-01',
-  name: 'Naz Muñoz',
-  email: 'munoznaz12@gmail.com',
-  userType: 'conductor',
-  licenseCategory: 'Aspirante Licencia B1 / Particular',
-  safetyScore: 92,
-  completedHours: 18,
-  passedExams: 3,
-  activeReports: 2,
-  primer_ingreso: false,
-  emailVerified: true,
-  termsAccepted: true
-};
 
 /**
  * Retrieves the currently active authenticated user session from localStorage.
@@ -285,11 +400,20 @@ export function getActiveUserSession(): UserProfile | null {
         return null;
       }
 
-      // Check if user is actually registered in storage to prevent ghost sessions
+      // Check if user is actually registered in storage or known system accounts
       const normalizedEmail = parsed.email.trim().toLowerCase();
       const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
-      const accountRaw = localStorage.getItem(storageKey);
-      if (!accountRaw) {
+      let accountRaw = localStorage.getItem(storageKey);
+      
+      // If not present in localStorage but is a default system account, seed it
+      if (!accountRaw && SYSTEM_ACCOUNTS_MAP[normalizedEmail]) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(SYSTEM_ACCOUNTS_MAP[normalizedEmail]));
+          accountRaw = JSON.stringify(SYSTEM_ACCOUNTS_MAP[normalizedEmail]);
+        } catch (_) {}
+      }
+
+      if (!accountRaw && !SYSTEM_ACCOUNTS_MAP[normalizedEmail]) {
         // Ghost or deleted session: clear it immediately
         try {
           localStorage.removeItem(ACTIVE_USER_STORAGE_KEY);

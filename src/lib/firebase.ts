@@ -5,7 +5,10 @@ import {
   verifyPasswordResetCode, 
   confirmPasswordReset,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -234,6 +237,100 @@ export async function firebaseRegister(email: string, password: string): Promise
   } catch (error: any) {
     return { success: false, error: error?.code || error?.message };
   }
+}
+
+/**
+ * Permanently deletes the user account in Firebase Authentication.
+ * Reauthenticates using EmailAuthProvider.credential as required by Firebase,
+ * and calls deleteUser.
+ */
+export async function deleteFirebaseAccount(
+  email: string, 
+  password: string
+): Promise<{ success: boolean; message: string; code?: string }> {
+  try {
+    let user = auth.currentUser;
+
+    // If no user is logged in to Firebase or email differs, attempt sign-in first
+    if (!user || (user.email && user.email.toLowerCase() !== email.toLowerCase())) {
+      try {
+        const loginRes = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+        user = loginRes.user;
+      } catch (signInErr: any) {
+        console.warn('[Firebase Auth] No se pudo reautenticar sesión previa:', signInErr?.code);
+        return {
+          success: false,
+          message: signInErr?.message || 'Contraseña incorrecta o usuario no encontrado en Firebase.',
+          code: signInErr?.code
+        };
+      }
+    }
+
+    if (!user || !user.email) {
+      return {
+        success: false,
+        message: 'No hay usuario autenticado en Firebase.',
+        code: 'auth/no-current-user'
+      };
+    }
+
+    // 1. Reautenticación obligatoria con EmailAuthProvider
+    const credencial = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credencial);
+
+    // 2. Eliminación definitiva del usuario en Firebase Auth
+    await deleteUser(user);
+
+    return {
+      success: true,
+      message: 'Cuenta eliminada permanentemente en Firebase Authentication.'
+    };
+  } catch (error: any) {
+    console.error('[Firebase Auth] Error al borrar cuenta:', error);
+    return {
+      success: false,
+      message: error?.message || 'Error al eliminar la cuenta en Firebase.',
+      code: error?.code
+    };
+  }
+}
+
+// Expose window.borrarCuenta for direct browser / developer / button interaction
+if (typeof window !== 'undefined') {
+  (window as any).borrarCuenta = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Primero inicia sesión");
+      return;
+    }
+
+    const confirmar = confirm("¿Seguro quieres borrar tu cuenta de ViaNova para siempre?");
+    if (!confirmar) return;
+
+    const clave = prompt("Escribe tu contraseña para confirmar:");
+    if (!clave) return;
+
+    try {
+      // 1. Volver a loguearse (obligatorio para Firebase)
+      const credencial = EmailAuthProvider.credential(user.email || '', clave);
+      await reauthenticateWithCredential(user, credencial);
+
+      // 2. Ahora sí borrar
+      await deleteUser(user);
+
+      // Limpiar almacenamiento local y sesión
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_) {}
+
+      alert("Cuenta eliminada");
+      window.location.href = "/";
+    } catch (error: any) {
+      console.log(error);
+      alert("Error: Tienes que volver a iniciar sesión y luego intentar borrar. Código: " + error.code);
+    }
+  };
 }
 
 export default app;

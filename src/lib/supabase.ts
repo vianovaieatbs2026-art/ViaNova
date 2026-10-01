@@ -58,6 +58,34 @@ export const supabase = {
             error: null
           };
         }
+
+        // Check server user registry
+        if (typeof window !== 'undefined') {
+          try {
+            const resp = await fetch('/api/auth/check-user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: normalized })
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok && data.exists && data.user) {
+              saveRegisteredUser(data.user);
+              return {
+                data: {
+                  user: {
+                    id: data.user.id,
+                    email: data.user.email,
+                    user_metadata: {
+                      name: data.user.name,
+                      userType: data.user.userType
+                    }
+                  }
+                },
+                error: null
+              };
+            }
+          } catch (_) {}
+        }
       }
 
       // 3. Check current Firebase Auth user
@@ -213,6 +241,14 @@ export async function deleteUserAccount(
     await supabase.from('profiles').delete().eq('id', userId);
     await supabase.from('progreso').delete().eq('id', userId);
     await supabase.from('quiz_results').delete().eq('id', userId);
+
+    // Also clean Firestore document if present
+    try {
+      if (userId) {
+        await deleteDoc(doc(db, 'users', userId)).catch(() => {});
+        await deleteDoc(doc(db, 'profiles', userId)).catch(() => {});
+      }
+    } catch (_) {}
 
     if (userEmail) {
       const normalized = userEmail.trim().toLowerCase();

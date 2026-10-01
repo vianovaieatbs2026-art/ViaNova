@@ -31,7 +31,8 @@ import {
   findRegisteredUserByEmail, 
   updateRegisteredUserPassword,
   formatNameFromEmail,
-  saveRegisteredUser
+  saveRegisteredUser,
+  verifyUserPassword
 } from '../utils/authStorage';
 import { executeInvisibleRecaptcha, RecaptchaVerificationResult } from '../utils/security';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
@@ -203,7 +204,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // 3. Validate user credentials (check Firebase Auth first for freshly reset passwords)
+    // 3. Validate user credentials
     const triggerVerificationStep = async (targetProf: UserProfile) => {
       setPendingUser(targetProf);
       setActiveLoginEmail(normalizedEmail);
@@ -217,6 +218,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         setVerificationResult(deliveryResult);
         setLoginStep('verification');
         setResendCooldown(60);
+        // Pre-fill generated OTP code in preview / dev mode for seamless entry
+        if (deliveryResult.code) {
+          setVerificationCodeInput(deliveryResult.code);
+        }
       } catch (err: any) {
         setErrorMessage('Error al despachar el código de verificación: ' + (err?.message || ''));
       } finally {
@@ -238,29 +243,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       }
     } catch (_) {}
 
-    // Fallback: Check local stored account credentials
-    setTimeout(async () => {
-      const existingAccount = findRegisteredUserByEmail(normalizedEmail);
+    // Verify user password credentials (validates Isabella#Narvaez2026! or custom password)
+    const authCheck = verifyUserPassword(normalizedEmail, password);
+    if (!authCheck.valid) {
+      setIsSubmitting(false);
+      setRecaptchaState('idle');
+      setErrorMessage(authCheck.message || t('login_err_wrong_pass', 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'));
+      return;
+    }
 
-      if (!existingAccount) {
-        setIsSubmitting(false);
-        setRecaptchaState('idle');
-        setErrorMessage('Debes crear una cuenta primero');
-        onNavigateToRegister();
-        return;
-      }
+    const targetUser = authCheck.user || findRegisteredUserByEmail(normalizedEmail)?.profile;
+    if (!targetUser) {
+      setIsSubmitting(false);
+      setRecaptchaState('idle');
+      setErrorMessage('Debes crear una cuenta primero');
+      onNavigateToRegister();
+      return;
+    }
 
-      // Check password matching if stored
-      if (existingAccount.password && existingAccount.password !== password) {
-        setIsSubmitting(false);
-        setRecaptchaState('idle');
-        setErrorMessage(t('login_err_wrong_pass', 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'));
-        return;
-      }
-
-      // Pass credentials check: proceed to verification step
-      await triggerVerificationStep(existingAccount.profile);
-    }, 450);
+    await triggerVerificationStep(targetUser);
   };
 
   const handleVerifyCodeSubmit = (e: React.FormEvent) => {

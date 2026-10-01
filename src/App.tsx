@@ -21,6 +21,7 @@ import { PasswordResetModal } from './components/PasswordResetModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CheckCircle2 } from 'lucide-react';
 import { ThemeLanguageProvider, useThemeLanguage } from './context/ThemeLanguageContext';
+import { supabase } from './lib/supabase';
 import { 
   getActiveUserSession, 
   setActiveUserSession, 
@@ -118,11 +119,16 @@ function AppContent() {
     showToast(`${t('toast_login_success', '¡Sesión iniciada con éxito! Bienvenido,')} ${loggedUser.name}.`);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (_) {}
     clearActiveUserSession();
     setUser(null);
     setUnauthView('login');
     setCurrentScreen('inicio');
+    setPrefillLoginEmail('');
+    setAuthNoticeMessage('');
     showToast(t('toast_logged_out', 'Has cerrado sesión correctamente.'));
   };
 

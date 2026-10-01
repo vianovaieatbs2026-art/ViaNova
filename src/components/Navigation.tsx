@@ -32,22 +32,35 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenDeleteAccountModal,
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
 
   const { 
     themeMode, 
     toggleThemeMode, 
     language, 
+    setLanguage,
     toggleLanguage,
     t 
   } = useThemeLanguage();
 
-  // Close user dropdown when clicking outside
+  const supportedLanguages: { id: 'es' | 'en' | 'pt' | 'fr'; label: string; flag: string }[] = [
+    { id: 'es', label: 'Español', flag: '🇪🇸' },
+    { id: 'en', label: 'English', flag: '🇺🇸' },
+    { id: 'pt', label: 'Português', flag: '🇧🇷' },
+    { id: 'fr', label: 'Français', flag: '🇫🇷' },
+  ];
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setLangDropdownOpen(false);
       }
     };
 
@@ -164,19 +177,53 @@ export const Navigation: React.FC<NavigationProps> = ({
               </span>
             </button>
 
-            {/* Language Selector Toggle */}
-            <button
-              type="button"
-              id="header-lang-toggle-btn"
-              data-i18n="nav_lang_switch"
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
-              title="Cambiar idioma / Switch language"
-              aria-label="Idioma / Language"
-            >
-              <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
-              <span className="font-bold">{language === 'es' ? 'ES' : 'EN'}</span>
-            </button>
+            {/* Language Selector Dropdown */}
+            <div className="relative" ref={langDropdownRef}>
+              <button
+                type="button"
+                id="header-lang-toggle-btn"
+                data-i18n="nav_lang_switch"
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs select-none"
+                title="Cambiar idioma / Switch language"
+                aria-label="Idioma / Language"
+              >
+                <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
+                <span className="font-black uppercase tracking-wider">{language}</span>
+              </button>
+
+              {langDropdownOpen && (
+                <div 
+                  id="language-picker-dropdown"
+                  className="absolute right-0 mt-2 w-44 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-1.5 z-50 animate-fade-in"
+                >
+                  {supportedLanguages.map((langItem) => {
+                    const isSelected = language === langItem.id;
+                    return (
+                      <button
+                        key={langItem.id}
+                        type="button"
+                        onClick={() => {
+                          setLanguage(langItem.id);
+                          setLangDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 font-black'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{langItem.flag}</span>
+                          <span>{langItem.label}</span>
+                        </span>
+                        {isSelected && <span className="text-[#0052cc] dark:text-sky-400 text-xs font-black">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Authenticated User Controls */}
             {user ? (
@@ -306,6 +353,17 @@ export const Navigation: React.FC<NavigationProps> = ({
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="p-2.5 rounded-xl text-xs font-bold text-left bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 flex items-center gap-1.5"
+                  >
+                    <LogOut size={14} />
+                    <span>{t('nav_logout', 'Cerrar Sesión')}</span>
+                  </button>
                 </div>
               </div>
             )}

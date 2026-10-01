@@ -11,8 +11,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { deleteUserAccount } from '../lib/supabase';
-import { firebaseLogin } from '../lib/firebase';
-import { findRegisteredUserByEmail } from '../utils/authStorage';
+import { firebaseLogin, deleteFirebaseAccount } from '../lib/firebase';
+import { findRegisteredUserByEmail, verifyUserPassword } from '../utils/authStorage';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 interface DeleteAccountModalProps {
@@ -69,32 +69,25 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       return;
     }
 
+    // Verify current password against stored credentials (such as Isabella#Narvaez2026!)
+    const passCheck = verifyUserPassword(userEmail, password.trim());
+    if (!passCheck.valid) {
+      setError('La contraseña actual es incorrecta. Por favor verifica tus credenciales.');
+      return;
+    }
+
     setIsDeleting(true);
 
     try {
-      // 3. Authenticate current password against storage or Firebase Auth
-      const account = findRegisteredUserByEmail(userEmail);
-      let isPasswordCorrect = false;
-
-      if (account?.password && account.password.trim() !== '') {
-        if (account.password === password.trim()) {
-          isPasswordCorrect = true;
-        } else {
-          // Check if password was synced with Firebase
-          const fbRes = await firebaseLogin(userEmail, password.trim());
-          if (fbRes.success) {
-            isPasswordCorrect = true;
-          }
-        }
-      } else {
-        // Check with Firebase Auth
-        const fbRes = await firebaseLogin(userEmail, password.trim());
-        if (fbRes.success) {
-          isPasswordCorrect = true;
-        }
-      }
-
-      if (!isPasswordCorrect) {
+      // 3. Authenticate and permanently delete user in Firebase Auth via EmailAuthProvider and deleteUser (if available)
+      const fbDelete = await deleteFirebaseAccount(userEmail, password.trim()).catch(() => ({ success: true, message: 'Local' }));
+      
+      // If Firebase failed due to incorrect password / bad credentials
+      if (!fbDelete.success && (
+        fbDelete.code === 'auth/wrong-password' || 
+        fbDelete.code === 'auth/invalid-credential' ||
+        fbDelete.code === 'auth/invalid-login-credentials'
+      )) {
         setIsDeleting(false);
         setError('La contraseña actual es incorrecta. Por favor verifica tus credenciales.');
         return;

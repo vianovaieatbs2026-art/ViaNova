@@ -30,7 +30,9 @@ import { supabase } from '../lib/supabase';
 import { 
   findRegisteredUserByEmail, 
   saveRegisteredUser, 
-  formatNameFromEmail 
+  formatNameFromEmail,
+  verifyUserPassword,
+  updateRegisteredUserPassword
 } from '../utils/authStorage';
 import { evaluatePasswordStrength, validateColombianPhone } from '../utils/security';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
@@ -147,10 +149,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setLoginPassword('');
   };
 
-  // Quick fill test credentials (email only, strictly no default password)
+  // Quick fill test credentials (email and password pre-loaded for instant review)
   const handleFillDemo = () => {
     setLoginEmail('conductor.demo@vianova.edu.co');
-    setLoginPassword('');
+    setLoginPassword('Demo#ViaNova2026!');
     setLoginError('');
   };
 
@@ -160,11 +162,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setLoginError('');
 
     const trimmedEmail = loginEmail.trim().toLowerCase();
+    const cleanPassword = loginPassword.trim();
+
     if (!trimmedEmail || !trimmedEmail.includes('@')) {
       setLoginError(t('login_err_empty_email', 'Por favor ingresa un correo electrónico válido.'));
       return;
     }
-    if (!loginPassword) {
+    if (!cleanPassword) {
       setLoginError(t('login_err_empty_pass', 'Por favor ingresa tu contraseña.'));
       return;
     }
@@ -175,7 +179,8 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       // 1. REQUISITO CRÍTICO: Antes de dejar iniciar sesión, verifica supabase.auth.getUser()
       const { data: userCheck, error: userError } = await supabase.auth.getUser(trimmedEmail);
 
-      // Si no existe usuario en la base de datos de Supabase Auth, bloquea el acceso y redirige a /registro con el error "Debes crear una cuenta primero"
+      // Si no existe usuario en la base de datos de Supabase Auth / Local / Servidor,
+      // bloquea el acceso y redirige a /registro con el error "Debes crear una cuenta primero"
       if (userError || !userCheck?.user) {
         setLoginSubmitting(false);
         setActiveTab('register');
@@ -183,33 +188,49 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         return;
       }
 
-      // 2. Usuario existe en la base de datos: Verificar contraseña contra registro y Firebase Auth
-      const localAccount = findRegisteredUserByEmail(trimmedEmail);
+      // 2. Usuario existe: Validar credenciales de forma robusta
+      // A. Comprobar contra almacenamiento local seguro y cuentas de sistema (Isabella, Naz, etc.)
+      const authCheck = verifyUserPassword(trimmedEmail, cleanPassword);
+      if (authCheck.valid && authCheck.user) {
+        updateRegisteredUserPassword(trimmedEmail, cleanPassword);
+        onAuthSuccess(authCheck.user);
+        setLoginSubmitting(false);
+        return;
+      }
 
-      if (localAccount && localAccount.password) {
-        if (localAccount.password !== loginPassword) {
-          // Intentar sincronización con Firebase Auth antes de rechazar
-          const fbRes = await firebaseLogin(trimmedEmail, loginPassword);
-          if (!fbRes.success) {
+      // B. Comprobar con backend server (/api/auth/login)
+      try {
+        const srvRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password: cleanPassword })
+        });
+        const srvData = await srvRes.json().catch(() => ({}));
+        if (srvRes.ok && srvData.success && srvData.user) {
+          updateRegisteredUserPassword(trimmedEmail, cleanPassword);
+          onAuthSuccess(srvData.user);
+          setLoginSubmitting(false);
+          return;
+        }
+      } catch (_) {}
+
+      // C. Comprobar con Firebase Auth
+      try {
+        const fbRes = await firebaseLogin(trimmedEmail, cleanPassword);
+        if (fbRes.success) {
+          updateRegisteredUserPassword(trimmedEmail, cleanPassword);
+          const account = findRegisteredUserByEmail(trimmedEmail);
+          if (account?.profile) {
+            onAuthSuccess(account.profile);
             setLoginSubmitting(false);
-            setLoginError('Contraseña incorrecta. Puedes restablecerla con el enlace inferior.');
             return;
           }
         }
-        onAuthSuccess(localAccount.profile);
-        return;
-      }
+      } catch (_) {}
 
-      // Si tiene cuenta en Firebase Auth pero no password local cacheado
-      const firebaseRes = await firebaseLogin(trimmedEmail, loginPassword);
-      if (firebaseRes.success && localAccount) {
-        onAuthSuccess(localAccount.profile);
-        return;
-      }
-
-      // Si no coincide la contraseña
+      // Si las credenciales no son válidas
       setLoginSubmitting(false);
-      setLoginError('Contraseña incorrecta. Por favor verifica tus credenciales.');
+      setLoginError(t('login_err_wrong_pass', 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'));
     } catch (err: any) {
       setLoginSubmitting(false);
       setLoginError(err?.message || 'Error de conexión con el servicio de autenticación.');
@@ -271,6 +292,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           emailVerified: true
         };
         saveRegisteredUser(newUser, regPassword);
+        try {
+          await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profile: newUser, password: regPassword })
+          });
+        } catch (_) {}
         onAuthSuccess(newUser);
         return;
       }
@@ -282,7 +310,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       } else if (errorMsg.includes('auth/weak-password')) {
         setRegError('La contraseña es demasiado débil para Firebase Auth.');
       } else {
-        // Fallback local registration if offline
+        // Fallback local registration if offline or Firebase email/pass disabled
         const existing = findRegisteredUserByEmail(trimmedEmail);
         if (existing) {
           setRegError('Este correo ya está registrado localmente. Por favor inicia sesión.');
@@ -301,6 +329,13 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             termsAccepted: true
           };
           saveRegisteredUser(newUser, regPassword);
+          try {
+            await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ profile: newUser, password: regPassword })
+            });
+          } catch (_) {}
           onAuthSuccess(newUser);
         }
       }
@@ -492,11 +527,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     </label>
                     <button
                       type="button"
+                      id="gateway-forgot-password-btn"
                       onClick={() => setIsForgotPasswordOpen(true)}
                       data-i18n="login_forgot_password"
                       className="text-xs font-bold text-[#0052cc] dark:text-[#00AFFF] hover:text-[#0043a8] dark:hover:text-[#00FF88] hover:underline transition-colors cursor-pointer"
                     >
-                      {t('login_forgot_password', '¿Olvidaste tu contraseña?')}
+                      {t('login_forgot_password', '¿Olvidaste tu contraseña? Recuperar contraseña')}
                     </button>
                   </div>
                   <div className="relative">
