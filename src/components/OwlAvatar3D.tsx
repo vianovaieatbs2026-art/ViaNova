@@ -265,6 +265,23 @@ export const OwlAvatar3D: React.FC<OwlAvatar3DProps> = ({
     facialDiscR.rotation.y = 0.15;
     headGroup.add(facialDiscR);
 
+    // Cute friendly cheek glow (soft blush dots for charm)
+    const blushMat = new THREE.MeshBasicMaterial({ 
+      color: 0xf472b6, 
+      transparent: true, 
+      opacity: 0.35 
+    });
+    const blushGeo = new THREE.CircleGeometry(0.09, 16);
+    const blushL = new THREE.Mesh(blushGeo, blushMat);
+    blushL.position.set(-0.46, -0.16, 0.81);
+    blushL.rotation.y = -0.18;
+    headGroup.add(blushL);
+
+    const blushR = new THREE.Mesh(blushGeo, blushMat);
+    blushR.position.set(0.46, -0.16, 0.81);
+    blushR.rotation.y = 0.18;
+    headGroup.add(blushR);
+
     // --- BIG EXPRESSIVE EYES ---
     const eyeLGroup = new THREE.Group();
     eyeLGroup.position.set(-0.35, 0.04, 0.8);

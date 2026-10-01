@@ -53,7 +53,7 @@ export const InteractiveStoryboard: React.FC = () => {
     {
       id: 2,
       title: 'Paso 2: Escuela Digital Interactiva',
-      tagline: 'CONTENIDO MULTIMEDIA SENA 524704',
+      tagline: 'CONTENIDO MULTIMEDIA Y CASOS VIALES',
       icon: <BookOpen size={26} />,
       color: '#00FF88',
       badgeColor: 'bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/40',
@@ -130,13 +130,13 @@ export const InteractiveStoryboard: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00FF88]/15 border border-[#00FF88]/30 text-[#059669] dark:text-[#00FF88] text-xs font-black uppercase tracking-wider mb-2">
             <Film size={13} className="text-[#059669] dark:text-[#00FF88]" />
-            <span>STORYBOARD INTERACTIVO • CÓMO FUNCIONA VIANOVA</span>
+            <span>JORNADA DE APRENDIZAJE • CÓMO FUNCIONA VIANOVA</span>
           </div>
           <h3 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             El Viaje del Conductor <span className="text-[#059669] dark:text-[#00FF88]">en 4 Escenas</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-1">
-            Metodología pedagógica diseñada bajo competencias SENA para transformar la cultura vial.
+            Metodología interactiva paso a paso para prepararte como conductor responsable en Colombia.
           </p>
         </div>
 

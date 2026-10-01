@@ -67,7 +67,7 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({
     {
       id: 'educacion',
       title: 'Escuela de Convivencia y Leyes',
-      tag: 'PEDAGOGÍA VIAL SENA',
+      tag: 'FORMACIÓN VIAL COLOMBIA',
       badgeColor: 'bg-[#00FF88]/15 text-[#00FF88]',
       borderColor: 'hover:border-[#00FF88]',
       glowColor: 'hover:shadow-[0_0_30px_rgba(0,255,136,0.3)]',
@@ -97,13 +97,13 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({
       <div className="text-center max-w-2xl mx-auto mb-10">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00AFFF]/15 border border-[#00AFFF]/30 text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-3 shadow-xs">
           <Zap size={14} className="text-[#00FF88]" />
-          <span>SERVICIOS DE ALTO IMPACTO MULTIMEDIA</span>
+          <span>SERVICIOS INTEGRALES DE FORMACIÓN Y MOVILIDAD</span>
         </div>
         <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
           Ecosistema Digital de <span className="text-[#00AFFF]">Seguridad Vial</span>
         </h2>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mt-2 font-medium">
-          Diseñado bajo principios de animación, interfaces fluidas y retroalimentación multimedia.
+          Aprende las normas vigentes, practica en simuladores oficiales, domina las señales y certifícate.
         </p>
       </div>
 

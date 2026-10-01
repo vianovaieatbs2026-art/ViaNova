@@ -76,7 +76,7 @@ export const CityRouteSimulator2D: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/15 dark:bg-[#00AFFF]/20 border border-[#00AFFF]/30 dark:border-[#00AFFF]/40 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
             <Zap size={13} className="text-[#059669] dark:text-[#00FF88] animate-bounce" />
-            <span>SENA 250201026 • SECUENCIA ANIMADA 2D</span>
+            <span>SIMULADOR DINÁMICO DE TRÁFICO URBANO • LEY 2251</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             Ruta Inteligente <span className="text-[#0052cc] dark:text-[#00AFFF]">ViaNova 2D</span>

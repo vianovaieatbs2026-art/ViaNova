@@ -100,7 +100,7 @@ export const MultimediaVideoSection: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00AFFF]/15 border border-[#00AFFF]/30 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-2">
             <Film size={13} className="text-[#059669] dark:text-[#00FF88]" />
-            <span>SENA 220501102 • INTEGRAR ELEMENTOS MULTIMEDIA</span>
+            <span>RECURSOS AUDIOVISUALES • EDUCACIÓN Y SEGURIDAD VIAL</span>
           </div>
           <h3 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             Cápsulas Multimedia de <span className="text-[#0052cc] dark:text-[#00AFFF]">Educación Vial</span>

@@ -377,7 +377,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           </div>
         </motion.div>
 
-        {/* SENA 524704 Badge */}
+        {/* Platform Purpose Badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -385,7 +385,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 dark:bg-[#050B14]/80 backdrop-blur-md border border-sky-300 dark:border-[#00AFFF]/40 text-[#0052cc] dark:text-[#00AFFF] text-[11px] font-black uppercase tracking-wider mb-2 shadow-xs dark:shadow-[0_0_15px_rgba(0,175,255,0.3)] transition-colors"
         >
           <span className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
-          <span data-i18n="gateway_badge">{t('gateway_badge', 'SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES')}</span>
+          <span data-i18n="gateway_badge">{t('gateway_badge', 'SEGURIDAD VIAL & MOVILIDAD INTELIGENTE COLOMBIA')}</span>
         </motion.div>
 
         {/* Dynamic Typewriter Headline */}
@@ -702,7 +702,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   >
                     <option value="conductor">{t('reg_user_type_driver', 'Conductor de Automóvil / Servicio Público')}</option>
                     <option value="aspirante">{t('reg_user_type_instructor', 'Aspirante a Licencia de Conducción CEA')}</option>
-                    <option value="estudiante">Estudiante Vial / Técnico SENA</option>
+                    <option value="estudiante">Estudiante de Conducción / Formación Vial</option>
                     <option value="ciudadano">{t('reg_user_type_pedestrian', 'Motociclista / Peatón / Ciclista')}</option>
                   </select>
                 </div>

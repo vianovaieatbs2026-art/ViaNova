@@ -109,7 +109,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             </div>
           </motion.div>
 
-          {/* Badge: SENA 524704 & Movilidad Inteligente */}
+          {/* Badge: Movilidad y Educación Vial */}
           <motion.div
             initial={{ y: -15, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -117,7 +117,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-[#0A1931]/90 backdrop-blur-md border border-[#00AFFF]/50 text-[#0052cc] dark:text-[#00AFFF] text-xs font-black uppercase tracking-wider mb-5 shadow-[0_0_18px_rgba(0,175,255,0.25)]"
           >
             <span className="w-2.5 h-2.5 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
-            <span>{t('gateway_badge', 'SENA 524704 • INTEGRACIÓN DE CONTENIDOS DIGITALES')}</span>
+            <span>{t('gateway_badge', 'SEGURIDAD VIAL & MOVILIDAD INTELIGENTE COLOMBIA')}</span>
           </motion.div>
 
           {/* Main H1 Headline */}
@@ -166,7 +166,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               onClick={() => scrollToSection('storyboard')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-all cursor-pointer shadow-xs"
             >
-              {t('landing_nav_storyboard', 'Storyboard SENA')}
+              {t('landing_nav_storyboard', 'Ruta de Aprendizaje')}
             </button>
             <button
               type="button"
@@ -290,7 +290,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         <MultimediaVideoSection />
       </section>
 
-      {/* ===================== 6. WIREFRAME, MOCKUP & CONTACTO ===================== */}
+      {/* ===================== 6. GUÍA DE NAVEGACIÓN Y CONTACTO CIUDADANO ===================== */}
       <section id="contacto" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <InteractiveWireframeSection />
       </section>

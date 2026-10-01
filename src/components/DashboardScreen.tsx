@@ -1720,7 +1720,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
         <MultimediaVideoSection />
       </div>
 
-      {/* ===================== WIREFRAME ESTRUCTURAL VS MOCKUP DE ALTA FIDELIDAD ===================== */}
+      {/* ===================== GUÍA DE NAVEGACIÓN Y ATENCIÓN CIUDADANA ===================== */}
       <div id="contacto" className="pt-6">
         <InteractiveWireframeSection />
       </div>
