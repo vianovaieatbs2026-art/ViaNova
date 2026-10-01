@@ -3,7 +3,8 @@ import { auth, db } from './firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { 
   findRegisteredUserByEmail, 
-  clearActiveUserSession 
+  clearActiveUserSession,
+  saveRegisteredUser
 } from '../utils/authStorage';
 
 // Read environment variables if available

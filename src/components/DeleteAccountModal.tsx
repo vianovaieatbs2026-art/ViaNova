@@ -80,7 +80,8 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
 
     try {
       // 3. Authenticate and permanently delete user in Firebase Auth via EmailAuthProvider and deleteUser (if available)
-      const fbDelete = await deleteFirebaseAccount(userEmail, password.trim()).catch(() => ({ success: true, message: 'Local' }));
+      const fbDelete: { success: boolean; message: string; code?: string } = 
+        await deleteFirebaseAccount(userEmail, password.trim()).catch(() => ({ success: true, message: 'Local', code: undefined }));
       
       // If Firebase failed due to incorrect password / bad credentials
       if (!fbDelete.success && (

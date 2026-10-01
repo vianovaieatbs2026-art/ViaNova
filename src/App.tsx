@@ -18,6 +18,7 @@ import { ProfileScreen } from './components/ProfileScreen';
 import { Footer } from './components/Footer';
 import { DeleteAccountModal } from './components/DeleteAccountModal';
 import { PasswordResetModal } from './components/PasswordResetModal';
+import { OwlAssistantWidget } from './components/OwlAssistantWidget';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CheckCircle2 } from 'lucide-react';
 import { ThemeLanguageProvider, useThemeLanguage } from './context/ThemeLanguageContext';
@@ -323,6 +324,12 @@ function AppContent() {
           setResetPasswordCode('');
           setUnauthView('login');
         }}
+      />
+
+      {/* Official ViaNova 3D Owl Virtual Assistant Mascot */}
+      <OwlAssistantWidget 
+        onNavigate={user ? setCurrentScreen : undefined} 
+        currentScreen={currentScreen} 
       />
 
       {/* Institutional Footer with Dark/Light Mode Switch & Language */}
