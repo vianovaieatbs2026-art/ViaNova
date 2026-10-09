@@ -110,10 +110,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   }, [currentText, isDeleting, phraseIdx]);
 
   // ===================== LOGIN FORM STATE =====================
-  const [loginEmail, setLoginEmail] = useState(initialEmail);
+  const [loginEmail, setLoginEmail] = useState(initialEmail || '');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginShowPassword, setLoginShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loginFieldErrors, setLoginFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
@@ -129,17 +130,34 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [regUserType, setRegUserType] = useState<UserType>('conductor');
+  const [regUserType, setRegUserType] = useState<UserType | ''>('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regShowPassword, setRegShowPassword] = useState(false);
   const [regShowConfirmPassword, setRegShowConfirmPassword] = useState(false);
   const [regAcceptedTerms, setRegAcceptedTerms] = useState(false);
   const [regError, setRegError] = useState('');
+  const [regFieldErrors, setRegFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    userType?: string;
+    password?: string;
+    confirmPassword?: string;
+    terms?: string;
+  }>({});
   const [regSubmitting, setRegSubmitting] = useState(false);
   const [termsModalType, setTermsModalType] = useState<'terms' | 'privacy' | null>(null);
 
-  const passwordAnalysis = evaluatePasswordStrength(regPassword);
+  // Real-time password criteria evaluation
+  const passRules = {
+    minLength: regPassword.length >= 8,
+    hasUpper: /[A-Z]/.test(regPassword),
+    hasLower: /[a-z]/.test(regPassword),
+    hasNumber: /[0-9]/.test(regPassword),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>_\-=+\[\]\\\/~`]/.test(regPassword),
+  };
+  const isPasswordSecure = Object.values(passRules).every(Boolean);
 
   // Switch tabs
   const handleTabChange = (tab: 'login' | 'register') => {
@@ -147,31 +165,34 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setLoginError('');
     setRegError('');
     setLoginPassword('');
-  };
-
-  // Quick fill test credentials (email and password pre-loaded for instant review)
-  const handleFillDemo = () => {
-    setLoginEmail('conductor.demo@vianova.edu.co');
-    setLoginPassword('Demo#ViaNova2026!');
-    setLoginError('');
+    setLoginFieldErrors({});
+    setRegFieldErrors({});
   };
 
   // ===================== HANDLE LOGIN SUBMIT =====================
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    const newErrors: { email?: string; password?: string } = {};
 
     const trimmedEmail = loginEmail.trim().toLowerCase();
     const cleanPassword = loginPassword.trim();
 
-    if (!trimmedEmail || !trimmedEmail.includes('@')) {
-      setLoginError(t('login_err_empty_email', 'Por favor ingresa un correo electrónico válido.'));
-      return;
+    if (!trimmedEmail) {
+      newErrors.email = 'Este campo es obligatorio.';
+    } else if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
+      newErrors.email = 'Ingresa un correo electrónico válido.';
     }
+
     if (!cleanPassword) {
-      setLoginError(t('login_err_empty_pass', 'Por favor ingresa tu contraseña.'));
+      newErrors.password = 'Este campo es obligatorio.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setLoginFieldErrors(newErrors);
       return;
     }
+    setLoginFieldErrors({});
 
     setLoginSubmitting(true);
 
@@ -243,32 +264,60 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError('');
+    const newErrors: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      userType?: string;
+      password?: string;
+      confirmPassword?: string;
+      terms?: string;
+    } = {};
 
-    if (!regName.trim() || regName.trim().length < 3) {
-      setRegError('Por favor ingresa tu nombre y apellido completos.');
-      return;
+    if (!regName.trim()) {
+      newErrors.name = 'Este campo es obligatorio.';
+    } else if (regName.trim().length < 3) {
+      newErrors.name = 'Ingresa tu nombre y apellido completos.';
     }
+
     const trimmedEmail = regEmail.trim().toLowerCase();
-    if (!trimmedEmail || !trimmedEmail.includes('@')) {
-      setRegError('Por favor ingresa un correo electrónico válido.');
-      return;
+    if (!trimmedEmail) {
+      newErrors.email = 'Este campo es obligatorio.';
+    } else if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
+      newErrors.email = 'Ingresa un correo electrónico válido.';
     }
-    if (!regPhone.trim() || !validateColombianPhone(regPhone)) {
-      setRegError('Ingresa un número celular colombiano válido (mínimo 10 dígitos).');
-      return;
+
+    if (!regPhone.trim()) {
+      newErrors.phone = 'Este campo es obligatorio.';
+    } else if (!validateColombianPhone(regPhone)) {
+      newErrors.phone = 'Ingresa un número celular colombiano válido (10 dígitos, ej. 3001234567).';
     }
-    if (!passwordAnalysis.isValid) {
-      setRegError('La contraseña debe tener al menos 8 caracteres, mayúscula, número y símbolo.');
-      return;
+
+    if (!regUserType) {
+      newErrors.userType = 'Este campo es obligatorio. Selecciona un perfil vial.';
     }
-    if (regPassword !== regConfirmPassword) {
-      setRegError('Las contraseñas no coinciden.');
-      return;
+
+    if (!regPassword) {
+      newErrors.password = 'Este campo es obligatorio.';
+    } else if (!isPasswordSecure) {
+      newErrors.password = 'La contraseña no cumple todos los requisitos de seguridad.';
     }
+
+    if (!regConfirmPassword) {
+      newErrors.confirmPassword = 'Este campo es obligatorio.';
+    } else if (regPassword !== regConfirmPassword) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden.';
+    }
+
     if (!regAcceptedTerms) {
-      setRegError('Debes aceptar los Términos de Servicio y la Política de Privacidad.');
+      newErrors.terms = 'Debes aceptar los Términos de Servicio y la Política de Privacidad.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setRegFieldErrors(newErrors);
       return;
     }
+    setRegFieldErrors({});
 
     setRegSubmitting(true);
 
@@ -282,7 +331,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           name: regName.trim(),
           email: trimmedEmail,
           phone: regPhone.trim(),
-          userType: regUserType,
+          userType: regUserType || 'conductor',
           safetyScore: 80,
           completedHours: 0,
           passedExams: 0,
@@ -320,7 +369,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             name: regName.trim(),
             email: trimmedEmail,
             phone: regPhone.trim(),
-            userType: regUserType,
+            userType: (regUserType || 'conductor') as UserType,
             safetyScore: 80,
             completedHours: 0,
             passedExams: 0,
@@ -377,7 +426,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           </div>
         </motion.div>
 
-        {/* Platform Purpose Badge */}
+        {/* Educational Road Safety Badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -385,7 +434,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 dark:bg-[#050B14]/80 backdrop-blur-md border border-sky-300 dark:border-[#00AFFF]/40 text-[#0052cc] dark:text-[#00AFFF] text-[11px] font-black uppercase tracking-wider mb-2 shadow-xs dark:shadow-[0_0_15px_rgba(0,175,255,0.3)] transition-colors"
         >
           <span className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-ping" />
-          <span data-i18n="gateway_badge">{t('gateway_badge', 'SEGURIDAD VIAL & MOVILIDAD INTELIGENTE COLOMBIA')}</span>
+          <span data-i18n="gateway_badge">{t('gateway_badge', 'EDUCACIÓN Y SEGURIDAD VIAL • COLOMBIA')}</span>
         </motion.div>
 
         {/* Dynamic Typewriter Headline */}
@@ -512,11 +561,24 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       autoComplete="username"
                       required
                       value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="ejemplo@vianova.edu.co"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0052cc] dark:focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
+                      onChange={(e) => {
+                        setLoginEmail(e.target.value);
+                        if (loginFieldErrors.email) {
+                          setLoginFieldErrors(prev => ({ ...prev, email: undefined }));
+                        }
+                      }}
+                      placeholder="Correo electrónico"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                        loginFieldErrors.email ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-[#0052cc] dark:focus:border-[#00AFFF]'
+                      } text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00AFFF]/40 transition-all`}
                     />
                   </div>
+                  {loginFieldErrors.email && (
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                      <AlertCircle size={13} className="shrink-0" />
+                      <span>{loginFieldErrors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Password Input */}
@@ -543,12 +605,19 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       id="login-password"
                       name="password"
                       type={loginShowPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
+                      autoComplete="current-password"
                       required
                       value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
+                      onChange={(e) => {
+                        setLoginPassword(e.target.value);
+                        if (loginFieldErrors.password) {
+                          setLoginFieldErrors(prev => ({ ...prev, password: undefined }));
+                        }
+                      }}
                       placeholder="••••••••••••"
-                      className="w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0052cc] dark:focus:border-[#00AFFF] focus:ring-2 focus:ring-[#00AFFF]/40 transition-all"
+                      className={`w-full pl-10 pr-11 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                        loginFieldErrors.password ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-[#0052cc] dark:focus:border-[#00AFFF]'
+                      } text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00AFFF]/40 transition-all`}
                     />
                     <button
                       type="button"
@@ -559,6 +628,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       {loginShowPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {loginFieldErrors.password && (
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                      <AlertCircle size={13} className="shrink-0" />
+                      <span>{loginFieldErrors.password}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Pulsing Login Button */}
@@ -580,22 +655,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     </>
                   )}
                 </button>
-
-                {/* Demo Test Account Shortcut */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs transition-colors">
-                  <span data-i18n="login_demo_question" className="text-slate-500 dark:text-slate-400 font-medium">
-                    {t('login_demo_question', '¿Deseas probar la plataforma?')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleFillDemo}
-                    data-i18n="login_demo_btn"
-                    className="text-[#0052cc] dark:text-[#00FF88] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Zap size={13} />
-                    <span data-i18n-text>{t('login_demo_btn', 'Cargar Cuenta Demo')}</span>
-                  </button>
-                </div>
               </motion.form>
             ) : (
               /* ================= TAB 2: FORMULARIO CREAR CUENTA ================= */
@@ -631,7 +690,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
                 {/* Full Name */}
                 <div className="space-y-1">
-                  <label data-i18n="reg_name_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="reg-name" data-i18n="reg_name_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('reg_name_label', 'Nombre y Apellidos')}
                   </label>
                   <div className="relative">
@@ -639,20 +698,34 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       <User size={15} />
                     </div>
                     <input
+                      id="reg-name"
                       type="text"
                       required
                       value={regName}
-                      onChange={(e) => setRegName(e.target.value)}
-                      placeholder="Ej. Juan Carlos Pérez"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                      onChange={(e) => {
+                        setRegName(e.target.value);
+                        if (regFieldErrors.name) {
+                          setRegFieldErrors(prev => ({ ...prev, name: undefined }));
+                        }
+                      }}
+                      placeholder="Nombre y apellidos"
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                        regFieldErrors.name ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                      } text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 transition-all`}
                     />
                   </div>
+                  {regFieldErrors.name && (
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                      <AlertCircle size={13} className="shrink-0" />
+                      <span>{regFieldErrors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Email & Phone in 2 Columns */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label data-i18n="reg_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="reg-email" data-i18n="reg_email_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_email_label', 'Correo Electrónico')}
                     </label>
                     <div className="relative">
@@ -660,18 +733,32 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         <Mail size={15} />
                       </div>
                       <input
+                        id="reg-email"
                         type="email"
                         required
                         value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder="tu-correo@gmail.com"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        onChange={(e) => {
+                          setRegEmail(e.target.value);
+                          if (regFieldErrors.email) {
+                            setRegFieldErrors(prev => ({ ...prev, email: undefined }));
+                          }
+                        }}
+                        placeholder="Correo electrónico"
+                        className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                          regFieldErrors.email ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                        } text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 transition-all`}
                       />
                     </div>
+                    {regFieldErrors.email && (
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                        <AlertCircle size={13} className="shrink-0" />
+                        <span>{regFieldErrors.email}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
-                    <label data-i18n="reg_phone_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="reg-phone" data-i18n="reg_phone_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_phone_label', 'Celular (Colombia)')}
                     </label>
                     <div className="relative">
@@ -679,38 +766,68 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         <Phone size={15} />
                       </div>
                       <input
+                        id="reg-phone"
                         type="tel"
                         required
                         value={regPhone}
-                        onChange={(e) => setRegPhone(e.target.value)}
-                        placeholder="300 123 4567"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        onChange={(e) => {
+                          setRegPhone(e.target.value);
+                          if (regFieldErrors.phone) {
+                            setRegFieldErrors(prev => ({ ...prev, phone: undefined }));
+                          }
+                        }}
+                        placeholder="Número de celular"
+                        className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                          regFieldErrors.phone ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                        } text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 transition-all`}
                       />
                     </div>
+                    {regFieldErrors.phone && (
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                        <AlertCircle size={13} className="shrink-0" />
+                        <span>{regFieldErrors.phone}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* User Type / Role */}
+                {/* Tipo de Perfil Vial: Normativa Vial Colombiana */}
                 <div className="space-y-1">
-                  <label data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <label htmlFor="reg-user-type" data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {t('reg_user_type_label', 'Tipo de Perfil Vial')}
                   </label>
                   <select
+                    id="reg-user-type"
                     value={regUserType}
-                    onChange={(e) => setRegUserType(e.target.value as UserType)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] transition-all cursor-pointer"
+                    onChange={(e) => {
+                      setRegUserType(e.target.value as UserType);
+                      if (regFieldErrors.userType) {
+                        setRegFieldErrors(prev => ({ ...prev, userType: undefined }));
+                      }
+                    }}
+                    className={`w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border ${
+                      regFieldErrors.userType ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                    } text-xs sm:text-sm text-slate-900 dark:text-white transition-all cursor-pointer`}
                   >
-                    <option value="conductor">{t('reg_user_type_driver', 'Conductor de Automóvil / Servicio Público')}</option>
-                    <option value="aspirante">{t('reg_user_type_instructor', 'Aspirante a Licencia de Conducción CEA')}</option>
-                    <option value="estudiante">Estudiante de Conducción / Formación Vial</option>
-                    <option value="ciudadano">{t('reg_user_type_pedestrian', 'Motociclista / Peatón / Ciclista')}</option>
+                    <option value="" disabled>Selecciona una categoría vial...</option>
+                    <option value="via_arterial">Vía arterial</option>
+                    <option value="via_intermedia">Vía intermedia</option>
+                    <option value="via_local">Vía local</option>
+                    <option value="via_rural">Vía rural</option>
+                    <option value="carretera">Carretera</option>
                   </select>
+                  {regFieldErrors.userType && (
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                      <AlertCircle size={13} className="shrink-0" />
+                      <span>{regFieldErrors.userType}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Password & Confirm Password */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label data-i18n="reg_pass_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="reg-password" data-i18n="reg_pass_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_pass_label', 'Contraseña')}
                     </label>
                     <div className="relative">
@@ -718,12 +835,20 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         <Lock size={15} />
                       </div>
                       <input
+                        id="reg-password"
                         type={regShowPassword ? 'text' : 'password'}
                         required
                         value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Mín. 8 caract."
-                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        onChange={(e) => {
+                          setRegPassword(e.target.value);
+                          if (regFieldErrors.password) {
+                            setRegFieldErrors(prev => ({ ...prev, password: undefined }));
+                          }
+                        }}
+                        placeholder="Contraseña"
+                        className={`w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                          regFieldErrors.password ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                        } text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 transition-all`}
                       />
                       <button
                         type="button"
@@ -736,7 +861,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label data-i18n="reg_pass_confirm_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label htmlFor="reg-confirm-password" data-i18n="reg_pass_confirm_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('reg_pass_confirm_label', 'Confirmar Contraseña')}
                     </label>
                     <div className="relative">
@@ -744,12 +869,24 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         <Lock size={15} />
                       </div>
                       <input
+                        id="reg-confirm-password"
                         type={regShowConfirmPassword ? 'text' : 'password'}
                         required
                         value={regConfirmPassword}
-                        onChange={(e) => setRegConfirmPassword(e.target.value)}
-                        placeholder="Repetir contraseña"
-                        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-2 focus:ring-[#00FF88]/30 transition-all"
+                        onChange={(e) => {
+                          setRegConfirmPassword(e.target.value);
+                          if (regFieldErrors.confirmPassword) {
+                            setRegFieldErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                          }
+                        }}
+                        placeholder="Confirmar contraseña"
+                        className={`w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border ${
+                          (regConfirmPassword.length > 0 && regConfirmPassword !== regPassword) || regFieldErrors.confirmPassword
+                            ? 'border-rose-500 focus:border-rose-500'
+                            : regConfirmPassword.length > 0 && regConfirmPassword === regPassword
+                              ? 'border-emerald-500 focus:border-emerald-500'
+                              : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
+                        } text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 transition-all`}
                       />
                       <button
                         type="button"
@@ -759,61 +896,106 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                         {regShowConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
                     </div>
+                    {/* Inline check for Confirm Password */}
+                    {regConfirmPassword.length > 0 ? (
+                      regConfirmPassword !== regPassword ? (
+                        <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                          <AlertCircle size={13} className="shrink-0" />
+                          <span>Las contraseñas no coinciden.</span>
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 size={13} className="shrink-0" />
+                          <span>✓ Las contraseñas coinciden</span>
+                        </p>
+                      )
+                    ) : regFieldErrors.confirmPassword ? (
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                        <AlertCircle size={13} className="shrink-0" />
+                        <span>{regFieldErrors.confirmPassword}</span>
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
-                {/* Password Strength Indicator */}
-                {regPassword && (
-                  <div className="space-y-1 text-[11px]">
-                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                      <span>Fortaleza de seguridad:</span>
-                      <span className={`font-bold ${
-                        passwordAnalysis.score >= 80 ? 'text-emerald-600 dark:text-[#00FF88]' : passwordAnalysis.score >= 50 ? 'text-amber-500 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
-                      }`}>
-                        {passwordAnalysis.strengthLabel}
-                      </span>
+                {/* Real-time Password Security Requirements Guide */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                  <p className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">
+                    Tu contraseña debe contener:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs font-medium">
+                    <div className={`flex items-center gap-1.5 ${passRules.minLength ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <span>{passRules.minLength ? '✅' : '❌'}</span>
+                      <span>Mínimo 8 caracteres</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${
-                          passwordAnalysis.score >= 80 ? 'bg-emerald-500 dark:bg-[#00FF88]' : passwordAnalysis.score >= 50 ? 'bg-amber-500 dark:bg-amber-400' : 'bg-rose-500'
-                        }`}
-                        style={{ width: `${passwordAnalysis.score}%` }}
-                      />
+                    <div className={`flex items-center gap-1.5 ${passRules.hasUpper ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <span>{passRules.hasUpper ? '✅' : '❌'}</span>
+                      <span>Una letra mayúscula</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${passRules.hasLower ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <span>{passRules.hasLower ? '✅' : '❌'}</span>
+                      <span>Una letra minúscula</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${passRules.hasNumber ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <span>{passRules.hasNumber ? '✅' : '❌'}</span>
+                      <span>Un número</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 sm:col-span-2 ${passRules.hasSpecial ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <span>{passRules.hasSpecial ? '✅' : '❌'}</span>
+                      <span>Un carácter especial (ej. !, @, #, $, %)</span>
                     </div>
                   </div>
+                </div>
+                {regFieldErrors.password && (
+                  <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{regFieldErrors.password}</span>
+                  </p>
                 )}
 
                 {/* Terms Acceptance */}
-                <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    checked={regAcceptedTerms}
-                    onChange={(e) => setRegAcceptedTerms(e.target.checked)}
-                    className="mt-0.5 rounded border-slate-300 dark:border-slate-700 text-[#0052cc] dark:text-[#00FF88] focus:ring-[#0052cc] dark:focus:ring-[#00FF88] bg-white dark:bg-slate-900"
-                  />
-                  <span className="leading-snug">
-                    <span data-i18n="reg_terms_agree">{t('reg_terms_agree', 'Acepto los')}</span>{' '}
-                    <button
-                      type="button"
-                      data-i18n="reg_terms_service"
-                      onClick={() => setTermsModalType('terms')}
-                      className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
-                    >
-                      {t('reg_terms_service', 'Términos de Servicio')}
-                    </button>{' '}
-                    <span data-i18n="reg_terms_and">{t('reg_terms_and', 'y la')}</span>{' '}
-                    <button
-                      type="button"
-                      data-i18n="reg_terms_privacy"
-                      onClick={() => setTermsModalType('privacy')}
-                      className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
-                    >
-                      {t('reg_terms_privacy', 'Política de Privacidad')}
-                    </button>
-                    .
-                  </span>
-                </label>
+                <div className="pt-1">
+                  <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={regAcceptedTerms}
+                      onChange={(e) => {
+                        setRegAcceptedTerms(e.target.checked);
+                        if (regFieldErrors.terms) {
+                          setRegFieldErrors(prev => ({ ...prev, terms: undefined }));
+                        }
+                      }}
+                      className="mt-0.5 rounded border-slate-300 dark:border-slate-700 text-[#0052cc] dark:text-[#00FF88] focus:ring-[#0052cc] dark:focus:ring-[#00FF88] bg-white dark:bg-slate-900"
+                    />
+                    <span className="leading-snug">
+                      <span data-i18n="reg_terms_agree">{t('reg_terms_agree', 'Acepto los')}</span>{' '}
+                      <button
+                        type="button"
+                        data-i18n="reg_terms_service"
+                        onClick={() => setTermsModalType('terms')}
+                        className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
+                      >
+                        {t('reg_terms_service', 'Términos de Servicio')}
+                      </button>{' '}
+                      <span data-i18n="reg_terms_and">{t('reg_terms_and', 'y la')}</span>{' '}
+                      <button
+                        type="button"
+                        data-i18n="reg_terms_privacy"
+                        onClick={() => setTermsModalType('privacy')}
+                        className="text-[#0052cc] dark:text-[#00AFFF] underline hover:text-[#0043a8] dark:hover:text-[#00FF88]"
+                      >
+                        {t('reg_terms_privacy', 'Política de Privacidad')}
+                      </button>
+                      .
+                    </span>
+                  </label>
+                  {regFieldErrors.terms && (
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                      <AlertCircle size={13} className="shrink-0" />
+                      <span>{regFieldErrors.terms}</span>
+                    </p>
+                  )}
+                </div>
 
                 {/* Pulsing Register Button */}
                 <button
