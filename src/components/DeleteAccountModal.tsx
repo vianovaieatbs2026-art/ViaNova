@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { deleteUserAccount } from '../lib/supabase';
 import { firebaseLogin, deleteFirebaseAccount } from '../lib/firebase';
-import { findRegisteredUserByEmail, verifyUserPassword } from '../utils/authStorage';
+import { findRegisteredUserByEmail, verifyUserPassword, deleteUserAccountPermanently } from '../utils/authStorage';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
 interface DeleteAccountModalProps {
@@ -95,6 +95,9 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       }
 
       // 4. Proceed with full account and relational data deletion
+      try {
+        deleteUserAccountPermanently(userEmail, password.trim());
+      } catch (_) {}
       await deleteUserAccount(userId, userEmail);
 
       setIsDeleting(false);

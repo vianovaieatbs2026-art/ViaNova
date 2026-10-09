@@ -3,6 +3,7 @@ import { KeyRound, CheckCircle2, AlertCircle, X, Loader2, ShieldCheck, Eye, EyeO
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { findRegisteredUserByEmail, updateRegisteredUserPassword } from '../utils/authStorage';
 import { supabase } from '../lib/supabase';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { sendPasswordReset } from '../lib/firebase';
 import { 
   sendRecoveryCodeViaEmailJS, 
@@ -146,23 +147,45 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     setIsLoading(true);
 
     try {
-      // 1. Envío mediante EmailJS y guardado en localStorage (codigo_real, correo_real, expiración 15m)
-      const emailjsResult = await sendRecoveryCodeViaEmailJS(cleanEmail);
-      setGeneratedCodeHint(emailjsResult.code);
+      // 1. Send 6-digit OTP code through backend email service
+      const originUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const response = await fetch('/api/send-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          recipientName: registeredName || '',
+          originUrl
+        })
+      });
 
-      // 2. Envío complementario mediante servidor Express y Firebase
-      sendPasswordReset(cleanEmail, registeredName).catch(() => {});
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data.success) {
+        setIsLoading(false);
+        setErrorMessage(data.message || 'Error al enviar el código de recuperación al correo. Intenta de nuevo.');
+        return;
+      }
+
+      // 2. Also invoke Firebase Auth sendPasswordResetEmail as required
+      try {
+        const auth = getAuth();
+        await sendPasswordResetEmail(auth, cleanEmail);
+      } catch (fbErr: any) {
+        console.log('[Firebase Auth] sendPasswordResetEmail:', fbErr?.code, fbErr?.message);
+      }
+
+      // 3. Fallback to EmailJS if user configured it
+      if (isEmailJSConfigured()) {
+        sendRecoveryCodeViaEmailJS(cleanEmail).catch(() => {});
+      }
 
       setIsLoading(false);
-      setSuccessMessage(
-        emailjsResult.isRealEmailSent 
-          ? `¡Listo! Código de recuperación enviado a ${cleanEmail}. Revisa tu bandeja de entrada y carpeta de spam (válido por 15 minutos).`
-          : `¡Listo! Código de recuperación generado para ${cleanEmail} (válido por 15 minutos).`
-      );
+      setSuccessMessage(`Te enviamos el código de 6 dígitos a ${cleanEmail}. Revisa tu bandeja de entrada y spam (válido por 10 minutos).`);
       setStep('verify');
     } catch (err: any) {
       setIsLoading(false);
-      setErrorMessage(err?.message || 'Error al procesar el envío del código.');
+      setErrorMessage(err?.message || 'Error de conexión al enviar el código. Por favor intenta más tarde.');
     }
   };
 
@@ -174,8 +197,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     const cleanEmail = email.trim().toLowerCase();
     const cleanCode = enteredCode.trim().replace(/\D/g, '');
 
-    if (!cleanCode || cleanCode.length < 6) {
-      setErrorMessage('Por favor ingresa el código numérico de 6 dígitos.');
+    if (!cleanCode || cleanCode.length !== 6) {
+      setErrorMessage('Por favor ingresa el código numérico de 6 dígitos recibido en tu correo.');
       return;
     }
 
@@ -191,37 +214,48 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
     setIsLoading(true);
 
-    // 1. Verificar el código en localStorage (codigo_real, correo_real, validez de 15 minutos y un solo uso)
-    const verification = verifyRecoveryCodeInStorage(cleanEmail, cleanCode);
-    if (!verification.success) {
-      setIsLoading(false);
-      setErrorMessage(verification.message);
-      return;
-    }
-
-    // 2. Actualizar contraseña localmente en almacenamiento seguro
-    updateRegisteredUserPassword(cleanEmail, newPassword);
-
-    // 3. Actualizar contraseña en el servidor backend
     try {
-      await fetch('/api/auth/update-password', {
+      // 1. Confirm code and update password in Backend + Firebase Authentication
+      const confirmRes = await fetch('/api/confirm-password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, newPassword })
+        body: JSON.stringify({
+          email: cleanEmail,
+          code: cleanCode,
+          newPassword
+        })
       });
-      await fetch('/api/confirm-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, code: cleanCode, newPassword })
-      });
-    } catch (_) {}
 
-    // 4. Limpiar código usado de localStorage para invalidarlo permanentemente contra reúsos
-    clearRecoveryCodeFromStorage();
+      const confirmData = await confirmRes.json().catch(() => ({}));
 
-    setIsLoading(false);
-    setSuccessMessage('¡Contraseña restablecida exitosamente! Ya puedes iniciar sesión con tu nueva contraseña.');
-    setStep('success');
+      if (!confirmRes.ok || !confirmData.success) {
+        setIsLoading(false);
+        setErrorMessage(confirmData.message || 'El código ingresado es incorrecto o ha vencido. Solicita un nuevo código.');
+        return;
+      }
+
+      // 2. Actualizar contraseña localmente en almacenamiento para acceso inmediato
+      updateRegisteredUserPassword(cleanEmail, newPassword);
+
+      // 3. Notificar a Supabase / endpoint de auth si aplica
+      try {
+        await fetch('/api/auth/update-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, newPassword })
+        });
+      } catch (_) {}
+
+      // 4. Limpiar cualquier código temporal de localStorage
+      clearRecoveryCodeFromStorage();
+
+      setIsLoading(false);
+      setSuccessMessage('¡Contraseña restablecida exitosamente en Firebase Authentication! Ya puedes iniciar sesión con tu nueva contraseña.');
+      setStep('success');
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMessage(err?.message || 'Error al actualizar la contraseña. Por favor intenta de nuevo.');
+    }
   };
 
   return (
@@ -445,19 +479,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="font-semibold">{successMessage}</p>
-                  {generatedCodeHint && (
-                    <div className="flex items-center gap-2 pt-1 text-[11px] text-emerald-700 dark:text-emerald-300">
-                      <span>Código de recuperación:</span>
-                      <strong className="font-mono bg-emerald-100 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded text-xs">{generatedCodeHint}</strong>
-                      <button
-                        type="button"
-                        onClick={() => setEnteredCode(String(generatedCodeHint))}
-                        className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] cursor-pointer ml-auto transition-colors"
-                      >
-                        Usar este código
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

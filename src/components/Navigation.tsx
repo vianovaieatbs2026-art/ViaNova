@@ -45,11 +45,9 @@ export const Navigation: React.FC<NavigationProps> = ({
     t 
   } = useThemeLanguage();
 
-  const supportedLanguages: { id: 'es' | 'en' | 'pt' | 'fr'; label: string; flag: string }[] = [
+  const supportedLanguages: { id: 'es' | 'en'; label: string; flag: string }[] = [
     { id: 'es', label: 'Español', flag: '🇪🇸' },
     { id: 'en', label: 'English', flag: '🇺🇸' },
-    { id: 'pt', label: 'Português', flag: '🇧🇷' },
-    { id: 'fr', label: 'Français', flag: '🇫🇷' },
   ];
 
   // Close dropdowns when clicking outside

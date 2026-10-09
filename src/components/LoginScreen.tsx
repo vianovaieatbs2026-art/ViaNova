@@ -36,6 +36,7 @@ import {
 } from '../utils/authStorage';
 import { executeInvisibleRecaptcha, RecaptchaVerificationResult } from '../utils/security';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { firebaseLogin } from '../lib/firebase';
 import { supabase } from '../lib/supabase';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
@@ -157,8 +158,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const handleForgotPasswordClick = () => {
-    setResetEmail(email.trim());
+  const handleForgotPasswordClick = async () => {
+    const cleanEmail = email.trim();
+    if (cleanEmail && cleanEmail.includes('@')) {
+      const auth = getAuth();
+
+      try {
+        await sendPasswordResetEmail(auth, cleanEmail);
+        alert("Te enviamos el correo a " + cleanEmail + ". Revisa bandeja de entrada y spam.");
+      } catch (error: any) {
+        console.log(error.code);
+        alert("Error: " + error.message);
+      }
+    }
+    setResetEmail(cleanEmail);
     setShowForgotModal(true);
   };
 

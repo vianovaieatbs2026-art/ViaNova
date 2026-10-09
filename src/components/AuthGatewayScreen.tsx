@@ -26,6 +26,7 @@ import { FloatingDecorations } from './FloatingDecorations';
 import { UserProfile, UserType } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { firebaseLogin, firebaseRegister, sendPasswordReset } from '../lib/firebase';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { supabase } from '../lib/supabase';
 import { 
   findRegisteredUserByEmail, 
@@ -360,10 +361,14 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         setRegError('La contraseña es demasiado débil para Firebase Auth.');
       } else {
         // Fallback local registration if offline or Firebase email/pass disabled
-        const existing = findRegisteredUserByEmail(trimmedEmail);
+        const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${trimmedEmail}`) === 'true';
+        const existing = isDeleted ? null : findRegisteredUserByEmail(trimmedEmail);
         if (existing) {
           setRegError('Este correo ya está registrado localmente. Por favor inicia sesión.');
         } else {
+          if (typeof window !== 'undefined') {
+            try { localStorage.removeItem(`vianova_deleted_${trimmedEmail}`); } catch (_) {}
+          }
           const newUser: UserProfile = {
             id: `user-${Date.now()}`,
             name: regName.trim(),
@@ -590,7 +595,20 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     <button
                       type="button"
                       id="gateway-forgot-password-btn"
-                      onClick={() => setIsForgotPasswordOpen(true)}
+                      onClick={async () => {
+                        const email = loginEmail.trim();
+                        if (email && email.includes('@')) {
+                          const auth = getAuth();
+                          try {
+                            await sendPasswordResetEmail(auth, email);
+                            alert("Te enviamos el correo a " + email + ". Revisa bandeja de entrada y spam.");
+                          } catch (error: any) {
+                            console.log(error.code);
+                            alert("Error: " + error.message);
+                          }
+                        }
+                        setIsForgotPasswordOpen(true);
+                      }}
                       data-i18n="login_forgot_password"
                       className="text-xs font-bold text-[#0052cc] dark:text-[#00AFFF] hover:text-[#0043a8] dark:hover:text-[#00FF88] hover:underline transition-colors cursor-pointer"
                     >
@@ -791,10 +809,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Tipo de Perfil Vial: Normativa Vial Colombiana */}
+                {/* Tipo de Perfil / Aspirante */}
                 <div className="space-y-1">
-                  <label htmlFor="reg-user-type" data-i18n="reg_user_type_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t('reg_user_type_label', 'Tipo de Perfil Vial')}
+                  <label htmlFor="reg-user-type" data-i18n="reg_profile_type_label" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {t('reg_profile_type_label', 'Tipo de Perfil / Aspirante')}
                   </label>
                   <select
                     id="reg-user-type"
@@ -809,12 +827,11 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                       regFieldErrors.userType ? 'border-rose-500 focus:border-rose-500' : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-[#00FF88]'
                     } text-xs sm:text-sm text-slate-900 dark:text-white transition-all cursor-pointer`}
                   >
-                    <option value="" disabled>Selecciona una categoría vial...</option>
-                    <option value="via_arterial">Vía arterial</option>
-                    <option value="via_intermedia">Vía intermedia</option>
-                    <option value="via_local">Vía local</option>
-                    <option value="via_rural">Vía rural</option>
-                    <option value="carretera">Carretera</option>
+                    <option value="" disabled>{t('reg_user_type_placeholder', 'Selecciona tu tipo de perfil...')}</option>
+                    <option value="aspirante">{t('reg_type_aspirante', '🚦 Aspirante a Licencia (Principiante)')}</option>
+                    <option value="conductor">{t('reg_type_conductor', '🚗 Conductor')}</option>
+                    <option value="estudiante">{t('reg_type_estudiante', '📚 Estudiante de Educación Vial')}</option>
+                    <option value="ciudadano">{t('reg_type_ciudadano', '🚶 Peatón / Ciudadano')}</option>
                   </select>
                   {regFieldErrors.userType && (
                     <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">

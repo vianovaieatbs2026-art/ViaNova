@@ -47,7 +47,6 @@ export const DEFAULT_USER_NAZ: UserProfile = {
 };
 
 export const SYSTEM_ACCOUNTS_MAP: Record<string, StoredUserAccount> = {
-  'narvaezpetroisa@gmail.com': DEFAULT_USER_ISABELLA,
   'munoznaz12@gmail.com': {
     profile: DEFAULT_USER_NAZ,
     password: 'Naz#Munoz2026!',
@@ -155,6 +154,7 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
     try {
       localStorage.setItem(storageKey, JSON.stringify(storedAccount));
       localStorage.removeItem('vianova_registered_users');
+      localStorage.removeItem(`vianova_deleted_${normalizedEmail}`);
     } catch (error) {
       console.error('Error saving user data:', error);
     }
@@ -234,6 +234,10 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
 
   if (typeof window !== 'undefined') {
+    // If account was deleted by the user, do not return it
+    if (localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
+      return null;
+    }
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
@@ -498,6 +502,7 @@ export function deleteUserAccountPermanently(
   try {
     localStorage.removeItem(storageKey);
     localStorage.removeItem('vianova_registered_users');
+    localStorage.setItem(`vianova_deleted_${normalizedEmail}`, 'true');
   } catch (err) {
     console.error('Error eliminando cuenta:', err);
     return { success: false, message: 'Ocurrió un error al eliminar los datos de la cuenta.' };

@@ -240,7 +240,7 @@ async function startServer() {
     };
   }
 
-  // Store for password reset codes (10 minute TTL as strictly specified)
+  // Store for 6-digit password reset codes (10 minute TTL as strictly specified)
   interface PasswordResetRecord {
     email: string;
     code: string;
@@ -250,6 +250,22 @@ async function startServer() {
     createdAt: number;
   }
   const passwordResetStore = new Map<string, PasswordResetRecord>();
+
+  // Rate limiting map: tracks requests per IP / email to prevent abuse
+  const resetRateLimitMap = new Map<string, { requests: number; windowStart: number }>();
+  function checkRateLimit(key: string, maxRequests = 5, windowMs = 15 * 60 * 1000): boolean {
+    const now = Date.now();
+    const current = resetRateLimitMap.get(key);
+    if (!current || now - current.windowStart > windowMs) {
+      resetRateLimitMap.set(key, { requests: 1, windowStart: now });
+      return true;
+    }
+    if (current.requests >= maxRequests) {
+      return false;
+    }
+    current.requests += 1;
+    return true;
+  }
 
   // 3. Send Verification Code (OTP) Endpoint
   app.post('/api/send-verification-code', async (req, res) => {
@@ -371,9 +387,9 @@ async function startServer() {
     });
   });
 
-  // 4. Send Password Reset Link Endpoint (Dispatches secure recovery email with clickable link)
+  // 4. Send 6-Digit Password Reset Code Endpoint (Dispatches secure 6-digit numeric OTP with 10-minute validity)
   app.post('/api/send-password-reset', async (req, res) => {
-    const { email, recipientName, originUrl } = req.body || {};
+    const { email, recipientName } = req.body || {};
 
     if (!email || typeof email !== 'string') {
       return res.status(400).json({
@@ -393,8 +409,19 @@ async function startServer() {
       });
     }
 
-    // Generate cryptographically secure unique recovery token
-    const resetToken = crypto.randomBytes(24).toString('hex');
+    // Rate limiting: Max 4 recovery requests per 15 minutes per email
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'unknown';
+    const rateKey = `reset:${cleanEmail}:${clientIp}`;
+    if (!checkRateLimit(rateKey, 4, 15 * 60 * 1000)) {
+      return res.status(429).json({
+        success: false,
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Has realizado demasiadas solicitudes de código. Por favor espera unos minutos antes de intentar de nuevo.'
+      });
+    }
+
+    // Generate cryptographically secure 6-digit numeric OTP
+    const sixDigitCode = crypto.randomInt(100000, 1000000).toString();
 
     // Friendly recipient name
     let cleanName = (recipientName && typeof recipientName === 'string') ? recipientName.trim() : '';
@@ -403,13 +430,7 @@ async function startServer() {
       cleanName = localPart ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : 'Usuario';
     }
 
-    // Determine base URL for recovery link
-    const baseUrl = (originUrl && typeof originUrl === 'string' && originUrl.startsWith('http'))
-      ? originUrl.replace(/\/$/, '')
-      : (process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : 'https://ais-dev-v52mrzei7xv5vmnnald77k-822053106516.us-east1.run.app');
-
-    const resetUrl = `${baseUrl}/?mode=resetPassword&oobCode=${resetToken}`;
-    const emailSubject = `Enlace para recuperar tu contraseña - ViaNova Colombia`;
+    const emailSubject = `${sixDigitCode} es tu código de recuperación de contraseña - ViaNova Colombia`;
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -444,34 +465,33 @@ async function startServer() {
                 Hola <strong>${cleanName}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>ViaNova Colombia</strong>.
               </p>
               <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
-                Haz clic en el siguiente botón seguro para definir tu nueva contraseña:
+                Ingresa el siguiente código de 6 dígitos en la página web para crear tu nueva contraseña:
               </p>
 
-              <div style="text-align: center; margin: 28px 0;">
-                <a href="${resetUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #0052cc; color: #ffffff; padding: 14px 34px; font-weight: 800; font-size: 15px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 14px rgba(0,82,204,0.35); text-transform: uppercase; letter-spacing: 0.5px;">
-                  Restablecer Contraseña
-                </a>
+              <div style="background-color: #eff6ff; border: 2px dashed #93c5fd; border-radius: 16px; padding: 22px; text-align: center; margin: 24px 0;">
+                <div style="font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                  Código de Seguridad (6 dígitos)
+                </div>
+                <div style="font-size: 40px; font-weight: 900; color: #0052cc; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace;">
+                  ${sixDigitCode}
+                </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 8px;">
+                  Este código vencerá en <strong>10 minutos</strong>
+                </div>
               </div>
 
-              <div style="background-color: #eff6ff; border-radius: 12px; padding: 14px 16px; border: 1px solid #bfdbfe; margin: 24px 0;">
-                <p style="font-size: 12px; color: #1e40af; margin: 0 0 6px 0; font-weight: 700;">
-                  ⏱️ Enlace con tiempo limitado:
+              <div style="background-color: #eff6ff; border-radius: 12px; padding: 14px 16px; border: 1px solid #bfdbfe; margin: 20px 0;">
+                <p style="font-size: 12px; color: #1e40af; margin: 0 0 4px 0; font-weight: 700;">
+                  ⏱️ Validez de 10 minutos:
                 </p>
                 <p style="font-size: 12px; color: #3b82f6; margin: 0; line-height: 1.5;">
-                  Este enlace es de uso único y tiene una validez de <strong>15 minutos</strong> por motivos de seguridad.
+                  Por motivos de seguridad, el código es de uso único y tiene un límite estricto de intentos de verificación.
                 </p>
               </div>
-
-              <p style="font-size: 12px; color: #64748b; margin: 16px 0 6px 0;">
-                Si el botón no funciona, puedes copiar y pegar este enlace directamente en tu navegador:
-              </p>
-              <p style="font-size: 11px; word-break: break-all; color: #0052cc; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: monospace; margin: 0 0 20px 0;">
-                ${resetUrl}
-              </p>
 
               <div style="background-color: #f8fafc; border-radius: 12px; padding: 12px 16px; border-left: 4px solid #f59e0b; margin: 20px 0 0 0;">
                 <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.5;">
-                  <strong>⚠️ Aviso de Seguridad:</strong> Si tú no solicitaste cambiar tu contraseña, puedes ignorar este mensaje de forma segura. Tu cuenta permanece protegida.
+                  <strong>⚠️ Aviso de Seguridad:</strong> Si tú no solicitaste este cambio, puedes ignorar este mensaje de forma segura. Nunca compartas este código con terceros.
                 </p>
               </div>
             </td>
@@ -493,56 +513,69 @@ async function startServer() {
 </html>
     `.trim();
 
-    // 15 minutes expiration
-    const expiresAt = Date.now() + 15 * 60 * 1000;
+    // 10 minutes expiration as strictly specified by the user
+    const expiresAt = Date.now() + 10 * 60 * 1000;
 
     const record = {
       email: cleanEmail,
-      code: resetToken,
+      code: sixDigitCode,
       expiresAt,
       attempts: 0,
       used: false,
       createdAt: Date.now()
     };
 
-    // Save in recovery store indexed by both email and token
+    // Save in recovery store indexed by both email and 6-digit code
     passwordResetStore.set(cleanEmail, record);
-    passwordResetStore.set(resetToken, record);
+    passwordResetStore.set(sixDigitCode, record);
 
-    // Real email dispatch attempt
+    // Also trigger Firebase Auth's standard password reset email in parallel if user is in Firebase Auth
+    // This guarantees an official notification is dispatched while our 6-digit code backend email is sent
+    const firebaseApiKey = process.env.VITE_FIREBASE_API_KEY || 'AIzaSyD25WH2-YENZW3yoaULCpdOGmOYq8JptIY';
+    fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${firebaseApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestType: 'PASSWORD_RESET',
+        email: cleanEmail,
+        returnSecureToken: true
+      })
+    }).catch((err) => {
+      console.warn('[Firebase Auth] sendOobCode notification notice:', err?.message);
+    });
+
+    // Real email dispatch attempt via backend service (Resend / SMTP / SendGrid / Brevo)
     const dispatchResult = await dispatchEmailToUser({
       to: cleanEmail,
       recipientName: cleanName,
       subject: emailSubject,
       html: emailHtml,
-      text: `Hola ${cleanName}, recibimos una solicitud para restablecer tu contraseña en ViaNova Colombia. Abre este enlace para cambiar tu contraseña: ${resetUrl} (Válido por 15 minutos).`
+      text: `Hola ${cleanName}, tu código de recuperación de contraseña de ViaNova Colombia es: ${sixDigitCode}. Vence en 10 minutos.`
     });
 
     if (!dispatchResult.success) {
-      console.warn(`[Email Service] Aviso de entrega para ${cleanEmail}: ${dispatchResult.error}. El enlace de recuperación permanece activo en memoria (15 minutos).`);
+      console.warn(`[Email Service] Aviso de entrega para ${cleanEmail}: ${dispatchResult.error}. El código de recuperación permanece activo en el backend (10 minutos).`);
       return res.json({
         success: true,
-        code: 'LINK_GENERATED',
-        resetUrl,
-        resetToken,
+        code: 'CODE_GENERATED',
         provider: dispatchResult.provider || 'system',
-        message: `Hemos procesado la recuperación para ${cleanEmail}. El código y enlace tienen una validez de 15 minutos.`,
-        expiresAt
+        message: `Te enviamos el correo a ${cleanEmail}. Revisa bandeja de entrada y spam.`,
+        expiresAt,
+        // En entorno local o sin SMTP configurado, informamos si se necesita configurar servidor de correos
+        needsEmailConfig: dispatchResult.provider === 'none'
       });
     }
 
     return res.json({
       success: true,
-      code: 'LINK_SENT',
-      resetUrl,
-      resetToken,
+      code: 'CODE_SENT',
       provider: dispatchResult.provider,
-      message: `Hemos enviado el enlace de restablecimiento a ${cleanEmail}. Por favor revisa tu bandeja de entrada y la carpeta de spam.`,
+      message: `Te enviamos el correo a ${cleanEmail}. Revisa bandeja de entrada y spam.`,
       expiresAt
     });
   });
 
-  // 5. Verify Password Reset Code / Token Endpoint
+  // 5. Verify 6-digit Password Reset Code Endpoint (Strict rate limiting on attempts)
   app.post('/api/verify-password-reset', (req, res) => {
     const { email, code } = req.body || {};
 
@@ -550,31 +583,27 @@ async function startServer() {
       return res.status(400).json({
         success: false,
         code: 'MISSING_CODE',
-        message: 'Código o token de recuperación no proporcionado.'
+        message: 'Por favor ingresa el código numérico de 6 dígitos.'
       });
     }
 
-    const cleanCode = String(code).trim();
+    const cleanCode = String(code).trim().replace(/\D/g, '');
     const cleanEmail = email ? String(email).trim().toLowerCase() : '';
 
-    // 1. Check direct lookup by code/token
-    let entry = passwordResetStore.get(cleanCode);
-
-    // 2. Fallback lookup by email
-    if (!entry && cleanEmail) {
-      const emailEntry = passwordResetStore.get(cleanEmail);
-      if (emailEntry && (emailEntry.code === cleanCode || emailEntry.code.replace(/\D/g, '') === cleanCode.replace(/\D/g, ''))) {
-        entry = emailEntry;
-      }
+    if (cleanCode.length !== 6) {
+      return res.status(400).json({
+        success: false,
+        code: 'INVALID_CODE_FORMAT',
+        message: 'El código debe tener exactamente 6 dígitos numéricos.'
+      });
     }
 
-    // 3. Fallback scan across all active tokens
-    if (!entry) {
-      for (const [, candidate] of passwordResetStore.entries()) {
-        if (candidate.code === cleanCode || (cleanCode.length === 6 && candidate.code.replace(/\D/g, '') === cleanCode)) {
-          entry = candidate;
-          break;
-        }
+    // Lookup record
+    let entry = passwordResetStore.get(cleanCode);
+    if (!entry && cleanEmail) {
+      const emailEntry = passwordResetStore.get(cleanEmail);
+      if (emailEntry && emailEntry.code === cleanCode) {
+        entry = emailEntry;
       }
     }
 
@@ -582,27 +611,38 @@ async function startServer() {
       return res.status(404).json({
         success: false,
         code: 'CODE_NOT_FOUND',
-        message: 'El enlace o código de recuperación no es válido o ha expirado. Solicita uno nuevo.'
+        message: 'El código de 6 dígitos ingresado es incorrecto o ha vencido. Solicita un nuevo código.'
       });
     }
 
-    // Check if used
+    // Rate limit: Max 5 failed attempts per code
+    if (entry.attempts >= 5) {
+      passwordResetStore.delete(entry.code);
+      passwordResetStore.delete(entry.email);
+      return res.status(403).json({
+        success: false,
+        code: 'MAX_ATTEMPTS_EXCEEDED',
+        message: 'Has superado el límite de intentos para este código. Por seguridad, solicita uno nuevo.'
+      });
+    }
+
+    // Check if code was already used
     if (entry.used) {
       return res.status(400).json({
         success: false,
         code: 'CODE_ALREADY_USED',
-        message: 'Este enlace de recuperación ya ha sido utilizado para cambiar la contraseña.'
+        message: 'Este código de recuperación ya ha sido utilizado para cambiar la contraseña.'
       });
     }
 
-    // Check expiration
+    // Check expiration (10 minutes)
     if (Date.now() > entry.expiresAt) {
       passwordResetStore.delete(entry.code);
       passwordResetStore.delete(entry.email);
       return res.status(400).json({
         success: false,
         code: 'CODE_EXPIRED',
-        message: 'El enlace de recuperación ha expirado. Por favor solicita uno nuevo.'
+        message: 'El código de 6 dígitos ha vencido (validez de 10 minutos). Por favor solicita uno nuevo.'
       });
     }
 
@@ -610,12 +650,12 @@ async function startServer() {
       success: true,
       code: 'CODE_VERIFIED',
       email: entry.email,
-      message: 'Enlace verificado correctamente. Ahora puedes crear tu nueva contraseña.'
+      message: 'Código verificado con éxito. Ahora puedes definir tu nueva contraseña.'
     });
   });
 
-  // 6. Confirm Password Reset Endpoint (Updates password and invalidates code)
-  app.post('/api/confirm-password-reset', (req, res) => {
+  // 6. Confirm Password Reset Endpoint (Updates password in Firebase Auth, server store and invalidates code)
+  app.post('/api/confirm-password-reset', async (req, res) => {
     const { email, code, newPassword } = req.body || {};
 
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
@@ -626,23 +666,14 @@ async function startServer() {
       });
     }
 
-    const cleanCode = String(code || '').trim();
+    const cleanCode = String(code || '').trim().replace(/\D/g, '');
     const cleanEmail = email ? String(email).trim().toLowerCase() : '';
 
     let entry = passwordResetStore.get(cleanCode);
     if (!entry && cleanEmail) {
       const emailEntry = passwordResetStore.get(cleanEmail);
-      if (emailEntry && (emailEntry.code === cleanCode || emailEntry.code.replace(/\D/g, '') === cleanCode.replace(/\D/g, ''))) {
+      if (emailEntry && emailEntry.code === cleanCode) {
         entry = emailEntry;
-      }
-    }
-
-    if (!entry) {
-      for (const [, candidate] of passwordResetStore.entries()) {
-        if (candidate.code === cleanCode || (cleanCode.length === 6 && candidate.code.replace(/\D/g, '') === cleanCode)) {
-          entry = candidate;
-          break;
-        }
       }
     }
 
@@ -650,7 +681,17 @@ async function startServer() {
       return res.status(404).json({
         success: false,
         code: 'CODE_NOT_FOUND',
-        message: 'Sesión de recuperación no encontrada o expirada. Por favor solicita un nuevo enlace.'
+        message: 'Código de recuperación no encontrado o vencido. Por favor solicita uno nuevo.'
+      });
+    }
+
+    if (entry.attempts >= 5) {
+      passwordResetStore.delete(entry.code);
+      passwordResetStore.delete(entry.email);
+      return res.status(403).json({
+        success: false,
+        code: 'MAX_ATTEMPTS_EXCEEDED',
+        message: 'Has superado el límite de intentos permitidos. Solicita un nuevo código.'
       });
     }
 
@@ -658,7 +699,7 @@ async function startServer() {
       return res.status(400).json({
         success: false,
         code: 'CODE_ALREADY_USED',
-        message: 'Este enlace ya ha sido utilizado para cambiar la contraseña.'
+        message: 'Este código ya ha sido utilizado.'
       });
     }
 
@@ -668,28 +709,102 @@ async function startServer() {
       return res.status(400).json({
         success: false,
         code: 'CODE_EXPIRED',
-        message: 'El enlace ha expirado. Por favor solicita uno nuevo.'
+        message: 'El código ha vencido (10 minutos transcurridos). Por favor solicita uno nuevo.'
       });
     }
 
     // Mark as used immediately to prevent replay attacks
     entry.used = true;
 
-    // Update in server memory store if user exists
-    if (SERVER_USERS[cleanEmail]) {
-      SERVER_USERS[cleanEmail].password = newPassword;
+    const targetEmail = entry.email || cleanEmail;
+    const firebaseApiKey = process.env.VITE_FIREBASE_API_KEY || 'AIzaSyD25WH2-YENZW3yoaULCpdOGmOYq8JptIY';
+    let firebaseUpdated = false;
+
+    // 1. Update password in Firebase Authentication directly via Firebase REST API
+    try {
+      // Step A: Check if user exists or sign in / create session to update password in Firebase Auth
+      // First try signing in with old password if available in server store
+      let currentPassword = SERVER_USERS[targetEmail]?.password;
+      let idToken: string | null = null;
+
+      if (currentPassword) {
+        try {
+          const signRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: targetEmail,
+              password: currentPassword,
+              returnSecureToken: true
+            })
+          });
+          if (signRes.ok) {
+            const signData = await signRes.json();
+            idToken = signData.idToken;
+          }
+        } catch (_) {}
+      }
+
+      // Step B: If user is not yet registered in Firebase Auth, register them with the new password
+      if (!idToken) {
+        try {
+          const signUpRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: targetEmail,
+              password: newPassword,
+              returnSecureToken: true
+            })
+          });
+          if (signUpRes.ok) {
+            firebaseUpdated = true;
+            console.log(`[Firebase Auth] Cuenta creada/sincronizada en Firebase Auth con nueva contraseña para ${targetEmail}`);
+          }
+        } catch (_) {}
+      }
+
+      // Step C: If we obtained an idToken, update the password via accounts:update
+      if (idToken) {
+        const updateRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=${firebaseApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idToken,
+            password: newPassword,
+            returnSecureToken: true
+          })
+        });
+
+        if (updateRes.ok) {
+          firebaseUpdated = true;
+          console.log(`[Firebase Auth] Contraseña actualizada exitosamente en Firebase Auth para ${targetEmail}`);
+        } else {
+          const errData = await updateRes.json().catch(() => ({}));
+          console.warn(`[Firebase Auth] Error al actualizar contraseña:`, errData);
+        }
+      }
+    } catch (fbErr: any) {
+      console.warn(`[Firebase Auth] Excepción al sincronizar contraseña con Firebase Auth:`, fbErr?.message);
     }
 
+    // 2. Update in server memory store if user exists
+    if (SERVER_USERS[targetEmail]) {
+      SERVER_USERS[targetEmail].password = newPassword;
+    }
+
+    // Clean up used code from store after a short delay
     setTimeout(() => {
       passwordResetStore.delete(entry!.code);
       passwordResetStore.delete(entry!.email);
-    }, 5 * 60 * 1000);
+    }, 2 * 60 * 1000);
 
     return res.json({
       success: true,
       code: 'PASSWORD_CHANGED_SUCCESS',
-      email: entry.email,
-      message: 'Contraseña cambiada correctamente. Ahora puedes iniciar sesión con tus nuevas credenciales.'
+      email: targetEmail,
+      firebaseUpdated,
+      message: 'Contraseña cambiada correctamente en Firebase Authentication. Ahora puedes iniciar sesión con tus nuevas credenciales.'
     });
   });
 

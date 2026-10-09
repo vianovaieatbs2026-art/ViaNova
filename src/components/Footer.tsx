@@ -3,8 +3,22 @@ import { Mail, Phone, Clock, Shield, BookOpen, ExternalLink, HelpCircle } from '
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { ViaNovaLogo } from './ViaNovaLogo';
 
-export const Footer: React.FC = () => {
+import { ScreenId } from '../types';
+
+interface FooterProps {
+  onNavigate?: (screen: ScreenId) => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { t } = useThemeLanguage();
+
+  const handleNav = (screen: ScreenId) => (e: React.MouseEvent) => {
+    if (onNavigate) {
+      e.preventDefault();
+      onNavigate(screen);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <footer 
@@ -43,27 +57,47 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li>
-                <a href="#inicio" className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors">
+                <a 
+                  href="#inicio" 
+                  onClick={handleNav('inicio')}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors"
+                >
                   1. Inicio e Introducción
                 </a>
               </li>
               <li>
-                <a href="#aprende" className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors">
+                <a 
+                  href="#aprende" 
+                  onClick={handleNav('educacion_vial')}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors"
+                >
                   2. Aprende sobre Movilidad
                 </a>
               </li>
               <li>
-                <a href="#simulador" className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors">
+                <a 
+                  href="#simulador" 
+                  onClick={handleNav('simulador')}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors"
+                >
                   3. Práctica y Simuladores
                 </a>
               </li>
               <li>
-                <a href="#quiz" className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors">
+                <a 
+                  href="#quiz" 
+                  onClick={handleNav('quiz')}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors"
+                >
                   4. Quizzes y Evaluaciones
                 </a>
               </li>
               <li>
-                <a href="#reportes" className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors">
+                <a 
+                  href="#reportes" 
+                  onClick={handleNav('reportes')}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors"
+                >
                   5. Reportes y Comunidad
                 </a>
               </li>

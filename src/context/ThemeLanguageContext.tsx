@@ -35,7 +35,7 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   const [language, setLanguageState] = useState<AppLanguage>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_LANG_KEY) as AppLanguage;
-      if (saved && ['es', 'en', 'pt', 'fr'].includes(saved)) {
+      if (saved && (saved === 'es' || saved === 'en')) {
         return saved;
       }
     } catch (e) {
