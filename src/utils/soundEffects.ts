@@ -271,6 +271,118 @@ class SoundEngine {
       osc.stop(ctx.currentTime + 0.25);
     } catch (_) {}
   }
+
+  /** Soft musical chime for selecting letter or crossword cell */
+  public playLetterSelect(index: number = 0): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const baseFreq = 440;
+      const scale = [1, 1.125, 1.25, 1.5, 1.667, 2];
+      const mult = scale[index % scale.length];
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq * mult, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } catch (_) {}
+  }
+
+  /** Celebratory chord when a word is solved in Word Search or Crossword */
+  public playWordFound(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const chords = [587.33, 739.99, 880.00, 1174.66]; // D5, F#5, A5, D6
+
+      chords.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + i * 0.04);
+
+        gain.gain.setValueAtTime(0.001, now + i * 0.04);
+        gain.gain.linearRampToValueAtTime(0.09, now + i * 0.04 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.3);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + i * 0.04);
+        osc.stop(now + i * 0.04 + 0.32);
+      });
+    } catch (_) {}
+  }
+
+  /** Urgent rapid tick when timer is running out */
+  public playUrgentTick(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1100, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.03);
+    } catch (_) {}
+  }
+
+  /** Festive pop sound for confetti or victory badges */
+  public playConfettiPop(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const bufferSize = ctx.sampleRate * 0.05;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1200, now);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      whiteNoise.start(now);
+      whiteNoise.stop(now + 0.05);
+    } catch (_) {}
+  }
 }
 
 export const soundEngine = new SoundEngine();

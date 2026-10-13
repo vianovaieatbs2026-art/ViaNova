@@ -25,7 +25,8 @@ import {
   Lightbulb,
   Filter,
   Camera,
-  CheckCircle
+  CheckCircle,
+  BarChart3
 } from 'lucide-react';
 import { 
   getQuizTopics, 
@@ -45,6 +46,10 @@ import { recordUserQuizScore } from '../utils/userProgress';
 import { soundEngine } from '../utils/soundEffects';
 import { TrafficSignGraphic } from './TrafficSignGraphic';
 import { QuizQuestionVisual } from './QuizQuestionVisual';
+import { WordSearchGame } from './quiz/WordSearchGame';
+import { CrosswordGame } from './quiz/CrosswordGame';
+import { CommunityPollsGame } from './quiz/CommunityPollsGame';
+import { QuizConfetti } from './quiz/QuizConfetti';
 
 interface QuizScreenProps {
   user?: UserProfile | null;
@@ -52,7 +57,15 @@ interface QuizScreenProps {
   onNavigateToSimulator?: () => void;
 }
 
-type QuizGameMode = 'hub' | 'matching' | 'fill_blanks' | 'rapid_fire' | 'traditional';
+type QuizGameMode = 
+  | 'hub' 
+  | 'matching' 
+  | 'fill_blanks' 
+  | 'rapid_fire' 
+  | 'crossword' 
+  | 'word_search' 
+  | 'polls' 
+  | 'traditional';
 
 export const QuizScreen: React.FC<QuizScreenProps> = ({
   user
@@ -67,6 +80,32 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   const handleToggleSound = () => {
     const next = soundEngine.toggleMute();
     setIsMuted(next);
+  };
+
+  // Filter in Hub view
+  const [hubCategoryFilter, setHubCategoryFilter] = useState<'all' | 'word_puzzles' | 'speed' | 'polls' | 'matching' | 'thematic'>('all');
+
+  const handleRecordQuizScore = (scoreOutOf100: number) => {
+    const activeUser = user || getActiveUserSession();
+    if (activeUser?.email) {
+      const scaledScore = Math.max(1, Math.round(scoreOutOf100 / 10));
+      recordUserQuizScore(activeUser.email, scaledScore);
+    }
+  };
+
+  const initCrosswordGame = () => {
+    soundEngine.playClick();
+    setGameMode('crossword');
+  };
+
+  const initWordSearchGame = () => {
+    soundEngine.playClick();
+    setGameMode('word_search');
+  };
+
+  const initPollsGame = () => {
+    soundEngine.playClick();
+    setGameMode('polls');
   };
 
   // =========================================================================
@@ -469,92 +508,242 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             </p>
           </div>
 
-          {/* 3 NUEVOS MODOS EDUCAPLAY (DESTACADOS) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Filtros de Modos Educativos */}
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setHubCategoryFilter('all')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                hubCategoryFilter === 'all'
+                  ? 'bg-[#0052cc] text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              🌟 Todos los Juegos (6 Modos)
+            </button>
+            <button
+              type="button"
+              onClick={() => setHubCategoryFilter('word_puzzles')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                hubCategoryFilter === 'word_puzzles'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              🧩 Crucigrama y Sopa de Letras
+            </button>
+            <button
+              type="button"
+              onClick={() => setHubCategoryFilter('speed')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                hubCategoryFilter === 'speed'
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              ⚡ Retos Rápidos
+            </button>
+            <button
+              type="button"
+              onClick={() => setHubCategoryFilter('polls')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                hubCategoryFilter === 'polls'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              📊 Encuestas y Dilemas
+            </button>
+          </div>
+
+          {/* 6 MODOS EDUCAPLAY INTERACTIVOS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* Modo A: Emparejar Columnas */}
-            <div 
-              onClick={initMatchingGame}
-              className="group bg-gradient-to-b from-blue-500/10 via-white to-white dark:from-blue-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-blue-400/40 hover:border-[#0052cc] dark:hover:border-sky-400 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-[#0052cc] text-white flex items-center justify-center font-bold shadow-md">
-                    <Shuffle size={22} />
+            {/* 1. Crucigrama Vial Interactivo */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'word_puzzles') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initCrosswordGame}
+                className="group bg-gradient-to-b from-purple-500/10 via-white to-white dark:from-purple-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-purple-400/40 hover:border-purple-600 dark:hover:border-purple-400 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <HelpCircle size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-[10px] font-black uppercase">
+                      Educaplay • Crucigrama
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-300 text-[10px] font-black uppercase">
-                    Educaplay Style
-                  </span>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    Crucigrama de Normas
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Resuelve pistas horizontales y verticales sobre límites, señales oficiales, SOAT y derechos del peatón. Incluye teclado táctil y pistas.
+                  </p>
                 </div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-sky-400 transition-colors">
-                  Relacionar Columnas
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Conecta cada señal oficial con su significado y orden de tránsito correspondiente antes de que se agote el tiempo.
-                </p>
-              </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-sky-400">
-                <span>Jugar Emparejamiento</span>
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400">
+                  <span>Jugar Crucigrama</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
 
-            {/* Modo B: Completar Frases */}
-            <div 
-              onClick={initFillBlanksGame}
-              className="group bg-gradient-to-b from-emerald-500/10 via-white to-white dark:from-emerald-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-emerald-400/40 hover:border-emerald-500 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md">
-                    <BookOpen size={22} />
+            {/* 2. Sopa de Letras de Seguridad Vial */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'word_puzzles') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initWordSearchGame}
+                className="group bg-gradient-to-b from-sky-500/10 via-white to-white dark:from-sky-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-sky-400/40 hover:border-[#00AFFF] shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-[#0052cc] dark:bg-[#00AFFF] text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <Sparkles size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-black uppercase">
+                      Educaplay • Sopa 10x10
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase">
-                    Completar Huecos
-                  </span>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-[#00AFFF] transition-colors">
+                    Sopa de Letras Vial
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Encuentra 8 términos de seguridad vial en la cuadrícula interactiva. Arrastra las letras, gana sonidos chimes y revisa definiciones legales.
+                  </p>
                 </div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                  Completar la Norma
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Rellena los espacios vacíos de la Ley Julián Esteban y normas del CNT con las fichas correctas del banco de palabras.
-                </p>
-              </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <span>Completar Frases</span>
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-[#00AFFF]">
+                  <span>Jugar Sopa de Letras</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
 
-            {/* Modo C: Reto Contra Reloj */}
-            <div 
-              onClick={initRapidFireGame}
-              className="group bg-gradient-to-b from-amber-500/10 via-white to-white dark:from-amber-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-amber-400/40 hover:border-amber-500 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-md">
-                    <Zap size={22} />
+            {/* 3. Reto Contra Reloj (Rapid Fire) */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'speed') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initRapidFireGame}
+                className="group bg-gradient-to-b from-amber-500/10 via-white to-white dark:from-amber-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-amber-400/40 hover:border-amber-500 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <Zap size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase">
+                      Reto Rápido • 10s
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase">
-                    10 Segundos
-                  </span>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    ¿Verdadero o Falso? (Relámpago)
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Pon a prueba tus reflejos con barra de tiempo acelerada, efecto tic-tac de adrenalina y combos de racha por aciertos consecutivos.
+                  </p>
                 </div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                  ¿Verdadero o Falso?
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  10 preguntas de velocidad pura. Decide si cada situación es legal o una infracción antes de que se agote la barra de tiempo.
-                </p>
-              </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
-                <span>Reto Contrarreloj</span>
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <span>Jugar Reto Rápido</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* 4. Encuestas y Dilemas en Vía */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'polls') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initPollsGame}
+                className="group bg-gradient-to-b from-emerald-500/10 via-white to-white dark:from-emerald-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-emerald-400/40 hover:border-emerald-600 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <BarChart3 size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase">
+                      Encuestas • En Vivo
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    Dilemas y Encuestas en Vía
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Decide ante situaciones reales de tráfico colombiano y compara al instante con los porcentajes de votación de la comunidad y la ley.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  <span>Votar y Aprender</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* 5. Relacionar Columnas */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'matching') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initMatchingGame}
+                className="group bg-gradient-to-b from-blue-500/10 via-white to-white dark:from-blue-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-blue-400/40 hover:border-[#0052cc] shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-[#0052cc] text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <Shuffle size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-300 text-[10px] font-black uppercase">
+                      Emparejar
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-sky-400 transition-colors">
+                    Relacionar Columnas
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Une cada señal vial con su orden de tránsito respectiva en dos columnas interactivas antes de que termine el tiempo.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-sky-400">
+                  <span>Jugar Emparejamiento</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* 6. Completar Huecos */}
+            {(hubCategoryFilter === 'all' || hubCategoryFilter === 'matching') && (
+              <motion.div 
+                whileHover={{ y: -4 }}
+                onClick={initFillBlanksGame}
+                className="group bg-gradient-to-b from-teal-500/10 via-white to-white dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 rounded-3xl p-6 border-2 border-teal-400/40 hover:border-teal-500 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition-transform">
+                      <BookOpen size={22} />
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 text-[10px] font-black uppercase">
+                      Leyes Viales
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    Completar la Norma
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Inserta las palabras correctas de la Ley 2251 y el Código Nacional de Tránsito para completar las frases legales.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-teal-600 dark:text-teal-400">
+                  <span>Completar Frases</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            )}
 
           </div>
 
@@ -983,7 +1172,8 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
           4. PANTALLA DE JUEGO: RETO CONTRA RELOJ (RAPID FIRE 10s)
          ===================================================================== */}
       {gameMode === 'rapid_fire' && (
-        <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+        <div className="space-y-6 animate-fade-in max-w-2xl mx-auto relative">
+          {rfFinished && <QuizConfetti />}
           {/* Header */}
           <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1121,6 +1311,30 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {/* =====================================================================
+          MUNDOS EDUCAPLAY: CRUCIGRAMA, SOPA DE LETRAS Y ENCUESTAS / DILEMAS
+         ===================================================================== */}
+      {gameMode === 'crossword' && (
+        <CrosswordGame 
+          onBackToHub={() => setGameMode('hub')} 
+          onRecordScore={handleRecordQuizScore}
+        />
+      )}
+
+      {gameMode === 'word_search' && (
+        <WordSearchGame 
+          onBackToHub={() => setGameMode('hub')} 
+          onRecordScore={handleRecordQuizScore}
+        />
+      )}
+
+      {gameMode === 'polls' && (
+        <CommunityPollsGame 
+          onBackToHub={() => setGameMode('hub')} 
+          onRecordScore={handleRecordQuizScore}
+        />
       )}
 
       {/* =====================================================================
