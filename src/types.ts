@@ -6,7 +6,6 @@ export type ScreenId =
   | 'servicios'
   | 'storyboard'
   | 'busqueda'
-  | 'educacion_vial'
   | 'senales'
   | 'quiz'
   | 'simulador'
@@ -91,6 +90,7 @@ export interface ExamQuestion {
   id: number;
   category: string;
   licenseCategory?: 'A2' | 'B1' | 'C1' | 'todas';
+  difficulty?: 'facil' | 'medio' | 'dificil';
   question: string;
   options: string[];
   correctIndex: number;
@@ -99,6 +99,9 @@ export interface ExamQuestion {
   signCode?: string;
   signType?: string;
   signHint?: string;
+  imageUrl?: string;
+  situationType?: string;
+  imageCaption?: string;
 }
 
 export interface QuizTopic {

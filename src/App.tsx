@@ -9,7 +9,6 @@ import { Navigation } from './components/Navigation';
 import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { DashboardScreen } from './components/DashboardScreen';
 import { SearchScreen } from './components/SearchScreen';
-import { EducationScreen } from './components/EducationScreen';
 import { ExamSimulatorScreen } from './components/ExamSimulatorScreen';
 import { TrafficSignsScreen } from './components/TrafficSignsScreen';
 import { QuizScreen } from './components/QuizScreen';
@@ -222,14 +221,6 @@ function AppContent() {
               />
             )}
 
-            {currentScreen === 'educacion_vial' && (
-              <EducationScreen
-                user={user}
-                onNavigateToQuiz={() => setCurrentScreen('quiz')}
-                onNavigateToSimulator={() => setCurrentScreen('simulador')}
-              />
-            )}
-
             {currentScreen === 'senales' && (
               <TrafficSignsScreen
                 onBackToDashboard={() => setCurrentScreen('inicio')}
@@ -239,7 +230,6 @@ function AppContent() {
             {currentScreen === 'quiz' && (
               <QuizScreen
                 user={user}
-                onNavigateToEducation={() => setCurrentScreen('educacion_vial')}
                 onNavigateToSimulator={() => setCurrentScreen('simulador')}
               />
             )}

@@ -396,7 +396,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 mt-1">
-                Usa al menos 6 caracteres (recomendado: mayúsculas, números o símbolos).
+                Usa al menos 6 caracteres (recomendado: mayúscula, minúscula y número).
               </p>
             </div>
 

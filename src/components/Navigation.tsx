@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ScreenId, UserProfile } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
+import { soundEngine } from '../utils/soundEffects';
 
 interface NavigationProps {
   currentScreen: ScreenId;
@@ -31,33 +32,27 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenDeleteAccountModal,
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const langDropdownRef = useRef<HTMLDivElement>(null);
 
   const { 
     themeMode, 
     toggleThemeMode, 
     language, 
-    setLanguage,
     toggleLanguage,
     t 
   } = useThemeLanguage();
 
-  const supportedLanguages: { id: 'es' | 'en'; label: string; flag: string }[] = [
-    { id: 'es', label: 'Español', flag: '🇪🇸' },
-    { id: 'en', label: 'English', flag: '🇺🇸' },
-  ];
+  const handleLanguageToggle = () => {
+    soundEngine.playClick();
+    toggleLanguage();
+  };
 
-  // Close dropdowns when clicking outside
+  // Close user dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
-      }
-      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
-        setLangDropdownOpen(false);
       }
     };
 
@@ -68,12 +63,12 @@ export const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   // Dashboard navigation items:
-  // Inicio, Aprende (Seguridad Vial), Práctica (Simulador), Quiz, Reportes
+  // Inicio, Señales, Quiz, Simulador, Reportes
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
-    { id: 'educacion_vial', labelKey: 'nav_learn', defaultLabel: 'Aprende' },
-    { id: 'simulador', labelKey: 'nav_practice', defaultLabel: 'Práctica' },
+    { id: 'senales', labelKey: 'nav_traffic_signs', defaultLabel: 'Señales' },
     { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
+    { id: 'simulador', labelKey: 'nav_simulator', defaultLabel: 'Simulador' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
   ];
 
@@ -115,9 +110,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             </div>
           </div>
 
-          {/* Center Nav Items */}
+          {/* Center Nav Items (Clean, without scrollbar, nicely spaced) */}
           {user ? (
-            <nav className="hidden md:flex items-center gap-5 lg:gap-7 py-2">
+            <nav className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8 py-2">
               {navItems.map((item) => {
                 const isActive = currentScreen === item.id;
 
@@ -127,7 +122,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     type="button"
                     id={`nav-item-${item.id}`}
                     onClick={() => handleNavClick(item.id)}
-                    className={`relative py-1.5 px-1 text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`relative py-1.5 px-1 text-xs lg:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                       isActive
                         ? 'text-[#0052cc] dark:text-sky-400'
                         : 'text-[#475569] dark:text-slate-300 hover:text-[#0052cc] dark:hover:text-white'
@@ -165,53 +160,24 @@ export const Navigation: React.FC<NavigationProps> = ({
               </span>
             </button>
 
-            {/* Language Selector Dropdown */}
-            <div className="relative" ref={langDropdownRef}>
-              <button
-                type="button"
-                id="header-lang-toggle-btn"
-                data-i18n="nav_lang_switch"
-                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs select-none"
-                title="Cambiar idioma / Switch language"
-                aria-label="Idioma / Language"
-              >
-                <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
-                <span className="font-black uppercase tracking-wider">{language}</span>
-              </button>
-
-              {langDropdownOpen && (
-                <div 
-                  id="language-picker-dropdown"
-                  className="absolute right-0 mt-2 w-44 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-1.5 z-50 animate-fade-in"
-                >
-                  {supportedLanguages.map((langItem) => {
-                    const isSelected = language === langItem.id;
-                    return (
-                      <button
-                        key={langItem.id}
-                        type="button"
-                        onClick={() => {
-                          setLanguage(langItem.id);
-                          setLangDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 font-black'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span>{langItem.flag}</span>
-                          <span>{langItem.label}</span>
-                        </span>
-                        {isSelected && <span className="text-[#0052cc] dark:text-sky-400 text-xs font-black">✓</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            {/* Direct 1-Click Language Switcher (Español <-> Inglés) */}
+            <button
+              type="button"
+              id="header-lang-toggle-btn"
+              data-i18n="nav_lang_switch"
+              onClick={handleLanguageToggle}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer shadow-xs select-none"
+              title={language === 'en' ? 'Cambiar a Español (ES)' : 'Switch to English (EN)'}
+              aria-label={language === 'en' ? 'Cambiar idioma a Español' : 'Switch language to English'}
+            >
+              <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
+              <span className="font-black uppercase tracking-wider">
+                {language === 'en' ? 'EN' : 'ES'}
+              </span>
+              <span className="text-xs" aria-hidden="true">
+                {language === 'en' ? '🇺🇸' : '🇪🇸'}
+              </span>
+            </button>
 
             {/* Authenticated User Controls */}
             {user ? (
@@ -301,7 +267,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="p-2 text-slate-700 dark:text-slate-200 md:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   aria-label="Abrir menú"
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -315,7 +281,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         {/* Mobile Navigation Drawer */}
         {user && mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
-            <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {navItems.map((item) => {
                     const isActive = currentScreen === item.id;
                     return (
@@ -346,7 +312,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   </button>
                 </div>
               </div>
-            )}
+        )}
       </div>
     </header>
   );

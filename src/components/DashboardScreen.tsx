@@ -14,7 +14,6 @@ import {
   Sparkles, 
   CheckCircle2, 
   ChevronRight, 
-  User,
   UserPlus, 
   LogIn, 
   AlertTriangle, 
@@ -145,52 +144,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
 
   const progress = getUserDashboardProgress(user);
 
-  const quickAccessChips = [
-    {
-      id: 'quiz',
-      label: 'Quiz',
-      icon: HelpCircle,
-      action: () => {
-        onNavigate('quiz');
-      },
-    },
-    {
-      id: 'simuladores',
-      label: 'Simuladores',
-      icon: FileCheck2,
-      action: () => {
-        onNavigate('simulador');
-      },
-    },
-    {
-      id: 'catalogo',
-      label: 'Catálogo',
-      icon: SlidersHorizontal,
-      action: () => {
-        onNavigate('senales');
-      },
-    },
-    {
-      id: 'mapa-en-vivo',
-      label: 'Mapa en Vivo',
-      icon: MapPin,
-      isLive: true,
-      action: () => {
-        const target = document.getElementById('mapa-en-vivo-medellin');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      },
-    },
-    {
-      id: 'perfil',
-      label: 'Perfil',
-      icon: User,
-      action: () => {
-        onNavigate('perfil');
-      },
-    },
-  ];
 
   // Search Bar state in Dashboard (opens in small white dropdown, no black screen)
   const [dashboardSearchQuery, setDashboardSearchQuery] = React.useState('');
@@ -502,12 +455,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
     {
       id: 'quick-ley2251',
       title: 'Límites de Velocidad (Ley 2251)',
-      categoryType: 'educacion',
-      categoryLabel: 'Educación Vial',
+      categoryType: 'senales',
+      categoryLabel: 'Señales y Normas',
       subtitle: 'Ley Julián Esteban: 50 km/h urbanas y 30 km/h residenciales',
-      targetScreen: 'educacion_vial',
+      targetScreen: 'senales',
       description: 'Ley Julián Esteban',
-      tags: ['velocidad', 'ley 2251']
+      tags: ['velocidad', 'ley 2251', 'normas']
     },
     {
       id: 'quick-mapa',
@@ -866,42 +819,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
           )}
         </div>
 
-      {/* ===================== BARRITA HORIZONTAL CON ACCESOS RÁPIDOS (CHIP PILL) ===================== */}
-      <div className="w-full -mt-2">
-        <div 
-          className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-2 px-0.5 scroll-smooth"
-          role="navigation"
-          aria-label="Accesos rápidos"
-        >
-          {quickAccessChips.map((chip) => {
-            const Icon = chip.icon;
-            const isLive = chip.isLive;
-
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                id={`quick-chip-${chip.id}`}
-                onClick={chip.action}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shadow-2xs shrink-0 select-none active:scale-95 border ${
-                  isLive
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-400 hover:text-[#0052cc] dark:hover:text-sky-300 hover:bg-blue-50/50 dark:hover:bg-slate-800'
-                }`}
-              >
-                {isLive && (
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                )}
-                <Icon size={15} className={isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#0052cc] dark:text-sky-400'} />
-                <span>{chip.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ===================== 3 KEY METRICS / STATS (If logged in) ===================== */}
       {user && (
@@ -1408,51 +1325,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* 1. Educación Vial */}
-          <div 
-            onClick={() => onNavigate('educacion_vial')}
-            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
-                  style={{ 
-                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
-                    color: activeThemeConfig.primaryHex 
-                  }}
-                >
-                  <BookOpen size={22} />
-                </div>
-                <span 
-                  className="text-[10px] font-bold px-2.5 py-1 rounded-full border"
-                  style={{ 
-                    backgroundColor: activeThemeConfig.bgLightHex, 
-                    color: activeThemeConfig.primaryHex,
-                    borderColor: activeThemeConfig.borderLightHex 
-                  }}
-                >
-                  {t('dash_badge_law', 'Fundamentos & Teoría')}
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-sky-500 transition-colors">
-                Aprende: Teoría y Normas Viales
-              </h3>
-              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
-                Insumos teóricos indispensables antes de realizar las actividades y simuladores: Ley Julián Esteban (50/30 km/h), glorietas, cascos y ciclistas a 1.5m.
-              </p>
-            </div>
-            <div 
-              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
-              style={{ color: activeThemeConfig.primaryHex }}
-            >
-              <span>Aprender teoría y normas</span>
-              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* 2. Señales de Tránsito */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* 1. Señales de Tránsito */}
           <div 
             onClick={() => onNavigate('senales')}
             className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"

@@ -9,12 +9,12 @@ export const ALL_SEARCHABLE_ITEMS: SearchResultItem[] = [
     id: `search-edu-${mod.id}`,
     title: mod.title,
     categoryType: 'educacion' as const,
-    categoryLabel: 'Educación Vial',
+    categoryLabel: 'Normativa y Quiz',
     subtitle: mod.subtitle,
     description: `${mod.summary} Base Legal: ${mod.legalBasis}.`,
-    tags: ['ley 2251', 'ley 769', 'educacion', 'normativa', 'seguridad', 'velocidad', 'casco', 'prelacion', 'ciclistas'],
+    tags: ['ley 2251', 'ley 769', 'normativa', 'seguridad', 'velocidad', 'casco', 'prelacion', 'ciclistas', 'quiz'],
     badgeColor: 'bg-[#eff6ff] text-[#0052cc] border-[#bfdbfe]',
-    targetScreen: 'educacion_vial' as const,
+    targetScreen: 'quiz' as const,
     metadata: `${mod.readTime} • ${mod.legalBasis}`
   })),
 

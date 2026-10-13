@@ -7,69 +7,85 @@
  */
 
 export interface PasswordValidationResult {
-  isValid: boolean;
+  isValid: boolean; // Minimum length >= 6 (valid for account creation)
+  isStrong: boolean; // Meets criteria for strong password (all 4 rules satisfied)
   score: number; // 0 to 100
   strengthLabel: 'Muy Débil' | 'Débil' | 'Media' | 'Fuerte' | 'Muy Fuerte';
-  strengthColor: string; // Tailwind color class or hex
+  strengthColor: string; // Tailwind color or hex
+  feedbackTip: string; // Real-time actionable guidance
   rules: {
-    minLength: boolean; // >= 8 chars
-    hasUpperCase: boolean; // At least one uppercase letter [A-Z]
-    hasNumber: boolean; // At least one number [0-9]
-    hasSymbol: boolean; // At least one special symbol
+    minLength: boolean; // >= 6 chars (mínimo obligatorio)
+    hasUpperCase: boolean; // Al menos una letra mayúscula [A-Z]
+    hasLowerCase: boolean; // Al menos una letra minúscula [a-z]
+    hasNumber: boolean; // Al menos un número [0-9]
+    hasSymbol?: boolean; // opcional / compatibilidad
   };
 }
 
 /**
- * Validates password strength according to strict security rules:
- * 1. Mínimo 8 caracteres
- * 2. Una letra mayúscula
- * 3. Un número
- * 4. Un símbolo / carácter especial
+ * Validates password strength:
+ * 1. Mínimo 6 caracteres
+ * 2. Al menos una letra mayúscula [A-Z]
+ * 3. Al menos una letra minúscula [a-z]
+ * 4. Al menos un número [0-9]
  */
 export function evaluatePasswordStrength(password: string): PasswordValidationResult {
-  const minLength = password.length >= 8;
+  const minLength = password.length >= 6;
   const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const hasSymbol = /[^A-Za-z0-9]/.test(password);
 
-  const passedRulesCount = [minLength, hasUpperCase, hasNumber, hasSymbol].filter(Boolean).length;
-  
   let score = 0;
+  if (password.length > 0) {
+    if (minLength) score += 25;
+    if (hasUpperCase) score += 25;
+    if (hasLowerCase) score += 25;
+    if (hasNumber) score += 25;
+  }
+
   let strengthLabel: PasswordValidationResult['strengthLabel'] = 'Muy Débil';
   let strengthColor = '#ef4444'; // Red
+  let feedbackTip = 'La contraseña debe tener mínimo 6 caracteres, una mayúscula, una minúscula y un número.';
 
   if (password.length === 0) {
     score = 0;
     strengthLabel = 'Muy Débil';
     strengthColor = '#94a3b8';
-  } else if (passedRulesCount === 1) {
-    score = 25;
+    feedbackTip = 'Para considerarla fuerte incluye: mínimo 6 caracteres, una mayúscula, una minúscula y un número.';
+  } else if (!minLength) {
+    strengthLabel = 'Muy Débil';
+    strengthColor = '#ef4444';
+    const remaining = 6 - password.length;
+    feedbackTip = `Te faltan ${remaining} caracter${remaining > 1 ? 'es' : ''} para el mínimo de 6 caracteres.`;
+  } else if (score <= 50) {
     strengthLabel = 'Débil';
-    strengthColor = '#ef4444'; // Red
-  } else if (passedRulesCount === 2) {
-    score = 50;
+    strengthColor = '#f87171';
+    feedbackTip = 'Contraseña válida pero débil. Agrega mayúsculas, minúsculas o números para fortalecerla.';
+  } else if (score === 75) {
     strengthLabel = 'Media';
     strengthColor = '#f59e0b'; // Amber
-  } else if (passedRulesCount === 3) {
-    score = 75;
+    feedbackTip = '¡Casi lista! Completa el requisito restante para considerarla fuerte.';
+  } else {
     strengthLabel = 'Fuerte';
-    strengthColor = '#3b82f6'; // Blue
-  } else if (passedRulesCount === 4) {
-    score = 100;
-    strengthLabel = 'Muy Fuerte';
-    strengthColor = '#10b981'; // Emerald Green
+    strengthColor = '#10b981'; // Green
+    feedbackTip = '¡Contraseña fuerte y segura! Cumple con todos los requisitos.';
   }
 
-  const isValid = minLength && hasUpperCase && hasNumber && hasSymbol;
+  const isStrong = minLength && hasUpperCase && hasLowerCase && hasNumber;
+  const isValid = minLength; // Permite registrar con mínimo 6 caracteres
 
   return {
     isValid,
+    isStrong,
     score,
     strengthLabel,
     strengthColor,
+    feedbackTip,
     rules: {
       minLength,
       hasUpperCase,
+      hasLowerCase,
       hasNumber,
       hasSymbol,
     }

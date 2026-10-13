@@ -19,6 +19,7 @@ import { UserType, UserProfile } from '../types';
 import { TermsModal } from './TermsModal';
 import { findRegisteredUserByEmail, saveRegisteredUser } from '../utils/authStorage';
 import { evaluatePasswordStrength, validateColombianPhone } from '../utils/security';
+import { PasswordRequirementsGuide } from './PasswordRequirementsGuide';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { firebaseRegister } from '../lib/firebase';
 
@@ -71,7 +72,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       return;
     }
     if (!passwordAnalysis.isValid) {
-      setErrorMessage(t('reg_err_short_pass', 'La contraseña debe tener al menos 8 caracteres, mayúscula, número y símbolo.'));
+      setErrorMessage(t('reg_err_short_pass', 'La contraseña debe tener al menos 6 caracteres.'));
       return;
     }
     if (password !== confirmPassword) {
@@ -292,19 +293,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
             {/* Secure Password Creation */}
             <div className="flex flex-col gap-1 pt-1">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-[#475569] dark:text-slate-300 uppercase tracking-wider block" htmlFor="password">
-                  {t('reg_pass_label', 'Contraseña')} *
-                </label>
-                {password && (
-                  <span 
-                    className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded"
-                    style={{ color: passwordAnalysis.strengthColor }}
-                  >
-                    {passwordAnalysis.strengthLabel} ({passwordAnalysis.score}%)
-                  </span>
-                )}
-              </div>
+              <label className="text-[11px] font-bold text-[#475569] dark:text-slate-300 uppercase tracking-wider block" htmlFor="password">
+                {t('reg_pass_label', 'Contraseña (Mínimo 6 caracteres)')} *
+              </label>
 
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none">
@@ -317,7 +308,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('reg_pass_ph', '••••••••')}
+                  placeholder="Mínimo 6 caracteres"
                   className="w-full pl-10 pr-11 py-2.5 border border-[#cbd5e1] dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-xs sm:text-sm text-[#0f172a] dark:text-white placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0052cc] font-mono"
                 />
                 <button 
@@ -325,21 +316,18 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
                   id="register-toggle-password-btn"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#0052cc] p-1 cursor-pointer"
+                  title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
 
-              {/* Password Strength Progress Bar */}
-              <div className="w-full bg-[#e2e8f0] dark:bg-slate-800 h-1 rounded-full overflow-hidden mt-1">
-                <div
-                  className="h-full transition-all duration-300"
-                  style={{
-                    width: `${passwordAnalysis.score}%`,
-                    backgroundColor: passwordAnalysis.strengthColor,
-                  }}
-                />
-              </div>
+              {/* Password Specifications & Strength Guide */}
+              <PasswordRequirementsGuide
+                password={password}
+                analysis={passwordAnalysis}
+                showAlways={true}
+              />
             </div>
 
             {/* Confirm Password */}

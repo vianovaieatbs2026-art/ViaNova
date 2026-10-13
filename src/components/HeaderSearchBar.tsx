@@ -68,10 +68,10 @@ export const HeaderSearchBar: React.FC<HeaderSearchBarProps> = ({
     {
       id: 'hdr-ley',
       title: 'Límites de Velocidad (Ley 2251)',
-      categoryType: 'educacion',
-      categoryLabel: 'Educación Vial',
+      categoryType: 'senales',
+      categoryLabel: 'Señales y Normas',
       subtitle: 'Ley Julián Esteban: 50 km/h en vías urbanas',
-      targetScreen: 'educacion_vial',
+      targetScreen: 'senales',
       description: '',
       tags: []
     }

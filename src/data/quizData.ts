@@ -604,6 +604,199 @@ export const COLOMBIAN_QUIZ_TOPICS_ES: QuizTopic[] = [
         legalReference: 'Art. 30 Ley 769 de 2002'
       }
     ]
+  },
+  {
+    id: 'quiz-situaciones-viales',
+    title: 'Quiz Visual: Situaciones y Conductas en la Vía',
+    description: '10 preguntas ilustradas con situaciones de tránsito en tiempo real: glorietas, pasos de cebra, semáforos, adelantamientos y prelaciones.',
+    icon: 'Camera',
+    questionCount: 10,
+    durationMinutes: 8,
+    questions: [
+      {
+        id: 401,
+        category: 'Conducta en Glorietas',
+        difficulty: 'medio',
+        situationType: 'glorieta',
+        imageCaption: 'Vehículo A ya circula por el anillo vial; Vehículo B espera en el acceso.',
+        question: 'Observa la ilustración de la glorieta. ¿Cuál es la conducta correcta en esta situación vial y quién tiene la prelación de paso?',
+        options: [
+          'El Vehículo B tiene prelación porque llega por una vía recta.',
+          'El Vehículo A tiene prelación total porque ya está circulando dentro del anillo; el Vehículo B debe ceder el paso.',
+          'Ambos vehículos deben avanzar al mismo tiempo sin detenerse.',
+          'Tiene prelación el vehículo que emita señales acústicas (pito) primero.'
+        ],
+        correctIndex: 1,
+        explanation: 'El Art. 119 de la Ley 769 (Código Nacional de Tránsito) estipula claramente que todo vehículo que transite dentro de una glorieta tiene prelación sobre el que intenta ingresar a ella.',
+        legalReference: 'Art. 119 Ley 769 de 2002 - Código Nacional de Tránsito',
+        signHint: 'Quien ya está dentro de la rotonda tiene la preferencia de circulación.'
+      },
+      {
+        id: 402,
+        category: 'Protección al Peatón',
+        difficulty: 'facil',
+        situationType: 'cebra_peaton',
+        imageCaption: 'Paso peatonal de cebra demarcado con peatón cruzando la calzada.',
+        question: 'Al observar esta situación con un peatón sobre la demarcación de cebra, ¿cuál es la conducta obligatoria del conductor?',
+        options: [
+          'Acelerar antes de que el peatón cruce frente a la trayectoria del carro.',
+          'Detener totalmente el vehículo antes de la línea blanca transversal y conceder el paso seguro al peatón.',
+          'Hacer sonar el pito insistentemente para que el peatón se apresure.',
+          'Avanzar esquivando al peatón por el carril contrario.'
+        ],
+        correctIndex: 1,
+        explanation: 'Los peatones gozan de prelación absoluta en los pasos peatonales y cebras. El conductor debe detenerse por completo antes de la línea de detención para proteger su vida e integridad.',
+        legalReference: 'Art. 105 y 109 Ley 769 de 2002',
+        signHint: 'En pasos de cebra, el peatón siempre tiene la prelación de paso.'
+      },
+      {
+        id: 403,
+        category: 'Adelantamiento y Demarcación',
+        difficulty: 'facil',
+        situationType: 'linea_continua',
+        imageCaption: 'Carretera de doble sentido con doble línea continua amarilla y curva próxima.',
+        question: 'Observa la carretera en la imagen. ¿Está permitido adelantar al vehículo precedente sobre este tramo vial?',
+        options: [
+          'Sí, siempre que se haga a gran velocidad encendiendo luces intermitentes.',
+          'No, la doble línea amarilla continua prohíbe de forma absoluta rebasar o invadir el carril contrario.',
+          'Sí, si el conductor no divisa vehículos aproximándose en la lejanía.',
+          'Solo si el vehículo que antecede circula a menos de 30 km/h.'
+        ],
+        correctIndex: 1,
+        explanation: 'La línea amarilla continua (sencilla o doble) prohíbe tajantemente el adelantamiento en ambos sentidos. Transgredirla constituye infracción D.06 y genera riesgo inminente de choque frontal.',
+        legalReference: 'Art. 73 Ley 769 de 2002 e Infracción D.06',
+        signHint: 'La línea continua funciona como un muro legal: nunca debe ser cruzada para adelantar.'
+      },
+      {
+        id: 404,
+        category: 'Semáforos y Señales Luminosas',
+        difficulty: 'medio',
+        situationType: 'semaforo_amarillo',
+        imageCaption: 'Aproximación a la intersección con luz amarilla fija del semáforo.',
+        question: 'Observa el semáforo con luz amarilla fija encendida. ¿Cuál es la conducta legalmente correcta que debe asumir el conductor?',
+        options: [
+          'Acelerar a fondo para cruzar la intersección antes de que encienda la luz roja.',
+          'Prepararse para detener el vehículo antes de la línea de parada, salvo que el frenado repentino sea peligroso.',
+          'Continuar la marcha sin prestar atención al cambio de luces.',
+          'Detenerse inmediatamente en medio de la intersección aunque bloquee el paso.'
+        ],
+        correctIndex: 1,
+        explanation: 'La luz amarilla advierte el cambio inminente a rojo. Obliga al conductor a detenerse antes de la línea de detención, a menos que el vehículo esté tan próximo que frenar bruscamente cause colisión por alcance.',
+        legalReference: 'Art. 118 Ley 769 de 2002',
+        signHint: 'La luz amarilla no significa acelerar, sino preparar la detención segura.'
+      },
+      {
+        id: 405,
+        category: 'Distancia de Seguridad',
+        difficulty: 'medio',
+        situationType: 'distancia_seguridad',
+        imageCaption: 'Regla de los 3 segundos de separación temporal entre vehículos en carretera.',
+        question: 'Observa los dos vehículos en movimiento en la autopista. ¿Cuál es el margen de seguridad recomendado para evitar colisiones por alcance?',
+        options: [
+          'Pegarse a 1 metro del parachoques para evitar que otros carros se metan.',
+          'Conservar una distancia de al menos 3 segundos de separación temporal respecto al vehículo precedente.',
+          'No existe distancia mínima reglamentaria en Colombia.',
+          'Medio segundo es suficiente cuando los frenos están en buen estado.'
+        ],
+        correctIndex: 1,
+        explanation: 'La regla de los 3 segundos permite al conductor percibir el peligro imprevisto, reaccionar y frenar a tiempo evitando el choque por alcance en carretera.',
+        legalReference: 'Art. 108 Ley 769 de 2002 - Distancia entre vehículos',
+        signHint: 'Cuenta 3 segundos tomando un punto de referencia fijo como un poste o árbol.'
+      },
+      {
+        id: 406,
+        category: 'Seguridad en Motocicletas',
+        difficulty: 'facil',
+        situationType: 'casco_motociclista',
+        imageCaption: 'Requisitos de uso del casco reglamentario certificado según la Res. 23385.',
+        question: 'Según la Resolución 23385 de Mintransporte, ¿cuál de las siguientes conductas es OBLIGATORIA al usar el casco en motocicleta?',
+        options: [
+          'Llevar la cabeza totalmente inmersa en el casco con el sistema de retención (hebilla) debidamente abrochado y sin celulares adentro.',
+          'Llevar el casco suelto en el codo o apoyado en la nuca.',
+          'Meter el teléfono celular dentro del casco pegado a la oreja para contestar llamadas mientras se conduce.',
+          'Usar cascos de ciclista o de construcción industrial sin certificación internacional.'
+        ],
+        correctIndex: 0,
+        explanation: 'La Resolución 23385 exige que la cabeza esté completamente inmersa en un casco certificado (DOT, ECE o NTC 4533), perfectamente abrochado y sin dispositivos móviles en su interior.',
+        legalReference: 'Resolución 23385 de 2020 - Mintransporte',
+        signHint: 'El casco debe estar abrochado, ajustado y libre de celulares entre la oreja y el acolchado.'
+      },
+      {
+        id: 407,
+        category: 'Prelación en Cruces',
+        difficulty: 'dificil',
+        situationType: 'interseccion_derecha',
+        imageCaption: 'Intersección vial perpendicular sin señalización ni semáforo.',
+        question: 'En este cruce de dos vías de igual jerarquía sin semáforos ni señales de PARE, ¿qué vehículo tiene la prelación legal de paso?',
+        options: [
+          'El vehículo que llegue a mayor velocidad a la bocacalle.',
+          'El vehículo que se aproxima por el lado derecho (mano derecha) respecto al otro conductor.',
+          'El vehículo que toque la bocina primero.',
+          'El vehículo de servicio público o de mayor tamaño.'
+        ],
+        correctIndex: 1,
+        explanation: 'El Art. 106 del CNT estipula que en intersecciones donde no haya prelación fijada por señales o semáforos, tiene prelación el vehículo que se aproxime por la derecha.',
+        legalReference: 'Art. 106 Ley 769 de 2002 - Prelación en intersecciones',
+        signHint: 'Regla universal de tránsito: ceda el paso al vehículo que viene por su derecha.'
+      },
+      {
+        id: 408,
+        category: 'Señales Reglamentarias',
+        difficulty: 'facil',
+        signCode: 'SR-38',
+        signType: 'sr-38',
+        imageCaption: 'Señal reglamentaria SR-38 con dos vehículos y orla roja tachada.',
+        question: 'Observa la señal reglamentaria SR-38 en la imagen. ¿Qué maniobra está terminantemente prohibida a partir de este punto?',
+        options: [
+          'Prohibido encender el aire acondicionado o la radio.',
+          'Prohibido adelantar o rebasar a otros vehículos en ese tramo de vía.',
+          'Carril exclusivo para carreras automovilísticas.',
+          'Permitido adelantar solo por la berma o andén.'
+        ],
+        correctIndex: 1,
+        explanation: 'La señal SR-38 notifica que está prohibido adelantar a otro automotor en el tramo de vía señalizado, debido a visibilidad insuficiente o trazado peligroso.',
+        legalReference: 'Manual de Señalización Vial - Mintransporte',
+        signHint: 'Dos siluetas de autos con una franja roja que cruza diagonalmente.'
+      },
+      {
+        id: 409,
+        category: 'Señales Preventivas',
+        difficulty: 'facil',
+        signCode: 'SP-40',
+        signType: 'sp-40',
+        imageCaption: 'Señal preventiva SP-40 rombo amarillo con resalto vial.',
+        question: 'Observa la señal preventiva SP-40 en la imagen. ¿Qué advertencia transmite y qué acción debe realizar el conductor?',
+        options: [
+          'Advierte la proximidad de un resalto o reductor de velocidad en la calzada; el conductor debe desacelerar oportunamente.',
+          'Indica una rampa de salto para vehículos de exhibición.',
+          'Señala el fin de la carretera pavimentada.',
+          'Indica un puente colgante sobre río.'
+        ],
+        correctIndex: 0,
+        explanation: 'La señal SP-40 advierte sobre la existencia de un resalto transversal (reductor físico de velocidad) en la calzada, requiriendo desacelerar para evitar daños al vehículo o accidentes.',
+        legalReference: 'Manual de Señalización Vial - Señales Preventivas',
+        signHint: 'Silueta ondulada en rombo amarillo reflectivo.'
+      },
+      {
+        id: 410,
+        category: 'Señales de Prioridad',
+        difficulty: 'facil',
+        signCode: 'SR-02',
+        signType: 'sr-02',
+        imageCaption: 'Señal reglamentaria SR-02 triangular invertida de Ceda el Paso.',
+        question: 'Observa la señal SR-02 triangular invertida. ¿Qué debe hacer el conductor al encontrarla en una intersección o incorporación?',
+        options: [
+          'Acelerar sin mirar porque tiene la prelación absoluta de la vía.',
+          'Reducir la velocidad y detenerse si fuere necesario para ceder el paso a los vehículos o peatones que transiten por la vía preferente.',
+          'Avanzar tocando la bocina repetidamente.',
+          'Girar en U inmediatamente sin detenerse.'
+        ],
+        correctIndex: 1,
+        explanation: 'La señal SR-02 "Ceda el Paso" obliga al conductor a moderar la marcha y parar si es indispensable, para no obstaculizar a los usuarios que gozan de la prelación.',
+        legalReference: 'Art. 110 Ley 769 de 2002',
+        signHint: 'Triángulo invertido blanco con orla roja reglamentaria.'
+      }
+    ]
   }
 ];
 
@@ -1207,8 +1400,229 @@ export const COLOMBIAN_QUIZ_TOPICS_EN: QuizTopic[] = [
         legalReference: 'Art. 30 Law 769 of 2002'
       }
     ]
+  },
+  {
+    id: 'quiz-situaciones-viales',
+    title: 'Visual Quiz: Road Scenarios & Safe Conduct',
+    description: '10 illustrated questions with real-time driving scenarios: roundabouts, zebra crossings, traffic lights, overtaking, and right of way.',
+    icon: 'Camera',
+    questionCount: 10,
+    durationMinutes: 8,
+    questions: [
+      {
+        id: 401,
+        category: 'Roundabout Conduct',
+        difficulty: 'medio',
+        situationType: 'glorieta',
+        imageCaption: 'Vehicle A is already inside the roundabout ring; Vehicle B is waiting at entrance.',
+        question: 'Observe the roundabout illustration. What is the correct conduct in this traffic situation and who has the right of way?',
+        options: [
+          'Vehicle B has right of way because it arrives on a straight road.',
+          'Vehicle A has absolute priority because it is already circulating inside the roundabout ring; Vehicle B must yield.',
+          'Both vehicles should advance simultaneously without stopping.',
+          'The vehicle that sounds its horn first has right of way.'
+        ],
+        correctIndex: 1,
+        explanation: 'Article 119 of Law 769 states that any vehicle circulating inside a roundabout has priority over traffic attempting to enter.',
+        legalReference: 'Art. 119 Law 769 of 2002',
+        signHint: 'Traffic already within the roundabout has right of way.'
+      },
+      {
+        id: 402,
+        category: 'Pedestrian Protection',
+        difficulty: 'facil',
+        situationType: 'cebra_peaton',
+        imageCaption: 'Marked zebra crossing with pedestrian crossing the road.',
+        question: 'When encountering this situation with a pedestrian on a zebra crossing, what is the mandatory action for the driver?',
+        options: [
+          'Accelerate before the pedestrian crosses in front of the vehicle path.',
+          'Completely stop the vehicle before the stop line and yield safe passage to the pedestrian.',
+          'Sound the horn insistently to hurry the pedestrian.',
+          'Swerve into the opposing lane to dodge the pedestrian.'
+        ],
+        correctIndex: 1,
+        explanation: 'Pedestrians have absolute priority at zebra crosswalks. Drivers must stop completely behind the stop line to protect human life.',
+        legalReference: 'Art. 105 and 109 Law 769 of 2002',
+        signHint: 'Pedestrians always have the right of way at zebra crossings.'
+      },
+      {
+        id: 403,
+        category: 'Overtaking & Markings',
+        difficulty: 'facil',
+        situationType: 'linea_continua',
+        imageCaption: 'Two-way road with double solid yellow line and upcoming bend.',
+        question: 'Look at the road in the image. Is the red vehicle permitted to overtake the blue vehicle on this road section?',
+        options: [
+          'Yes, provided it is done at high speed with hazard lights on.',
+          'No, the double solid yellow line strictly prohibits overtaking or invading the opposing lane.',
+          'Yes, if no oncoming cars are seen in the distance.',
+          'Only if the preceding car is moving under 30 km/h.'
+        ],
+        correctIndex: 1,
+        explanation: 'Solid yellow road lines strictly prohibit overtaking in both directions. Transgressing it is a serious infraction and causes head-on collisions.',
+        legalReference: 'Art. 73 Law 769 of 2002',
+        signHint: 'Solid lines act like legal barriers: never cross them to overtake.'
+      },
+      {
+        id: 404,
+        category: 'Traffic Lights',
+        difficulty: 'medio',
+        situationType: 'semaforo_amarillo',
+        imageCaption: 'Approaching intersection with solid yellow light active.',
+        question: 'Observe the traffic light with solid amber/yellow light on. What is the legally correct action for the driver?',
+        options: [
+          'Accelerate hard to clear the intersection before red turns on.',
+          'Prepare to stop the vehicle before the stop line, unless sudden braking would cause a collision.',
+          'Continue at the same speed ignoring the light change.',
+          'Stop abruptly in the middle of the intersection.'
+        ],
+        correctIndex: 1,
+        explanation: 'The solid amber light warns of impending red. It obligates stopping behind the stop line unless the vehicle is too close to stop safely.',
+        legalReference: 'Art. 118 Law 769 of 2002',
+        signHint: 'Yellow means prepare to stop safely, not speed up.'
+      },
+      {
+        id: 405,
+        category: 'Following Distance',
+        difficulty: 'medio',
+        situationType: 'distancia_seguridad',
+        imageCaption: 'The 3-second rule for following distance between vehicles on highways.',
+        question: 'Look at both moving vehicles on the highway. What is the recommended safe following buffer to avoid rear-end crashes?',
+        options: [
+          'Tailgate 1 meter away to draft and save fuel.',
+          'Maintain at least a 3-second temporal following gap behind the leading vehicle.',
+          'There is no minimum following distance in Colombia.',
+          'Half a second is sufficient with ABS brakes.'
+        ],
+        correctIndex: 1,
+        explanation: 'The 3-second rule gives drivers time to perceive hazard, react, and brake safely to avoid rear-end collisions.',
+        legalReference: 'Art. 108 Law 769 of 2002',
+        signHint: 'Count 3 seconds after the front car passes a fixed roadside landmark.'
+      },
+      {
+        id: 406,
+        category: 'Motorcycle Safety',
+        difficulty: 'facil',
+        situationType: 'casco_motociclista',
+        imageCaption: 'Certified helmet usage rules under Res. 23385.',
+        question: 'Under Resolution 23385, which conduct is MANDATORY when wearing a motorcycle helmet in Colombia?',
+        options: [
+          'Keep head completely inside the certified helmet, chin retention strap properly buckled, and no mobile phones tucked inside.',
+          'Wear helmet unbuckled on the elbow or back of neck.',
+          'Tuck phone inside the helmet against the ear while riding.',
+          'Use bicycle or construction helmets without motor vehicle certification.'
+        ],
+        correctIndex: 0,
+        explanation: 'Resolution 23385 requires a certified helmet (DOT/ECE/NTC 4533) fully buckled, with head completely enclosed and free of mobile devices.',
+        legalReference: 'Resolution 23385 of 2020',
+        signHint: 'Helmets must be certified, buckled, and worn without phones wedged inside.'
+      },
+      {
+        id: 407,
+        category: 'Intersection Priority',
+        difficulty: 'dificil',
+        situationType: 'interseccion_derecha',
+        imageCaption: 'Cross intersection without signals or stop signs.',
+        question: 'At this crossroad of equal roads with no traffic lights or STOP signs, which vehicle has the legal right of way?',
+        options: [
+          'The vehicle arriving at higher speed.',
+          'The vehicle approaching from the right side relative to the other driver.',
+          'The vehicle honking first.',
+          'The larger public transit vehicle.'
+        ],
+        correctIndex: 1,
+        explanation: 'Article 106 states that at uncontrolled intersections of equal roads, vehicles approaching from the right have priority.',
+        legalReference: 'Art. 106 Law 769 of 2002',
+        signHint: 'Standard rule: yield to vehicles approaching from your right hand side.'
+      },
+      {
+        id: 408,
+        category: 'Regulatory Signs',
+        difficulty: 'facil',
+        signCode: 'SR-38',
+        signType: 'sr-38',
+        imageCaption: 'Regulatory sign SR-38 with two cars and diagonal red slash.',
+        question: 'Observe regulatory sign SR-38. What maneuver is strictly prohibited from this point forward?',
+        options: [
+          'Air conditioning usage.',
+          'Overtaking or passing other vehicles.',
+          'Race track lane.',
+          'Passing on the shoulder only.'
+        ],
+        correctIndex: 1,
+        explanation: 'The SR-38 sign indicates overtaking other vehicles is strictly forbidden due to hazards or poor visibility.',
+        legalReference: 'Colombian Road Sign Manual',
+        signHint: 'Two car silhouettes crossed out with a diagonal red line.'
+      },
+      {
+        id: 409,
+        category: 'Warning Signs',
+        difficulty: 'facil',
+        signCode: 'SP-40',
+        signType: 'sp-40',
+        imageCaption: 'Warning sign SP-40 yellow diamond with speed bump.',
+        question: 'Look at warning sign SP-40. What warning does it convey and what should the driver do?',
+        options: [
+          'Warns of an upcoming speed bump or road hump; driver must reduce speed.',
+          'Indicates a vehicle jump ramp.',
+          'Marks the end of paved road.',
+          'Suspension bridge ahead.'
+        ],
+        correctIndex: 0,
+        explanation: 'SP-40 warns about a physical speed hump, requiring the driver to slow down to prevent vehicle damage or loss of control.',
+        legalReference: 'Colombian Road Sign Manual',
+        signHint: 'Wavy hump silhouette on reflective yellow diamond.'
+      },
+      {
+        id: 410,
+        category: 'Priority Signs',
+        difficulty: 'facil',
+        signCode: 'SR-02',
+        signType: 'sr-02',
+        imageCaption: 'Regulatory sign SR-02 inverted triangle Yield.',
+        question: 'Look at inverted triangle sign SR-02. What must the driver do upon encountering it?',
+        options: [
+          'Speed up because they have priority.',
+          'Slow down and stop if necessary to yield to vehicles or pedestrians on the priority road.',
+          'Advance while continuously honking.',
+          'Make an immediate U-turn.'
+        ],
+        correctIndex: 1,
+        explanation: 'The SR-02 Yield sign obligates slowing down and stopping if required to give way to oncoming priority traffic.',
+        legalReference: 'Art. 110 Law 769 of 2002',
+        signHint: 'Inverted white triangle with red border.'
+      }
+    ]
   }
 ];
+
+export const QUIZ_MOTIVATIONAL_MESSAGES = {
+  correct: [
+    { title: '¡Excelente! 🎉', subtitle: '¡Muy bien! Respuesta correcta.' },
+    { title: '¡Así se hace! 🚀', subtitle: '¡Correcto! Estás aprendiendo muy bien.' },
+    { title: '¡Muy bien! 🌟', subtitle: 'Respuesta correcta. Sigue adelante con ese ritmo.' },
+    { title: '¡Perfecto! 👏', subtitle: 'Identificaste la norma vial con total precisión.' }
+  ],
+  incorrect: [
+    { title: '¡Casi lo logras! 💪', subtitle: 'Sigue intentando, cada intento te acerca a dominar la norma.' },
+    { title: 'No te preocupes 🌱', subtitle: 'Cada error es una valiosa oportunidad para aprender y mejorar.' },
+    { title: '¡Vamos por la siguiente! 🎯', subtitle: 'Respuesta incorrecta. Revisa el fundamento y sigamos practicando.' }
+  ]
+};
+
+export const QUIZ_MOTIVATIONAL_MESSAGES_EN = {
+  correct: [
+    { title: 'Excellent! 🎉', subtitle: 'Very good! Correct answer.' },
+    { title: 'Way to go! 🚀', subtitle: 'Correct! You are learning very well.' },
+    { title: 'Well done! 🌟', subtitle: 'Correct answer. Keep moving forward.' },
+    { title: 'Spot on! 👏', subtitle: 'You identified the road regulation with total precision.' }
+  ],
+  incorrect: [
+    { title: 'Almost there! 💪', subtitle: 'Keep trying, each attempt brings you closer to mastery.' },
+    { title: 'Do not worry 🌱', subtitle: 'Every mistake is a valuable opportunity to learn and improve safety.' },
+    { title: 'On to the next one! 🎯', subtitle: 'Incorrect answer. Review the law and keep practicing.' }
+  ]
+};
 
 export function getQuizTopics(lang: string): QuizTopic[] {
   return lang === 'en' ? COLOMBIAN_QUIZ_TOPICS_EN : COLOMBIAN_QUIZ_TOPICS_ES;

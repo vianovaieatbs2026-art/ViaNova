@@ -4,6 +4,7 @@ import {
   GraduationCap, 
   TrafficCone, 
   BookOpen, 
+  HelpCircle,
   MapPin, 
   ArrowRight, 
   Sparkles, 
@@ -65,17 +66,17 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({
       targetScreen: 'senales'
     },
     {
-      id: 'educacion',
-      title: 'Escuela de Convivencia y Leyes',
-      tag: 'EDUCACIÓN VIAL COLOMBIA',
+      id: 'quiz',
+      title: 'Quizzes Visuales e Interactivos',
+      tag: 'EVALUACIÓN DIDÁCTICA',
       badgeColor: 'bg-[#00FF88]/15 text-[#00FF88]',
       borderColor: 'hover:border-[#00FF88]',
       glowColor: 'hover:shadow-[0_0_30px_rgba(0,255,136,0.3)]',
-      description: 'Módulos didácticos sobre la Ley Julián Esteban (Ley 2251 de 2022), distancias de frenado, prelación en glorietas y puntos ciegos de carga pesada.',
-      icon: <BookOpen size={32} className="text-[#00FF88]" />,
-      actionText: 'Acceder a Clases',
-      stats: 'Normativa Ley 769 & Ley 2251',
-      targetScreen: 'educacion_vial'
+      description: 'Preguntas con imágenes reales de señales viales, situaciones de tránsito, retroalimentación inmediata motivadora y explicaciones de la normativa colombiana.',
+      icon: <HelpCircle size={32} className="text-[#00FF88]" />,
+      actionText: 'Hacer un Quiz',
+      stats: 'Preguntas con imágenes y retroalimentación',
+      targetScreen: 'quiz'
     },
     {
       id: 'reportes',

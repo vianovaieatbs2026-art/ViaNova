@@ -455,12 +455,12 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                   type="button"
                   onClick={() => {
                     setSelectedCampaign(null);
-                    onNavigate('educacion_vial');
+                    onNavigate('quiz');
                   }}
                   className="px-5 py-2.5 rounded-xl bg-[#0052cc] hover:bg-[#0043a8] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
                 >
                   <BookOpen size={15} />
-                  <span>Estudiar en Educación Vial</span>
+                  <span>Practicar en Quiz</span>
                 </button>
               </div>
             </div>

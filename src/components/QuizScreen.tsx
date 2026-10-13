@@ -22,13 +22,18 @@ import {
   Trophy, 
   FileCheck2,
   AlertTriangle,
-  Lightbulb
+  Lightbulb,
+  Filter,
+  Camera,
+  CheckCircle
 } from 'lucide-react';
 import { 
   getQuizTopics, 
   MATCH_SIGNS_DATA, 
   FILL_BLANKS_CHALLENGES, 
   RAPID_FIRE_QUESTIONS,
+  QUIZ_MOTIVATIONAL_MESSAGES,
+  QUIZ_MOTIVATIONAL_MESSAGES_EN,
   MatchSignItem,
   FillBlankChallenge,
   RapidFireQuestion
@@ -39,10 +44,11 @@ import { getActiveUserSession } from '../utils/authStorage';
 import { recordUserQuizScore } from '../utils/userProgress';
 import { soundEngine } from '../utils/soundEffects';
 import { TrafficSignGraphic } from './TrafficSignGraphic';
+import { QuizQuestionVisual } from './QuizQuestionVisual';
 
 interface QuizScreenProps {
   user?: UserProfile | null;
-  onNavigateToEducation: () => void;
+  onNavigateToEducation?: () => void;
   onNavigateToSimulator: () => void;
 }
 
@@ -50,7 +56,6 @@ type QuizGameMode = 'hub' | 'matching' | 'fill_blanks' | 'rapid_fire' | 'traditi
 
 export const QuizScreen: React.FC<QuizScreenProps> = ({
   user,
-  onNavigateToEducation,
   onNavigateToSimulator
 }) => {
   const { language, t } = useThemeLanguage();
@@ -322,16 +327,18 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   };
 
   // =========================================================================
-  // 4. MODO CLÁSICO: QUIZ TRADICIONAL POR PREGUNTAS
+  // 4. MODO CLÁSICO: QUIZ TRADICIONAL Y VISUAL POR PREGUNTAS
   // =========================================================================
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState<boolean>(false);
   const [tradScore, setTradScore] = useState<number>(0);
+  const [tradWrongCount, setTradWrongCount] = useState<number>(0);
   const [tradStreak, setTradStreak] = useState<number>(0);
   const [tradQuizFinished, setTradQuizFinished] = useState<boolean>(false);
-  const [showHint, setShowHint] = useState<boolean>(false);
+  const [feedbackData, setFeedbackData] = useState<{ title: string; subtitle: string; isCorrect: boolean } | null>(null);
+  const [topicFilter, setTopicFilter] = useState<'all' | 'visual' | 'facil' | 'medio' | 'dificil'>('all');
 
   const activeTopic = topics.find(tp => tp.id === activeTopicId) || null;
 
@@ -342,44 +349,59 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
     setSelectedOption(null);
     setIsAnswerSubmitted(false);
     setTradScore(0);
+    setTradWrongCount(0);
     setTradStreak(0);
-    setShowHint(false);
+    setFeedbackData(null);
     setTradQuizFinished(false);
     setGameMode('traditional');
   };
 
+  // Retroalimentación INMEDIATA al seleccionar respuesta
   const handleSelectTradOption = (index: number) => {
-    if (!isAnswerSubmitted) {
-      soundEngine.playClick();
-      setSelectedOption(index);
-    }
-  };
+    if (isAnswerSubmitted || !activeTopic) return;
 
-  const handleSubmitTradAnswer = () => {
-    if (selectedOption === null || !activeTopic) return;
-    setIsAnswerSubmitted(true);
     const question = activeTopic.questions[currentQuestionIdx];
-    const isCorrect = selectedOption === question.correctIndex;
+    const isCorrect = index === question.correctIndex;
+
+    setSelectedOption(index);
+    setIsAnswerSubmitted(true);
+
+    // Selección de mensaje motivador inmediato según resultado
+    const motivationalPool = language === 'en'
+      ? (isCorrect ? QUIZ_MOTIVATIONAL_MESSAGES_EN.correct : QUIZ_MOTIVATIONAL_MESSAGES_EN.incorrect)
+      : (isCorrect ? QUIZ_MOTIVATIONAL_MESSAGES.correct : QUIZ_MOTIVATIONAL_MESSAGES.incorrect);
+
+    const randomMsg = motivationalPool[Math.floor(Math.random() * motivationalPool.length)];
+    setFeedbackData({
+      title: randomMsg.title,
+      subtitle: randomMsg.subtitle,
+      isCorrect
+    });
 
     if (isCorrect) {
       soundEngine.playSuccess();
-      setTradStreak(prev => prev + 1);
+      const nextStreak = tradStreak + 1;
+      setTradStreak(nextStreak);
       setTradScore(prev => prev + 1);
+      if (nextStreak >= 3) {
+        setTimeout(() => soundEngine.playStreak(), 200);
+      }
     } else {
       soundEngine.playError();
       setTradStreak(0);
+      setTradWrongCount(prev => prev + 1);
     }
   };
 
   const handleNextTradQuestion = () => {
     if (!activeTopic) return;
     soundEngine.playClick();
-    setShowHint(false);
 
     if (currentQuestionIdx + 1 < activeTopic.questions.length) {
       setCurrentQuestionIdx(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswerSubmitted(false);
+      setFeedbackData(null);
     } else {
       setTradQuizFinished(true);
       soundEngine.playComplete();
@@ -537,42 +559,101 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
 
           </div>
 
-          {/* BANCO DE QUIZZES TRADICIONALES POR TEMAS */}
-          <div className="pt-4 space-y-4">
-            <div className="flex items-center justify-between">
+          {/* BANCO DE QUIZZES POR TEMAS Y VISUALES */}
+          <div className="pt-4 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                  Quizzes Tradicionales por Temas
+                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>Quizzes Temáticos y Visuales</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-400 text-[10px] font-black uppercase">
+                    Interactivo
+                  </span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Rondas clásicas de 10 preguntas oficiales con retroalimentación jurídica inmediata.
+                  Rondas completas de 10 preguntas con imágenes de señales de tránsito, situaciones en vivo y retroalimentación motivadora inmediata.
                 </p>
+              </div>
+
+              {/* Filtros de Categoría / Dificultad */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setTopicFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap text-xs ${
+                    topicFilter === 'all'
+                      ? 'bg-[#0052cc] text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  Todos los Quizzes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTopicFilter('visual')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap text-xs flex items-center gap-1.5 ${
+                    topicFilter === 'visual'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  <Camera size={13} />
+                  <span>Visuales con Imágenes</span>
+                </button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {topics.map((topic) => (
-                <div
-                  key={topic.id}
-                  onClick={() => startTopic(topic)}
-                  className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-500 transition-all cursor-pointer flex items-start gap-4 group shadow-xs hover:shadow-md"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Target size={22} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-sky-400 transition-colors truncate">
-                      {topic.title}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-                      {topic.description}
-                    </p>
-                    <span className="text-[11px] font-bold text-[#0052cc] dark:text-sky-400 inline-flex items-center gap-1 mt-2">
-                      Iniciar Quiz →
-                    </span>
-                  </div>
-                </div>
-              ))}
+              {topics
+                .filter(topic => {
+                  if (topicFilter === 'visual') {
+                    return topic.questions.some(q => q.signCode || q.situationType || q.imageUrl);
+                  }
+                  return true;
+                })
+                .map((topic) => {
+                  const hasVisualQuestions = topic.questions.some(q => q.signCode || q.situationType || q.imageUrl);
+
+                  return (
+                    <div
+                      key={topic.id}
+                      onClick={() => startTopic(topic)}
+                      className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-500 transition-all cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-lg relative overflow-hidden"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md">
+                            {hasVisualQuestions ? <Camera size={22} /> : <Target size={22} />}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                            {hasVisualQuestions && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase flex items-center gap-1 border border-emerald-300/60 dark:border-emerald-800">
+                                <span>📸 Con Imágenes</span>
+                              </span>
+                            )}
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                              10 Preguntas
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-black text-base text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-sky-400 transition-colors">
+                            {topic.title}
+                          </h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                            {topic.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-sky-400">
+                        <span>Empezar Quiz</span>
+                        <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform" />
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 
@@ -1044,98 +1125,192 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
       )}
 
       {/* =====================================================================
-          5. PANTALLA DE JUEGO: QUIZ TRADICIONAL POR PREGUNTAS
+          5. PANTALLA DE JUEGO: QUIZ TRADICIONAL Y VISUAL POR PREGUNTAS
          ===================================================================== */}
       {gameMode === 'traditional' && activeTopic && (
         <div className="space-y-6 animate-fade-in max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-sky-400 tracking-wider">
-                QUIZ TRADICIONAL • {activeTopic.title}
-              </span>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
-                Pregunta {currentQuestionIdx + 1} de {activeTopic.questions.length}
-              </h2>
+          {/* Header con Progreso y Marcadores en Vivo */}
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            {/* Barra superior de progreso continuo */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] uppercase font-black tracking-wider text-[#0052cc] dark:text-sky-400">
+                  {activeTopic.title}
+                </span>
+                <span>
+                  Pregunta <strong className="text-slate-900 dark:text-white font-black">{currentQuestionIdx + 1}</strong> de {activeTopic.questions.length}
+                </span>
+              </div>
+              <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#0052cc] to-sky-400 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentQuestionIdx + 1) / activeTopic.questions.length) * 100}%` }}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              {tradStreak >= 2 && (
-                <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                  <Flame size={14} />
-                  <span>x{tradStreak}</span>
+
+            {/* Marcadores de Aciertos, Errores y Racha */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-black">
+                  <CheckCircle2 size={14} />
+                  <span>Aciertos: {tradScore}</span>
                 </div>
-              )}
-              <div className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300">
-                Puntos: {tradScore}
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-black">
+                  <XCircle size={14} />
+                  <span>Errores: {tradWrongCount}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {tradStreak >= 2 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 text-amber-600 dark:text-amber-400 text-xs font-black animate-pulse">
+                    <Flame size={14} />
+                    <span>Racha x{tradStreak}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {tradQuizFinished ? (
-            /* Resultados tradicionales */
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-blue-500/20 text-[#0052cc] dark:text-sky-400 flex items-center justify-center mx-auto border-2 border-blue-400">
-                <Trophy size={32} />
+            /* Pantalla Completa de Resultados Finales */
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-6 animate-fade-in">
+              <div className="w-20 h-20 rounded-full bg-blue-500/10 dark:bg-sky-500/20 text-[#0052cc] dark:text-sky-400 flex items-center justify-center mx-auto border-2 border-blue-400/40">
+                <Trophy size={40} className="animate-bounce" />
               </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                ¡Quiz Completado!
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-                Obtuviste <strong className="text-[#0052cc] dark:text-sky-400 font-black">{tradScore} de {activeTopic.questions.length} respuestas correctas</strong>.
-              </p>
-              <div className="flex items-center justify-center gap-3 pt-2">
+
+              <div className="space-y-2">
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                  ¡Quiz Visual Finalizado!
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+                  Completaste todas las preguntas de <strong className="text-[#0052cc] dark:text-sky-400">{activeTopic.title}</strong>.
+                </p>
+              </div>
+
+              {/* Estadísticas de la Ronda */}
+              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 block">
+                    {tradScore}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">
+                    Aciertos
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
+                  <span className="text-2xl font-black text-rose-600 dark:text-rose-400 block">
+                    {tradWrongCount}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">
+                    Errores
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800">
+                  <span className="text-2xl font-black text-[#0052cc] dark:text-sky-400 block">
+                    {Math.round((tradScore / activeTopic.questions.length) * 100)}%
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase">
+                    Efectividad
+                  </span>
+                </div>
+              </div>
+
+              {/* Mensaje Evaluativo Constructivo */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 max-w-md mx-auto text-xs text-slate-700 dark:text-slate-300 leading-relaxed border border-slate-200 dark:border-slate-700">
+                {tradScore >= 8 ? (
+                  <p className="font-semibold text-emerald-700 dark:text-emerald-300">
+                    🎉 ¡Extraordinario desempeño! Tienes un excelente dominio de la señalización y normativa vial colombiana.
+                  </p>
+                ) : tradScore >= 5 ? (
+                  <p className="font-semibold text-amber-700 dark:text-amber-300">
+                    👍 ¡Buen trabajo! Vas por excelente camino. Repasar las preguntas visuales consolidará aún más tu seguridad al conducir.
+                  </p>
+                ) : (
+                  <p className="font-semibold text-slate-700 dark:text-slate-300">
+                    🌱 ¡Buen esfuerzo! Cada error es una valiosa oportunidad para aprender. Vuelve a intentarlo para reforzar estos conceptos.
+                  </p>
+                )}
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => startTopic(activeTopic)}
-                  className="px-5 py-2.5 rounded-xl bg-[#0052cc] text-white text-xs font-bold hover:bg-[#0043a8] transition-colors cursor-pointer shadow-sm"
+                  className="px-6 py-3 rounded-2xl bg-[#0052cc] text-white text-xs font-bold hover:bg-[#0043a8] transition-all cursor-pointer shadow-md flex items-center gap-2"
                 >
-                  Repetir Quiz
+                  <RotateCcw size={15} />
+                  <span>Repetir este Quiz</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setGameMode('hub')}
-                  className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
-                  Volver al Menú
+                  Explorar Otros Quizzes
+                </button>
+                <button
+                  type="button"
+                  onClick={onNavigateToSimulator}
+                  className="px-6 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 border border-blue-200 dark:border-blue-900 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer"
+                >
+                  Ir al Simulador de Examen
                 </button>
               </div>
             </div>
           ) : (
-            /* Pregunta actual */
+            /* Tarjeta de Pregunta Actual con Imagen y Opciones */
             <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
               
-              {/* Señal gráfica si la pregunta la incluye */}
-              {activeTopic.questions[currentQuestionIdx].signCode && (
-                <div className="flex justify-center py-2">
-                  <div className="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs">
-                    <TrafficSignGraphic 
-                      signCode={activeTopic.questions[currentQuestionIdx].signCode!} 
-                      size="sm" 
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Categoría de la Pregunta */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-300 text-xs font-bold border border-blue-200 dark:border-blue-900">
+                  {activeTopic.questions[currentQuestionIdx].category}
+                </span>
 
-              <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+                {activeTopic.questions[currentQuestionIdx].difficulty && (
+                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                    activeTopic.questions[currentQuestionIdx].difficulty === 'facil'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300'
+                      : activeTopic.questions[currentQuestionIdx].difficulty === 'medio'
+                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300'
+                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border-rose-300'
+                  }`}>
+                    Nivel {activeTopic.questions[currentQuestionIdx].difficulty === 'facil' ? 'Fácil' : activeTopic.questions[currentQuestionIdx].difficulty === 'medio' ? 'Medio' : 'Difícil'}
+                  </span>
+                )}
+              </div>
+
+              {/* Tarjeta Visual: Muestra Señal de Tránsito Oficial, Situación Vial o Imagen */}
+              <QuizQuestionVisual question={activeTopic.questions[currentQuestionIdx]} />
+
+              {/* Enunciado de la Pregunta */}
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-relaxed">
                 {activeTopic.questions[currentQuestionIdx].question}
-              </p>
+              </h3>
 
-              {/* Opciones */}
-              <div className="space-y-2.5">
+              {/* Opciones de Respuesta Interactivas */}
+              <div className="space-y-3">
                 {activeTopic.questions[currentQuestionIdx].options.map((opt, optIdx) => {
                   const isSelected = selectedOption === optIdx;
                   const isCorrect = optIdx === activeTopic.questions[currentQuestionIdx].correctIndex;
 
-                  let style = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#0052cc] text-slate-800 dark:text-slate-200';
-                  if (isSelected && !isAnswerSubmitted) {
-                    style = 'bg-blue-50 dark:bg-blue-950/60 border-[#0052cc] dark:border-sky-400 text-[#0052cc] dark:text-sky-300 font-bold';
-                  } else if (isAnswerSubmitted) {
+                  let optionStyle = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-400 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850';
+
+                  if (isAnswerSubmitted) {
                     if (isCorrect) {
-                      style = 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-200 font-bold';
+                      // Respuesta correcta (verde resaltado con icono)
+                      optionStyle = 'bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-500 text-emerald-950 dark:text-emerald-100 font-bold shadow-sm';
                     } else if (isSelected && !isCorrect) {
-                      style = 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-800 dark:text-rose-200 font-bold';
+                      // Selección incorrecta del usuario (rojo suave)
+                      optionStyle = 'bg-rose-50 dark:bg-rose-950/60 border-2 border-rose-500 text-rose-950 dark:text-rose-100 font-bold shadow-sm';
                     } else {
-                      style = 'opacity-50 border-slate-200 dark:border-slate-800';
+                      // Resto de opciones atenuadas
+                      optionStyle = 'opacity-40 border-slate-200 dark:border-slate-800 cursor-not-allowed bg-slate-50 dark:bg-slate-900';
                     }
                   }
 
@@ -1145,55 +1320,122 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                       type="button"
                       disabled={isAnswerSubmitted}
                       onClick={() => handleSelectTradOption(optIdx)}
-                      className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-medium transition-all flex items-start gap-3 cursor-pointer ${style}`}
+                      className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-medium transition-all flex items-start gap-3.5 cursor-pointer relative ${optionStyle} ${
+                        !isAnswerSubmitted ? 'active:scale-[0.99]' : ''
+                      }`}
                     >
-                      <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      {/* Letra A, B, C, D */}
+                      <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 mt-0.5 transition-colors ${
+                        isAnswerSubmitted && isCorrect
+                          ? 'bg-emerald-500 text-white'
+                          : isAnswerSubmitted && isSelected && !isCorrect
+                          ? 'bg-rose-500 text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}>
                         {String.fromCharCode(65 + optIdx)}
                       </span>
-                      <span className="flex-1 leading-relaxed">{opt}</span>
+
+                      <span className="flex-1 leading-relaxed pt-0.5">
+                        {opt}
+                      </span>
+
+                      {/* Icono de Verificación Inmediata */}
+                      {isAnswerSubmitted && isCorrect && (
+                        <div className="shrink-0 text-emerald-600 dark:text-emerald-400 pt-0.5 animate-bounce">
+                          <CheckCircle2 size={20} />
+                        </div>
+                      )}
+                      {isAnswerSubmitted && isSelected && !isCorrect && (
+                        <div className="shrink-0 text-rose-600 dark:text-rose-400 pt-0.5">
+                          <XCircle size={20} />
+                        </div>
+                      )}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Explicación y Justificación Legal */}
-              {isAnswerSubmitted && (
-                <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs text-slate-800 dark:text-slate-200 space-y-1">
-                  <p className="font-bold flex items-center gap-1.5 text-[#0052cc] dark:text-sky-400">
-                    <Lightbulb size={14} />
-                    <span>Fundamento Normativo:</span>
-                  </p>
-                  <p className="leading-relaxed">{activeTopic.questions[currentQuestionIdx].explanation}</p>
-                  {activeTopic.questions[currentQuestionIdx].legalReference && (
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1">
-                      {activeTopic.questions[currentQuestionIdx].legalReference}
-                    </p>
-                  )}
-                </div>
-              )}
+              {/* PANEL DE RETROALIMENTACIÓN INMEDIATA MOTIVADORA */}
+              <AnimatePresence>
+                {isAnswerSubmitted && feedbackData && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25 }}
+                    className={`p-5 rounded-2xl border text-xs sm:text-sm space-y-3.5 ${
+                      feedbackData.isCorrect
+                        ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100 shadow-sm'
+                        : 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/80 text-rose-950 dark:text-rose-100 shadow-sm'
+                    }`}
+                  >
+                    {/* Encabezado Motivador con Icono */}
+                    <div className="flex items-center gap-3">
+                      {feedbackData.isCorrect ? (
+                        <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
+                          <CheckCircle2 size={20} />
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
+                          <XCircle size={20} />
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-black text-sm sm:text-base leading-tight">
+                          {feedbackData.title}
+                        </h4>
+                        <p className="text-xs font-medium opacity-90 mt-0.5">
+                          {feedbackData.subtitle}
+                        </p>
+                      </div>
+                    </div>
 
-              {/* Botón Siguiente / Comprobar */}
-              <div className="pt-2 flex items-center justify-end">
-                {!isAnswerSubmitted ? (
-                  <button
-                    type="button"
-                    onClick={handleSubmitTradAnswer}
-                    disabled={selectedOption === null}
-                    className="px-5 py-2.5 rounded-xl bg-[#0052cc] hover:bg-[#0043a8] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-40"
-                  >
-                    Confirmar Respuesta
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleNextTradQuestion}
-                    className="px-5 py-2.5 rounded-xl bg-[#0052cc] hover:bg-[#0043a8] text-white text-xs font-bold transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span>Siguiente Pregunta</span>
-                    <ArrowRight size={14} />
-                  </button>
+                    {/* En caso de error: Resaltar cuál era la opción correcta */}
+                    {!feedbackData.isCorrect && (
+                      <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-rose-200 dark:border-rose-900/60 text-xs leading-relaxed">
+                        <span className="font-bold text-rose-700 dark:text-rose-300">
+                          Respuesta correcta:{' '}
+                        </span>
+                        <strong className="text-emerald-700 dark:text-emerald-300 font-bold">
+                          Opción {String.fromCharCode(65 + activeTopic.questions[currentQuestionIdx].correctIndex)}: {activeTopic.questions[currentQuestionIdx].options[activeTopic.questions[currentQuestionIdx].correctIndex]}
+                        </strong>
+                      </div>
+                    )}
+
+                    {/* Explicación Educativa y Fundamento Legal */}
+                    <div className="p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800/80 space-y-1.5">
+                      <p className="font-bold flex items-center gap-1.5 text-slate-900 dark:text-slate-100 text-xs">
+                        <Lightbulb size={14} className="text-amber-500" />
+                        <span>Fundamento Pedagógico y Vial:</span>
+                      </p>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
+                        {activeTopic.questions[currentQuestionIdx].explanation}
+                      </p>
+                      {activeTopic.questions[currentQuestionIdx].legalReference && (
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider pt-1">
+                          Norma: {activeTopic.questions[currentQuestionIdx].legalReference}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Botón para Continuar a la Siguiente Pregunta */}
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleNextTradQuestion}
+                        className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#0052cc] hover:bg-[#0043a8] text-white text-xs sm:text-sm font-black transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                      >
+                        <span>
+                          {currentQuestionIdx + 1 < activeTopic.questions.length
+                            ? 'Continuar a la Siguiente Pregunta'
+                            : 'Finalizar Quiz y Ver Resultados'}
+                        </span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
+              </AnimatePresence>
 
             </div>
           )}

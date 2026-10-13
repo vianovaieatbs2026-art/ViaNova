@@ -441,6 +441,115 @@ export const TrafficSignGraphic: React.FC<TrafficSignGraphicProps> = ({
       );
     }
 
+    // 18. SR-38 PROHIBIDO ADELANTAR (Two cars with red diagonal line)
+    if (normalizedType.includes('sr-38') || normalizedType.includes('adelantar') || normalizedType.includes('overtaking')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#c92a2a" strokeWidth="8" />
+          {/* Right car (black) */}
+          <rect x="52" y="38" width="18" height="24" rx="4" fill="#0f172a" />
+          <circle cx="56" cy="38" r="2" fill="#ef4444" />
+          <circle cx="66" cy="38" r="2" fill="#ef4444" />
+          {/* Left car (red/black overtaking) */}
+          <rect x="28" y="38" width="18" height="24" rx="4" fill="#c92a2a" />
+          <circle cx="32" cy="38" r="2" fill="#ffffff" />
+          <circle cx="42" cy="38" r="2" fill="#ffffff" />
+          {/* Diagonal Red Slash */}
+          <line x1="20" y1="20" x2="80" y2="80" stroke="#c92a2a" strokeWidth="8" strokeLinecap="round" />
+        </svg>
+      );
+    }
+
+    // 19. SR-12 PROHIBIDO GIRAR A LA DERECHA
+    if (normalizedType.includes('sr-12') || (normalizedType.includes('prohibido') && normalizedType.includes('derecha'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#c92a2a" strokeWidth="8" />
+          {/* Right Turn Arrow */}
+          <path
+            d="M 36 68 L 36 48 C 36 38, 46 34, 58 34 L 62 34"
+            fill="none"
+            stroke="#0f172a"
+            strokeWidth="7"
+            strokeLinecap="round"
+          />
+          <polygon points="62,24 76,34 62,44" fill="#0f172a" />
+          {/* Diagonal Red Slash */}
+          <line x1="20" y1="20" x2="80" y2="80" stroke="#c92a2a" strokeWidth="8" strokeLinecap="round" />
+        </svg>
+      );
+    }
+
+    // 20. SP-33 DOBLE SENTIDO DE CIRCULACIÓN / DOBLE VÍA
+    if (normalizedType.includes('sp-33') || normalizedType.includes('doble via') || normalizedType.includes('doble sentido')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <polygon points="50,4 96,50 50,96 4,50" fill="#facc15" stroke="#0f172a" strokeWidth="3" />
+          <polygon points="50,9 91,50 50,91 9,50" fill="none" stroke="#0f172a" strokeWidth="1" />
+          {/* Up arrow */}
+          <line x1="42" y1="68" x2="42" y2="34" stroke="#0f172a" strokeWidth="6" strokeLinecap="round" />
+          <polygon points="34,38 42,24 50,38" fill="#0f172a" />
+          {/* Down arrow */}
+          <line x1="58" y1="32" x2="58" y2="66" stroke="#0f172a" strokeWidth="6" strokeLinecap="round" />
+          <polygon points="50,62 58,76 66,62" fill="#0f172a" />
+        </svg>
+      );
+    }
+
+    // 21. SP-28 GLORIETA PRÓXIMA (Yellow Diamond)
+    if (normalizedType.includes('sp-28')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <polygon points="50,4 96,50 50,96 4,50" fill="#facc15" stroke="#0f172a" strokeWidth="3" />
+          <polygon points="50,9 91,50 50,91 9,50" fill="none" stroke="#0f172a" strokeWidth="1" />
+          <g transform="translate(50,50)">
+            <path d="M 0,-18 A 18 18 0 0 1 15.5,9" fill="none" stroke="#0f172a" strokeWidth="4.5" strokeLinecap="round" />
+            <polygon points="15.5,9 12,4 20,6" fill="#0f172a" />
+            <path d="M 15.5,9 A 18 18 0 0 1 -15.5,9" fill="none" stroke="#0f172a" strokeWidth="4.5" strokeLinecap="round" />
+            <polygon points="-15.5,9 -11,14 -14,5" fill="#0f172a" />
+            <path d="M -15.5,9 A 18 18 0 0 1 0,-18" fill="none" stroke="#0f172a" strokeWidth="4.5" strokeLinecap="round" />
+            <polygon points="0,-18 -5,-13 4,-16" fill="#0f172a" />
+          </g>
+        </svg>
+      );
+    }
+
+    // 22. SR-30 (80) & SR-30 (90) VELOCIDADES MÁXIMAS
+    if (normalizedType.includes('80') && (normalizedType.includes('sr-30') || normalizedType.includes('velocidad'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#c92a2a" strokeWidth="8" />
+          <text x="50" y="54" textAnchor="middle" fill="#0f172a" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="30">80</text>
+          <text x="50" y="70" textAnchor="middle" fill="#64748b" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="9">KM/H</text>
+        </svg>
+      );
+    }
+    if (normalizedType.includes('90') && (normalizedType.includes('sr-30') || normalizedType.includes('velocidad'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#c92a2a" strokeWidth="8" />
+          <text x="50" y="54" textAnchor="middle" fill="#0f172a" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="30">90</text>
+          <text x="50" y="70" textAnchor="middle" fill="#64748b" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="9">KM/H</text>
+        </svg>
+      );
+    }
+
+    // 23. SI-27 FOTOMULTA / DETECCIÓN ELECTRÓNICA
+    if (normalizedType.includes('si-27') || normalizedType.includes('fotodeteccion') || normalizedType.includes('camara')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="10" width="84" height="80" rx="8" fill="#0052cc" stroke="#ffffff" strokeWidth="3" />
+          <rect x="18" y="20" width="64" height="60" rx="4" fill="#ffffff" />
+          {/* Camera body */}
+          <rect x="28" y="38" width="44" height="28" rx="4" fill="#0f172a" />
+          <polygon points="40,38 45,30 55,30 60,38" fill="#0f172a" />
+          <circle cx="50" cy="52" r="9" fill="#38bdf8" stroke="#ffffff" strokeWidth="2.5" />
+          <circle cx="64" cy="44" r="2.5" fill="#f59e0b" />
+          <text x="50" y="76" textAnchor="middle" fill="#0052cc" fontWeight="900" fontSize="7">RADAR SAST</text>
+        </svg>
+      );
+    }
+
     // Generic Default Sign
     return (
       <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">

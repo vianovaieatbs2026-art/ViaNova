@@ -31,7 +31,7 @@ const STORAGE_MODE_KEY = 'vianova_pref_theme_mode';
 const STORAGE_COLOR_KEY = 'vianova_pref_theme_color';
 
 export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 1. Language state with local storage fallback
+  // 1. Language state with local storage fallback (Spanish / English only)
   const [language, setLanguageState] = useState<AppLanguage>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_LANG_KEY) as AppLanguage;
@@ -76,9 +76,10 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update Language
   const setLanguage = (newLang: AppLanguage) => {
-    setLanguageState(newLang);
+    const validLang: AppLanguage = newLang === 'en' ? 'en' : 'es';
+    setLanguageState(validLang);
     try {
-      localStorage.setItem(STORAGE_LANG_KEY, newLang);
+      localStorage.setItem(STORAGE_LANG_KEY, validLang);
     } catch (e) {
       // ignore
     }
@@ -86,7 +87,7 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Toggle directly between Spanish (es) and English (en) with 1 click
   const toggleLanguage = () => {
-    const nextLang: AppLanguage = language === 'es' ? 'en' : 'es';
+    const nextLang: AppLanguage = language === 'en' ? 'es' : 'en';
     setLanguage(nextLang);
   };
 
