@@ -294,12 +294,13 @@ function AppContent() {
           userId={user.id}
           userEmail={user.email}
           onClose={() => setIsDeleteModalOpen(false)}
-          onSuccess={() => {
+          onSuccess={(msg) => {
             setIsDeleteModalOpen(false);
             setUser(null);
             clearActiveUserSession();
             setUnauthView('login');
-            setAuthNoticeMessage('');
+            setAuthNoticeMessage(msg || 'Tu cuenta y todo tu proceso han sido eliminados por completo. Para ingresar de nuevo, debes crear una nueva cuenta.');
+            showToast('Cuenta eliminada permanentemente. Todo tu proceso ha sido borrado.');
           }}
         />
       )}

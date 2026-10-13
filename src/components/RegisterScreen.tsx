@@ -112,10 +112,31 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
         activeReports: 0,
         licenseNumber: userType === 'conductor' ? 'VN-2026-8892' : undefined,
         licenseCategory: userType === 'conductor' ? 'Clase B - Particular' : 'En formación',
-        city: 'Bogotá D.C.'
+        city: 'Medellín, Antioquia'
       };
 
+      // Clear any prior progress keys from deleted account
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(`vianova_deleted_${normalizedEmail}`);
+          localStorage.removeItem(`vianova_completed_modules_${normalizedEmail}`);
+          localStorage.removeItem(`vianova_quiz_history_${normalizedEmail}`);
+          localStorage.removeItem(`vianova_exam_results_${normalizedEmail}`);
+          localStorage.removeItem(`vianova_reports_${normalizedEmail}`);
+        } catch (_) {}
+      }
+
       saveRegisteredUser(newUser, password);
+
+      // Synchronize creation in Server Store & Firebase Auth
+      try {
+        fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: newUser, password })
+        }).catch(() => {});
+      } catch (_) {}
+
       // Synchronize creation in Firebase Auth for seamless password recovery
       firebaseRegister(normalizedEmail, password).catch((err) => {
         console.warn('Firebase Auth registration sync notice:', err);

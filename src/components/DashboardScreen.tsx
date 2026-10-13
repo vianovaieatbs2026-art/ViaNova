@@ -125,7 +125,7 @@ export const COLOMBIA_HIGHLIGHTS: WorldLocationItem[] = [
   { id: 'co-poblado', name: 'Parque Lleras / El Poblado', detail: 'Medellín, Antioquia', query: 'Parque Lleras, Medellín, Colombia', zoom: 16, country: 'Colombia', category: 'corridor' },
   { id: 'co-sur', name: 'Autopista Sur (Itagüí - Medellín)', detail: 'Corredor vial metropolitano', query: 'Autopista Sur, Medellín, Colombia', zoom: 15, country: 'Colombia', category: 'corridor' },
   { id: 'co-regional', name: 'Avenida Regional (Eje del Río)', detail: 'Corredor Norte - Sur', query: 'Avenida Regional, Medellín, Colombia', zoom: 15, country: 'Colombia', category: 'corridor' },
-  { id: 'co-monserrate', name: 'Cerro de Monserrate', detail: 'Bogotá D.C., Colombia', query: 'Monserrate, Bogotá, Colombia', zoom: 15, country: 'Colombia', category: 'monument' },
+  { id: 'co-nutibara', name: 'Cerro Nutibara / Pueblito Paisa', detail: 'Medellín, Antioquia', query: 'Cerro Nutibara, Medellín, Colombia', zoom: 16, country: 'Colombia', category: 'monument' },
   { id: 'co-cartagena', name: 'Ciudad Amurallada', detail: 'Cartagena de Indias, Bolívar', query: 'Ciudad Amurallada, Cartagena, Colombia', zoom: 16, country: 'Colombia', category: 'city' },
   { id: 'co-cali', name: 'San Antonio y Cristo Rey', detail: 'Cali, Valle del Cauca', query: 'Barrio San Antonio, Cali, Colombia', zoom: 15, country: 'Colombia', category: 'city' },
   { id: 'co-oriente', name: 'Túnel de Oriente', detail: 'Conexión Valle de Aburrá - Aeropuerto JMC', query: 'Túnel de Oriente, Medellín, Colombia', zoom: 14, country: 'Colombia', category: 'corridor' }

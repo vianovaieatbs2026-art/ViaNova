@@ -193,7 +193,14 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       setLoginFieldErrors(newErrors);
       return;
     }
-    setLoginFieldErrors({});
+    // Requisito estricto: Si la cuenta fue eliminada previamente, sí o sí debe crearse una nueva cuenta
+    const isDeletedAccount = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${trimmedEmail}`) === 'true';
+    if (isDeletedAccount) {
+      setLoginSubmitting(false);
+      setActiveTab('register');
+      setRegError('Debes crear una cuenta primero');
+      return;
+    }
 
     setLoginSubmitting(true);
 
@@ -326,14 +333,26 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       // 1. Create account with Firebase Auth
       const firebaseRes = await firebaseRegister(trimmedEmail, regPassword);
 
+      const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${trimmedEmail}`) === 'true';
+
       if (firebaseRes.success && firebaseRes.user) {
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem(`vianova_deleted_${trimmedEmail}`);
+            localStorage.removeItem(`vianova_completed_modules_${trimmedEmail}`);
+            localStorage.removeItem(`vianova_quiz_history_${trimmedEmail}`);
+            localStorage.removeItem(`vianova_exam_results_${trimmedEmail}`);
+            localStorage.removeItem(`vianova_reports_${trimmedEmail}`);
+          } catch (_) {}
+        }
+
         const newUser: UserProfile = {
           id: firebaseRes.user.uid || `user-${Date.now()}`,
           name: regName.trim(),
           email: trimmedEmail,
           phone: regPhone.trim(),
           userType: regUserType || 'conductor',
-          safetyScore: 80,
+          safetyScore: 0,
           completedHours: 0,
           passedExams: 0,
           activeReports: 0,
@@ -355,19 +374,24 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
       // Handle Firebase registration errors
       const errorMsg = firebaseRes.error || '';
-      if (errorMsg.includes('auth/email-already-in-use')) {
+      if (errorMsg.includes('auth/email-already-in-use') && !isDeleted) {
         setRegError('Este correo electrónico ya se encuentra registrado. Cambia a la pestaña "Iniciar Sesión".');
       } else if (errorMsg.includes('auth/weak-password')) {
         setRegError('La contraseña es demasiado débil para Firebase Auth.');
       } else {
-        // Fallback local registration if offline or Firebase email/pass disabled
-        const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${trimmedEmail}`) === 'true';
+        // Fallback local registration or recreation of deleted account
         const existing = isDeleted ? null : findRegisteredUserByEmail(trimmedEmail);
         if (existing) {
           setRegError('Este correo ya está registrado localmente. Por favor inicia sesión.');
         } else {
           if (typeof window !== 'undefined') {
-            try { localStorage.removeItem(`vianova_deleted_${trimmedEmail}`); } catch (_) {}
+            try {
+              localStorage.removeItem(`vianova_deleted_${trimmedEmail}`);
+              localStorage.removeItem(`vianova_completed_modules_${trimmedEmail}`);
+              localStorage.removeItem(`vianova_quiz_history_${trimmedEmail}`);
+              localStorage.removeItem(`vianova_exam_results_${trimmedEmail}`);
+              localStorage.removeItem(`vianova_reports_${trimmedEmail}`);
+            } catch (_) {}
           }
           const newUser: UserProfile = {
             id: `user-${Date.now()}`,
@@ -375,7 +399,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
             email: trimmedEmail,
             phone: regPhone.trim(),
             userType: (regUserType || 'conductor') as UserType,
-            safetyScore: 80,
+            safetyScore: 0,
             completedHours: 0,
             passedExams: 0,
             activeReports: 0,

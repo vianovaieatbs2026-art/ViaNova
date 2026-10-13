@@ -43,6 +43,15 @@ export const supabase = {
       // 2. Check by email if provided
       if (emailCandidate) {
         const normalized = emailCandidate.trim().toLowerCase();
+
+        // Si la cuenta fue eliminada permanentemente, bloquea acceso y exige crear una nueva cuenta
+        if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalized}`) === 'true') {
+          return {
+            data: { user: null },
+            error: new Error('Debes crear una cuenta primero')
+          };
+        }
+
         const account = findRegisteredUserByEmail(normalized);
         if (account && account.profile) {
           return {
@@ -265,6 +274,7 @@ export async function deleteUserAccount(
           localStorage.removeItem(`vianova_exam_results_${normalized}`);
           localStorage.removeItem(`vianova_completed_modules_${normalized}`);
           localStorage.removeItem(`vianova_reports_${normalized}`);
+          localStorage.setItem(`vianova_deleted_${normalized}`, 'true');
         } catch (_) {}
       }
     }
@@ -272,10 +282,16 @@ export async function deleteUserAccount(
     // 3. Sign out from all auth instances
     await supabase.auth.signOut();
 
-    // 4. Clear all browser storage completely
+    // 4. Clear active session and secondary keys (preserving vianova_deleted flags)
     if (typeof window !== 'undefined') {
       try {
-        localStorage.clear();
+        localStorage.removeItem('vianova_active_user');
+        localStorage.removeItem('vianova_registered_users');
+        localStorage.removeItem('vianova_last_email');
+        if (userEmail) {
+          const norm = userEmail.trim().toLowerCase();
+          localStorage.setItem(`vianova_deleted_${norm}`, 'true');
+        }
         sessionStorage.clear();
       } catch (_) {}
     }
@@ -291,7 +307,12 @@ export async function deleteUserAccount(
     try {
       await supabase.auth.signOut();
       if (typeof window !== 'undefined') {
-        localStorage.clear();
+        localStorage.removeItem('vianova_active_user');
+        localStorage.removeItem('vianova_registered_users');
+        if (userEmail) {
+          const norm = userEmail.trim().toLowerCase();
+          localStorage.setItem(`vianova_deleted_${norm}`, 'true');
+        }
         sessionStorage.clear();
       }
     } catch (_) {}

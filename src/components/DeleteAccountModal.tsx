@@ -69,9 +69,44 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       return;
     }
 
+    const cleanEmail = (userEmail || '').trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     // Verify current password against stored credentials (such as Isabella#Narvaez2026!)
-    const passCheck = verifyUserPassword(userEmail, password.trim());
-    if (!passCheck.valid) {
+    let isPasswordValid = false;
+
+    // A. Check local stored credentials & system accounts
+    const passCheck = verifyUserPassword(cleanEmail, cleanPassword);
+    if (passCheck.valid) {
+      isPasswordValid = true;
+    }
+
+    // B. Check backend server authentication store (e.g. SERVER_USERS)
+    if (!isPasswordValid) {
+      try {
+        const checkRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+        });
+        const checkData = await checkRes.json().catch(() => ({}));
+        if (checkRes.ok && checkData.success) {
+          isPasswordValid = true;
+        }
+      } catch (_) {}
+    }
+
+    // C. Check Firebase Auth if available
+    if (!isPasswordValid) {
+      try {
+        const fbRes = await firebaseLogin(cleanEmail, cleanPassword);
+        if (fbRes.success) {
+          isPasswordValid = true;
+        }
+      } catch (_) {}
+    }
+
+    if (!isPasswordValid) {
       setError('La contraseña actual es incorrecta. Por favor verifica tus credenciales.');
       return;
     }
@@ -79,29 +114,44 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
     setIsDeleting(true);
 
     try {
-      // 3. Authenticate and permanently delete user in Firebase Auth via EmailAuthProvider and deleteUser (if available)
-      const fbDelete: { success: boolean; message: string; code?: string } = 
-        await deleteFirebaseAccount(userEmail, password.trim()).catch(() => ({ success: true, message: 'Local', code: undefined }));
-      
-      // If Firebase failed due to incorrect password / bad credentials
-      if (!fbDelete.success && (
-        fbDelete.code === 'auth/wrong-password' || 
-        fbDelete.code === 'auth/invalid-credential' ||
-        fbDelete.code === 'auth/invalid-login-credentials'
-      )) {
-        setIsDeleting(false);
-        setError('La contraseña actual es incorrecta. Por favor verifica tus credenciales.');
-        return;
+      // 1. Permanently remove from server memory store & mark deleted
+      try {
+        await fetch('/api/auth/delete-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+        });
+      } catch (_) {}
+
+      // 2. Authenticate and permanently delete user in Firebase Auth if available
+      try {
+        await deleteFirebaseAccount(cleanEmail, cleanPassword);
+      } catch (_) {}
+
+      // 3. Proceed with full account, quiz, exams and personal data deletion in local storage
+      try {
+        deleteUserAccountPermanently(cleanEmail, cleanPassword);
+      } catch (_) {}
+
+      // 4. Wipe relational tables in database, Firestore collections and sign out
+      await deleteUserAccount(userId, cleanEmail);
+
+      // 5. Guarantee local progress is erased and deletion flag is set
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`vianova_deleted_${cleanEmail}`, 'true');
+          localStorage.removeItem(`vianova_usr_${cleanEmail}`);
+          localStorage.removeItem(`vianova_completed_modules_${cleanEmail}`);
+          localStorage.removeItem(`vianova_quiz_history_${cleanEmail}`);
+          localStorage.removeItem(`vianova_exam_results_${cleanEmail}`);
+          localStorage.removeItem(`vianova_reports_${cleanEmail}`);
+          localStorage.removeItem('vianova_active_user');
+          sessionStorage.clear();
+        } catch (_) {}
       }
 
-      // 4. Proceed with full account and relational data deletion
-      try {
-        deleteUserAccountPermanently(userEmail, password.trim());
-      } catch (_) {}
-      await deleteUserAccount(userId, userEmail);
-
       setIsDeleting(false);
-      onSuccess();
+      onSuccess('Tu cuenta y todo tu proceso han sido eliminados por completo. Para ingresar de nuevo, debes registrar una nueva cuenta.');
       onClose();
     } catch (err: any) {
       console.error('Error al eliminar cuenta:', err);

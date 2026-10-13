@@ -22,7 +22,7 @@ export const DEFAULT_USER_ISABELLA: StoredUserAccount = {
     completedHours: 24,
     passedExams: 4,
     activeReports: 1,
-    city: 'Bogotá D.C.',
+    city: 'Medellín, Antioquia',
     primer_ingreso: false,
     emailVerified: true,
     termsAccepted: true
@@ -41,12 +41,14 @@ export const DEFAULT_USER_NAZ: UserProfile = {
   completedHours: 18,
   passedExams: 3,
   activeReports: 2,
+  city: 'Medellín, Antioquia',
   primer_ingreso: false,
   emailVerified: true,
   termsAccepted: true
 };
 
 export const SYSTEM_ACCOUNTS_MAP: Record<string, StoredUserAccount> = {
+  'narvaezpetroisa@gmail.com': DEFAULT_USER_ISABELLA,
   'munoznaz12@gmail.com': {
     profile: DEFAULT_USER_NAZ,
     password: 'Naz#Munoz2026!',
@@ -63,7 +65,7 @@ export const SYSTEM_ACCOUNTS_MAP: Record<string, StoredUserAccount> = {
       completedHours: 120,
       passedExams: 10,
       activeReports: 0,
-      city: 'Bogotá D.C.',
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
@@ -84,7 +86,7 @@ export const SYSTEM_ACCOUNTS_MAP: Record<string, StoredUserAccount> = {
       completedHours: 15,
       passedExams: 2,
       activeReports: 1,
-      city: 'Bogotá D.C.',
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
@@ -134,20 +136,30 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
     } catch (_) {}
   }
 
+  const wasDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true';
   const isFirstTime = profile.primer_ingreso !== undefined 
     ? profile.primer_ingreso 
     : (existingData ? existingData.profile.primer_ingreso : false);
 
   const finalPassword = password || existingData?.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
 
+  // Once a user registers or re-registers after deletion, remove predefined system mock values
+  delete SYSTEM_ACCOUNTS_MAP[normalizedEmail];
+
+  const cleanProfile: UserProfile = {
+    ...(wasDeleted ? {} : (existingData?.profile || {})),
+    ...profile,
+    completedHours: profile.completedHours ?? 0,
+    passedExams: profile.passedExams ?? 0,
+    activeReports: profile.activeReports ?? 0,
+    safetyScore: profile.safetyScore ?? 0,
+    primer_ingreso: isFirstTime,
+  };
+
   const storedAccount: StoredUserAccount = {
-    profile: {
-      ...(existingData?.profile || {}),
-      ...profile,
-      primer_ingreso: isFirstTime,
-    },
+    profile: cleanProfile,
     password: finalPassword,
-    createdAt: existingData?.createdAt || new Date().toISOString()
+    createdAt: wasDeleted ? new Date().toISOString() : (existingData?.createdAt || new Date().toISOString())
   };
 
   if (typeof window !== 'undefined') {
@@ -155,6 +167,12 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
       localStorage.setItem(storageKey, JSON.stringify(storedAccount));
       localStorage.removeItem('vianova_registered_users');
       localStorage.removeItem(`vianova_deleted_${normalizedEmail}`);
+      if (wasDeleted) {
+        localStorage.removeItem(`vianova_completed_modules_${normalizedEmail}`);
+        localStorage.removeItem(`vianova_quiz_history_${normalizedEmail}`);
+        localStorage.removeItem(`vianova_exam_results_${normalizedEmail}`);
+        localStorage.removeItem(`vianova_reports_${normalizedEmail}`);
+      }
     } catch (error) {
       console.error('Error saving user data:', error);
     }
@@ -198,7 +216,7 @@ export function updateRegisteredUserPassword(email: string, newPassword?: string
             passedExams: 0,
             activeReports: 0,
             licenseCategory: 'Aspirante / Particular',
-            city: 'Bogotá D.C.'
+            city: 'Medellín, Antioquia'
           },
           createdAt: new Date().toISOString()
         };
@@ -279,9 +297,24 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
   message?: string;
 } {
   const normalizedEmail = email.trim().toLowerCase();
-  const account = findRegisteredUserByEmail(normalizedEmail);
+
+  // Si la cuenta fue eliminada, el usuario DEBE crear una nueva cuenta obligatoriamente
+  if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
+    return {
+      valid: false,
+      message: 'Debes crear una cuenta primero'
+    };
+  }
+
+  const account = findRegisteredUserByEmail(normalizedEmail) || SYSTEM_ACCOUNTS_MAP[normalizedEmail];
 
   if (!account || !account.profile) {
+    if (normalizedEmail === 'narvaezpetroisa@gmail.com' && (candidatePassword || '').trim() === DEFAULT_USER_ISABELLA.password) {
+      return {
+        valid: true,
+        user: DEFAULT_USER_ISABELLA.profile
+      };
+    }
     return {
       valid: false,
       message: 'Debes crear una cuenta primero'
@@ -486,22 +519,25 @@ export function deleteUserAccountPermanently(
 
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
-  const account = findRegisteredUserByEmail(normalizedEmail);
+  const account = findRegisteredUserByEmail(normalizedEmail) || SYSTEM_ACCOUNTS_MAP[normalizedEmail];
 
   if (!account) {
     return { success: false, message: 'La cuenta no fue encontrada en el sistema.' };
   }
 
   // Verify password if account has one set
-  if (account.password && account.password.trim() !== '') {
-    if (account.password !== passwordConfirm.trim()) {
+  const expectedPassword = account.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
+  if (expectedPassword && expectedPassword.trim() !== '') {
+    if (expectedPassword !== passwordConfirm.trim()) {
       return { success: false, message: 'La contraseña ingresada es incorrecta.' };
     }
   }
 
   try {
+    delete SYSTEM_ACCOUNTS_MAP[normalizedEmail];
     localStorage.removeItem(storageKey);
     localStorage.removeItem('vianova_registered_users');
+    localStorage.removeItem('vianova_active_user');
     localStorage.setItem(`vianova_deleted_${normalizedEmail}`, 'true');
   } catch (err) {
     console.error('Error eliminando cuenta:', err);
@@ -518,6 +554,7 @@ export function deleteUserAccountPermanently(
     const userKeysToClear = [
       `vianova_quiz_history_${normalizedEmail}`,
       `vianova_exam_results_${normalizedEmail}`,
+      `vianova_completed_modules_${normalizedEmail}`,
       `vianova_reports_${normalizedEmail}`
     ];
     userKeysToClear.forEach(k => {

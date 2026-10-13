@@ -530,7 +530,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     dash_badge_official_runt: 'Examen Oficial RUNT',
     dash_mod_sim_desc: 'Simula el examen oficial de los Centros de Enseñanza Automovilística (CEA) para categorías A2 (Motos), B1 (Carros) y C1 (Público).',
     dash_badge_citizen: 'Ciudadano',
-    dash_mod_rep_desc: 'Reporta baches, semáforos fuera de servicio, señales caídas o bloqueos viales en Bogotá, Medellín, Cali, Barranquilla y todo el país.',
+    dash_mod_rep_desc: 'Reporta baches, semáforos fuera de servicio, señales caídas o bloqueos viales en Medellín, Valle de Aburrá y toda la región.',
     dash_badge_global_search: 'Buscador Global',
     dash_mod_search_desc: 'Encuentra al instante contenidos sobre educación vial, señales, campañas preventivas y descarga de manuales oficiales.',
     dash_badge_digital_credential: 'Credencial Digital',
@@ -700,7 +700,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     rep_photo_attached: '✓ Fotografía adjuntada con éxito',
     rep_photo_attach_btn: 'Adjuntar foto de la vía',
     rep_modal_header: 'Reportar Incidencia Vial en Colombia',
-    rep_location_ph: 'Ej. Bogotá - Av. NQS con Calle 68 o Medellín - Av. El Poblado',
+    rep_location_ph: 'Ej. Medellín - Av. El Poblado con Calle 10 o Av. San Juan con Cra 65',
 
     // Profile Screen & Digital ID
     prof_badge: 'Documento Digital Oficial ViaNova',

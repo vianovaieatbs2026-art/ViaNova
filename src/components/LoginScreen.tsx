@@ -190,6 +190,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
+    // Requisito estricto: Si la cuenta fue eliminada previamente, sí o sí debe crearse una nueva cuenta
+    const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true';
+    if (isDeleted) {
+      setIsSubmitting(false);
+      setRecaptchaState('idle');
+      setErrorMessage('Debes crear una cuenta primero');
+      onNavigateToRegister();
+      return;
+    }
+
     setIsSubmitting(true);
     setRecaptchaState('checking');
 

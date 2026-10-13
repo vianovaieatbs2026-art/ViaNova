@@ -823,7 +823,7 @@ async function startServer() {
       completedHours: 24,
       passedExams: 4,
       activeReports: 1,
-      city: 'Bogotá D.C.',
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
@@ -839,6 +839,7 @@ async function startServer() {
       completedHours: 18,
       passedExams: 3,
       activeReports: 2,
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
@@ -854,7 +855,7 @@ async function startServer() {
       completedHours: 120,
       passedExams: 10,
       activeReports: 0,
-      city: 'Bogotá D.C.',
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
@@ -872,23 +873,31 @@ async function startServer() {
       completedHours: 15,
       passedExams: 2,
       activeReports: 1,
-      city: 'Bogotá D.C.',
+      city: 'Medellín, Antioquia',
       primer_ingreso: false,
       emailVerified: true,
       termsAccepted: true
     }
   };
 
-  // Register New User in Server Store
+  // Track accounts permanently deleted so check-user & login correctly enforce re-registration
+  const SERVER_DELETED_USERS: Record<string, boolean> = {};
+
+  // Register New User in Server Store (clears deleted flag if user decides to recreate account)
   app.post('/api/auth/register', (req, res) => {
     const { profile, password } = req.body || {};
     if (!profile || !profile.email) {
       return res.status(400).json({ success: false, message: 'Datos de perfil no proporcionados.' });
     }
     const cleanEmail = String(profile.email).trim().toLowerCase();
+    delete SERVER_DELETED_USERS[cleanEmail];
     SERVER_USERS[cleanEmail] = {
       ...profile,
       email: cleanEmail,
+      completedHours: 0,
+      passedExams: 0,
+      activeReports: 0,
+      safetyScore: 0,
       password: (password && typeof password === 'string') ? password.trim() : 'ViaNova#2026!'
     };
     const { password: _, ...safeProfile } = SERVER_USERS[cleanEmail];
@@ -902,6 +911,9 @@ async function startServer() {
       return res.status(400).json({ exists: false, message: 'Correo no proporcionado' });
     }
     const cleanEmail = email.trim().toLowerCase();
+    if (SERVER_DELETED_USERS[cleanEmail]) {
+      return res.json({ exists: false, deleted: true });
+    }
     const user = SERVER_USERS[cleanEmail];
     if (user) {
       const { password: _, ...safeProfile } = user;
@@ -923,6 +935,15 @@ async function startServer() {
 
     const cleanEmail = String(email).trim().toLowerCase();
     const cleanPass = String(password).trim();
+
+    if (SERVER_DELETED_USERS[cleanEmail]) {
+      return res.status(404).json({
+        success: false,
+        code: 'USER_DELETED',
+        message: 'Debes crear una cuenta primero'
+      });
+    }
+
     const user = SERVER_USERS[cleanEmail];
 
     if (!user) {
@@ -945,6 +966,39 @@ async function startServer() {
     return res.json({
       success: true,
       user: safeProfile
+    });
+  });
+
+  // Delete User Account Endpoint (Permanently deletes account and records from server)
+  app.post('/api/auth/delete-account', (req, res) => {
+    const { email, password } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Correo no proporcionado' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPass = String(password || '').trim();
+
+    const user = SERVER_USERS[cleanEmail];
+    // If user exists and has a password, verify password
+    if (user && user.password && cleanPass) {
+      if (user.password !== cleanPass) {
+        return res.status(401).json({
+          success: false,
+          code: 'WRONG_PASSWORD',
+          message: 'La contraseña actual es incorrecta. Por favor verifica tus credenciales.'
+        });
+      }
+    }
+
+    // Permanently remove from active users and flag as deleted
+    delete SERVER_USERS[cleanEmail];
+    SERVER_DELETED_USERS[cleanEmail] = true;
+
+    console.log(`[Auth Server] Cuenta ${cleanEmail} eliminada permanentemente del servidor.`);
+    return res.json({
+      success: true,
+      message: 'Cuenta y proceso eliminados permanentemente del servidor.'
     });
   });
 
