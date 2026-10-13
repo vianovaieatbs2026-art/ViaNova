@@ -12,6 +12,7 @@ import {
   MapPin, 
   HeartHandshake, 
   CheckCircle2, 
+  HelpCircle,
   Info,
   Layers,
   ChevronRight
@@ -48,7 +49,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     { id: 'senales', label: t('nav_signs', 'Señales de Tránsito'), icon: SlidersHorizontal },
     { id: 'campanas', label: t('search_cat_campaigns', 'Campañas Viales'), icon: HeartHandshake },
     { id: 'recursos', label: t('search_cat_resources', 'Recursos & Manuales'), icon: FileText },
-    { id: 'evaluacion', label: t('nav_simulator', 'Simulador & Exámenes'), icon: FileCheck2 },
+    { id: 'evaluacion', label: 'Quizzes & Evaluación', icon: HelpCircle },
     { id: 'reportes', label: t('nav_reports', 'Reportes en Vía'), icon: MapPin },
   ];
 
@@ -110,7 +111,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
           </h1>
 
           <p className="text-xs sm:text-sm text-[#cbd5e1] leading-relaxed">
-            {t('search_sub_banner', 'Localiza contenidos sobre educación vial, señales de tránsito según el Manual de Mintransporte, campañas de prevención ciudadana, simuladores y recursos descargables sin recorrer toda la plataforma.')}
+            {t('search_sub_banner', 'Localiza contenidos sobre educación vial, señales de tránsito según el Manual de Mintransporte, campañas de prevención ciudadana, quizzes interactivos y recursos descargables sin recorrer toda la plataforma.')}
           </p>
 
           {/* Search Box */}
@@ -388,7 +389,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                        item.categoryType === 'recursos' ? 'Ver o descargar recurso' :
                        item.categoryType === 'senales' ? 'Ver señal en catálogo' :
                        item.categoryType === 'educacion' ? 'Ir al módulo de estudio' :
-                       item.categoryType === 'evaluacion' ? 'Practicar en simulador' :
+                       item.categoryType === 'evaluacion' ? 'Practicar en Quiz' :
                        'Ir a reportes en vía'}
                     </span>
                     <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />

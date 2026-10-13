@@ -8,7 +8,6 @@ import {
   ShieldCheck, 
   Car, 
   Sparkles, 
-  Film, 
   Compass,
   ChevronDown
 } from 'lucide-react';
@@ -16,10 +15,7 @@ import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { MultimediaCanvas } from './MultimediaCanvas';
 import { FloatingDecorations } from './FloatingDecorations';
-import { CityRouteSimulator2D } from './CityRouteSimulator2D';
-import { InteractiveStoryboard } from './InteractiveStoryboard';
 import { AnimatedServicesGrid } from './AnimatedServicesGrid';
-import { MultimediaVideoSection } from './MultimediaVideoSection';
 import { soundEngine } from '../utils/soundEffects';
 
 interface LandingScreenProps {
@@ -141,31 +137,17 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           </div>
 
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xl font-medium leading-relaxed">
-            {t('landing_hero_desc', 'Plataforma multimedia de educación vial, simulación de normas de tránsito CEA/RUNT y reportes de movilidad colaborativa en Colombia.')}
+            {t('landing_hero_desc', 'Plataforma multimedia de educación vial, quizzes interactivos de normas de tránsito y reportes de movilidad colaborativa en Colombia.')}
           </p>
 
           {/* Sub-Navigation Quick Pill Tabs */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-6 max-w-2xl">
             <button
               type="button"
-              onClick={() => scrollToSection('simulacion-2d')}
+              onClick={() => scrollToSection('servicios')}
               className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
             >
-              {t('landing_nav_sim_2d', 'Ruta 2D Interactiva')}
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection('storyboard')}
-              className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-all cursor-pointer shadow-xs"
-            >
-              {t('landing_nav_storyboard', 'Guía del Conductor')}
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection('multimedia')}
-              className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00AFFF] hover:text-[#00AFFF] transition-all cursor-pointer shadow-xs"
-            >
-              {t('landing_nav_videos', 'Cápsulas de Video')}
+              Servicios Viales
             </button>
             <button
               type="button"
@@ -254,7 +236,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             className="mt-12 flex flex-col items-center text-slate-400 dark:text-slate-500 hover:text-[#00AFFF] transition-colors cursor-pointer group"
           >
             <span className="text-[10px] font-black uppercase tracking-widest mb-1 group-hover:tracking-wider transition-all">
-              Explorar Contenido Multimedia
+              Explorar Servicios Viales
             </span>
             <ChevronDown size={18} className="animate-bounce text-[#00AFFF]" />
           </button>
@@ -265,21 +247,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* ===================== 2. SERVICIOS VIALES (SQUASH & STRETCH ANIMATED CARDS) ===================== */}
       <section id="servicios" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <AnimatedServicesGrid onActionClick={onGoToLogin} />
-      </section>
-
-      {/* ===================== 3. RUTA INTELIGENTE 2D (ANIMATED 2D SEQUENCE) ===================== */}
-      <section id="simulacion-2d" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <CityRouteSimulator2D />
-      </section>
-
-      {/* ===================== 4. STORYBOARD INTERACTIVO EN 4 ESCENAS ===================== */}
-      <section id="storyboard" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <InteractiveStoryboard />
-      </section>
-
-      {/* ===================== 5. CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
-      <section id="multimedia" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <MultimediaVideoSection />
       </section>
 
     </div>

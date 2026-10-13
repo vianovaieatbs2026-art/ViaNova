@@ -8,7 +8,6 @@ export type ScreenId =
   | 'busqueda'
   | 'senales'
   | 'quiz'
-  | 'simulador'
   | 'reportes'
   | 'perfil'
   | 'registro'

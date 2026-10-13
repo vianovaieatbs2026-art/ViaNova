@@ -614,7 +614,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     {t('gateway_reg_title', 'Registro de Conductor en Colombia')}
                   </h2>
                   <p data-i18n="gateway_reg_sub" className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
-                    {t('gateway_reg_sub', 'Crea tu perfil oficial para acceder a simuladores y certificaciones')}
+                    {t('gateway_reg_sub', 'Crea tu perfil oficial para acceder a quizzes interactivos y certificaciones')}
                   </p>
                 </div>
 

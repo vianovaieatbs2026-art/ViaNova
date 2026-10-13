@@ -12,6 +12,7 @@ import {
   Award,
   Sparkles,
   CheckCircle2,
+  HelpCircle,
   Film
 } from 'lucide-react';
 import { soundEngine } from '../utils/soundEffects';
@@ -66,16 +67,16 @@ export const InteractiveStoryboard: React.FC = () => {
     },
     {
       id: 3,
-      title: 'Paso 3: Simulador Oficial CEA / RUNT',
-      tagline: 'BANCO OFICIAL DE 30 PREGUNTAS',
-      icon: <GraduationCap size={26} />,
-      color: '#FF6B00',
-      badgeColor: 'bg-[#FF6B00]/15 text-[#FF6B00] border-[#FF6B00]/40',
-      description: 'Entrenamiento bajo condiciones reales de examen teórico: cronómetro regresivo, preguntas aleatorias categorizadas y revisión técnica de cada respuesta errada.',
-      keyFeature: 'Tasa de aprobación superior al 94%',
+      title: 'Paso 3: Quizzes Didácticos con Imágenes',
+      tagline: 'PREGUNTAS VISUALES Y RETROALIMENTACIÓN',
+      icon: <HelpCircle size={26} />,
+      color: '#00FF88',
+      badgeColor: 'bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/40',
+      description: 'Preguntas con imágenes de señales y situaciones de tránsito en Colombia, retroalimentación instantánea motivadora y explicaciones técnicas de la normativa.',
+      keyFeature: 'Aprendizaje acelerado con imágenes reales',
       visualScene: {
-        illustration: 'SIMULADOR_CRONOMETRO',
-        subElements: ['Cronómetro 40 min', 'Banco Aleatorio', 'Explicación Jurídica']
+        illustration: 'QUIZ_INTERACTIVO',
+        subElements: ['Preguntas con Imágenes', 'Retroalimentación Inmediata', 'Explicación Jurídica']
       }
     },
     {

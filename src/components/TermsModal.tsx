@@ -56,9 +56,9 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, type, onClose, o
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-[#101c2d] mb-1">3. Certificaciones y Simuladores</h3>
+                <h3 className="font-semibold text-[#101c2d] mb-1">3. Certificaciones y Quizzes Didácticos</h3>
                 <p>
-                  Los exámenes y certificaciones emitidos en ViaNova reflejan el rendimiento formativo y normativo basado en los manuales de tránsito vigentes.
+                  Los quizzes y certificaciones emitidos en ViaNova reflejan el rendimiento formativo y normativo basado en los manuales de tránsito vigentes.
                 </p>
               </div>
               <div>

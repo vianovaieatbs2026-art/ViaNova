@@ -40,19 +40,6 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({
 }) => {
   const services: ServiceItem[] = [
     {
-      id: 'simulador',
-      title: 'Simulador Teórico Oficial CEA / RUNT',
-      tag: 'SIMULADOR DE EXAMEN',
-      badgeColor: 'bg-[#00AFFF]/15 text-[#00AFFF]',
-      borderColor: 'hover:border-[#00AFFF]',
-      glowColor: 'hover:shadow-[0_0_30px_rgba(0,175,255,0.3)]',
-      description: 'Entrénate con preguntas oficiales bajo el estándar del Ministerio de Transporte. Cronómetro regresivo y retroalimentación técnica inmediata.',
-      icon: <GraduationCap size={32} className="text-[#00AFFF]" />,
-      actionText: 'Probar Simulador',
-      stats: '30 preguntas aleatorias • 40 min',
-      targetScreen: 'simulador'
-    },
-    {
       id: 'senales',
       title: 'Diccionario de Señales Viales HD',
       tag: 'CATÁLOGO VISUAL',
@@ -109,7 +96,7 @@ export const AnimatedServicesGrid: React.FC<AnimatedServicesGridProps> = ({
       </div>
 
       {/* Grid with 3D Tilt and Squash & Stretch */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {services.map((item, index) => (
           <motion.div
             key={item.id}

@@ -49,14 +49,13 @@ import { QuizQuestionVisual } from './QuizQuestionVisual';
 interface QuizScreenProps {
   user?: UserProfile | null;
   onNavigateToEducation?: () => void;
-  onNavigateToSimulator: () => void;
+  onNavigateToSimulator?: () => void;
 }
 
 type QuizGameMode = 'hub' | 'matching' | 'fill_blanks' | 'rapid_fire' | 'traditional';
 
 export const QuizScreen: React.FC<QuizScreenProps> = ({
-  user,
-  onNavigateToSimulator
+  user
 }) => {
   const { language, t } = useThemeLanguage();
   const topics = getQuizTopics(language);
@@ -1252,13 +1251,6 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                   className="px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   Explorar Otros Quizzes
-                </button>
-                <button
-                  type="button"
-                  onClick={onNavigateToSimulator}
-                  className="px-6 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 border border-blue-200 dark:border-blue-900 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer"
-                >
-                  Ir al Simulador de Examen
                 </button>
               </div>
             </div>

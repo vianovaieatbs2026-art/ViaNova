@@ -46,16 +46,6 @@ export const HeaderSearchBar: React.FC<HeaderSearchBarProps> = ({
       tags: []
     },
     {
-      id: 'hdr-sim',
-      title: 'Simulador de Examen Oficial',
-      categoryType: 'evaluacion',
-      categoryLabel: 'Simulador Licencias',
-      subtitle: 'Prueba de 30 preguntas con temporizador',
-      targetScreen: 'simulador',
-      description: '',
-      tags: []
-    },
-    {
       id: 'hdr-quiz',
       title: 'Quiz de Conocimiento Vial',
       categoryType: 'evaluacion',
@@ -183,7 +173,7 @@ export const HeaderSearchBar: React.FC<HeaderSearchBarProps> = ({
             if (query.trim()) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder={t('header_search_placeholder', 'Buscar señales, leyes, simulador...')}
+          placeholder={t('header_search_placeholder', 'Buscar señales, leyes, quiz...')}
           className="w-full pl-9 pr-8 py-1.5 bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200/70 dark:hover:bg-slate-800 text-[#0f172a] dark:text-slate-100 placeholder:text-slate-400 text-xs rounded-xl border border-transparent focus:border-[#0052cc] dark:focus:border-sky-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0052cc]/20 transition-all"
         />
 

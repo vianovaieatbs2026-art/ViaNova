@@ -63,12 +63,11 @@ export const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   // Dashboard navigation items:
-  // Inicio, Señales, Quiz, Simulador, Reportes
+  // Inicio, Señales, Quiz, Reportes
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
     { id: 'senales', labelKey: 'nav_traffic_signs', defaultLabel: 'Señales' },
     { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
-    { id: 'simulador', labelKey: 'nav_simulator', defaultLabel: 'Simulador' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
   ];
 

@@ -9,7 +9,6 @@ import { Navigation } from './components/Navigation';
 import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { DashboardScreen } from './components/DashboardScreen';
 import { SearchScreen } from './components/SearchScreen';
-import { ExamSimulatorScreen } from './components/ExamSimulatorScreen';
 import { TrafficSignsScreen } from './components/TrafficSignsScreen';
 import { QuizScreen } from './components/QuizScreen';
 import { MobilityReportsScreen } from './components/MobilityReportsScreen';
@@ -132,19 +131,6 @@ function AppContent() {
     showToast(t('toast_logged_out', 'Has cerrado sesión correctamente.'));
   };
 
-  const handleExamCompleted = (score: number) => {
-    if (user) {
-      const updatedUser: UserProfile = {
-        ...user,
-        safetyScore: Math.min(100, Math.round((user.safetyScore + score) / 2)),
-        passedExams: user.passedExams + (score >= 75 ? 1 : 0),
-        completedHours: user.completedHours + 1
-      };
-      setActiveUserSession(updatedUser);
-      setUser(updatedUser);
-    }
-  };
-
   const handleUpdateUser = (updated: UserProfile) => {
     setActiveUserSession(updated);
     setUser(updated);
@@ -230,15 +216,6 @@ function AppContent() {
             {currentScreen === 'quiz' && (
               <QuizScreen
                 user={user}
-                onNavigateToSimulator={() => setCurrentScreen('simulador')}
-              />
-            )}
-
-            {currentScreen === 'simulador' && (
-              <ExamSimulatorScreen
-                user={user}
-                onBackToDashboard={() => setCurrentScreen('inicio')}
-                onExamCompleted={handleExamCompleted}
               />
             )}
 

@@ -175,15 +175,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   type="button"
-                  onClick={() => handleNav('simulador')}
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left"
-                >
-                  Simulador de Examen CEA / RUNT
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => handleNav('reportes')}
                   className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -438,7 +429,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-sky-400"
                   >
                     <option value="normas">Normas viales y Código de Tránsito (Ley 769 / 2251)</option>
-                    <option value="examenes">Dudas sobre Simulador Oficial CEA / RUNT</option>
+                    <option value="examenes">Dudas sobre Quizzes y Evaluaciones Didácticas</option>
                     <option value="senales">Preguntas sobre Señales de Tránsito</option>
                     <option value="soporte">Soporte técnico de la plataforma ViaNova</option>
                     <option value="sugerencia">Sugerencias comunitarias de movilidad</option>

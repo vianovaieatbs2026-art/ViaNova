@@ -67,15 +67,15 @@ export const ALL_SEARCHABLE_ITEMS: SearchResultItem[] = [
   // 5. Exámenes y Evaluaciones
   ...COLOMBIAN_EXAM_QUESTIONS.map((q) => ({
     id: `search-exam-${q.id}`,
-    title: `Pregunta CEA/RUNT: ${q.category}`,
+    title: `Pregunta Didáctica: ${q.category}`,
     categoryType: 'evaluacion' as const,
-    categoryLabel: 'Simulador / Examen',
+    categoryLabel: 'Preguntas y Quizzes',
     subtitle: q.question,
     description: `Explicación técnica: ${q.explanation} Referencia legal: ${q.legalReference || 'Ley 769 de 2002'}.`,
-    tags: ['examen', 'pregunta', 'runt', 'cea', 'simulador', 'licencia', 'evaluacion', 'test'],
+    tags: ['examen', 'pregunta', 'quiz', 'licencia', 'evaluacion', 'norma', 'test'],
     badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-    targetScreen: 'simulador' as const,
-    metadata: q.legalReference || 'Examen Teórico'
+    targetScreen: 'quiz' as const,
+    metadata: q.legalReference || 'Quiz de Evaluación'
   })),
 
   // 6. Reportes e Incidencias en Vía
