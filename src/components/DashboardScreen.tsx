@@ -39,8 +39,6 @@ import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { getUserDashboardProgress } from '../utils/userProgress';
 import { CityRouteSimulator2D } from './CityRouteSimulator2D';
-import { InteractiveStoryboard } from './InteractiveStoryboard';
-import { MultimediaVideoSection } from './MultimediaVideoSection';
 import { GoogleMapsLive } from './GoogleMapsLive';
 
 interface CorridorItem {
@@ -1076,16 +1074,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       {/* ===================== RUTA 2D INTERACTIVA CON VEHÍCULO EN MOVIMIENTO ===================== */}
       <div id="simulacion-2d" className="pt-6">
         <CityRouteSimulator2D />
-      </div>
-
-      {/* ===================== RUTA DE APRENDIZAJE "CÓMO FUNCIONA VIANOVA" EN 4 PASOS ===================== */}
-      <div id="storyboard" className="pt-6">
-        <InteractiveStoryboard />
-      </div>
-
-      {/* ===================== CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
-      <div id="multimedia" className="pt-6">
-        <MultimediaVideoSection />
       </div>
     </div>
   );
