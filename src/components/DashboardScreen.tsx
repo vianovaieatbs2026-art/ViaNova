@@ -1,15 +1,20 @@
 import React from 'react';
 import { 
   ShieldCheck, 
+  Clock, 
+  Award, 
   MapPin, 
   ArrowRight, 
   BookOpen, 
   SlidersHorizontal, 
   HelpCircle, 
   FileCheck2, 
+  TrendingUp, 
   Car, 
   Sparkles, 
   CheckCircle2, 
+  ChevronRight, 
+  User,
   UserPlus, 
   LogIn, 
   AlertTriangle, 
@@ -33,6 +38,10 @@ import { TrafficSignGraphic } from './TrafficSignGraphic';
 import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 import { getUserDashboardProgress } from '../utils/userProgress';
+import { CityRouteSimulator2D } from './CityRouteSimulator2D';
+import { InteractiveStoryboard } from './InteractiveStoryboard';
+import { MultimediaVideoSection } from './MultimediaVideoSection';
+import { GoogleMapsLive } from './GoogleMapsLive';
 
 interface CorridorItem {
   id: string;
@@ -137,270 +146,57 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
 
   const progress = getUserDashboardProgress(user);
 
+  const quickAccessChips = [
+    {
+      id: 'quiz',
+      label: 'Quiz',
+      icon: HelpCircle,
+      action: () => {
+        onNavigate('quiz');
+      },
+    },
+    {
+      id: 'simuladores',
+      label: 'Simuladores',
+      icon: FileCheck2,
+      action: () => {
+        onNavigate('simulador');
+      },
+    },
+    {
+      id: 'catalogo',
+      label: 'Catálogo',
+      icon: SlidersHorizontal,
+      action: () => {
+        onNavigate('senales');
+      },
+    },
+    {
+      id: 'mapa-en-vivo',
+      label: 'Mapa en Vivo',
+      icon: MapPin,
+      isLive: true,
+      action: () => {
+        const target = document.getElementById('mapa-en-vivo-medellin');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
+    },
+    {
+      id: 'perfil',
+      label: 'Perfil',
+      icon: User,
+      action: () => {
+        onNavigate('perfil');
+      },
+    },
+  ];
 
   // Search Bar state in Dashboard (opens in small white dropdown, no black screen)
   const [dashboardSearchQuery, setDashboardSearchQuery] = React.useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = React.useState(false);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // Google Maps interactive state and worldwide locator
-  const [mapQuery, setMapQuery] = React.useState('Medellín, Antioquia, Colombia');
-  const [mapSearchInput, setMapSearchInput] = React.useState('');
-  const [mapZoom, setMapZoom] = React.useState(13);
-  const [mapLayer, setMapLayer] = React.useState<'m' | 'k' | 'p'>('m'); // m: mapa/tráfico, k: satélite, p: relieve
-  const [activeCorridorId, setActiveCorridorId] = React.useState<string | null>(null);
-  const [mapDisplayName, setMapDisplayName] = React.useState('Medellín (Vista General)');
-  const [isMapSuggestionsOpen, setIsMapSuggestionsOpen] = React.useState(false);
-  const [worldSearchResults, setWorldSearchResults] = React.useState<WorldLocationItem[]>([]);
-  const [isSearchingWorld, setIsSearchingWorld] = React.useState(false);
-  const [defaultSuggestionsTab, setDefaultSuggestionsTab] = React.useState<'mundo' | 'colombia'>('mundo');
-  const [isForegroundActive, setIsForegroundActive] = React.useState(false);
-  const [foregroundNotice, setForegroundNotice] = React.useState<string | null>(null);
-  const mapSearchContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // Close map suggestions on outside click
-  React.useEffect(() => {
-    const handleMapClickOutside = (event: MouseEvent) => {
-      if (mapSearchContainerRef.current && !mapSearchContainerRef.current.contains(event.target as Node)) {
-        setIsMapSuggestionsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleMapClickOutside);
-    return () => document.removeEventListener('mousedown', handleMapClickOutside);
-  }, []);
-
-  // Live worldwide location autocomplete (Photon OpenStreetMap API + local cache)
-  React.useEffect(() => {
-    const trimmed = mapSearchInput.trim();
-    if (trimmed.length < 2) {
-      setWorldSearchResults([]);
-      setIsSearchingWorld(false);
-      return;
-    }
-
-    setIsSearchingWorld(true);
-    const controller = new AbortController();
-
-    const timeoutId = setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `https://photon.komoot.io/api/?q=${encodeURIComponent(trimmed)}&limit=8`,
-          { signal: controller.signal }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          const features = data.features || [];
-          const mapped: WorldLocationItem[] = features.map((f: any, idx: number) => {
-            const p = f.properties || {};
-            const coords = f.geometry?.coordinates; // [lon, lat]
-            const name = p.name || p.street || p.city || trimmed;
-            const parts = [
-              p.housenumber ? `${p.street || ''} #${p.housenumber}` : p.street,
-              p.district,
-              p.city,
-              p.state,
-              p.country
-            ].filter(Boolean);
-            const detail = parts.length > 0 ? parts.join(', ') : (p.country || 'Ubicación mundial');
-            const zoom = p.type === 'country' ? 6 : (p.type === 'city' || p.type === 'state' ? 12 : 16);
-            const query = (coords && coords.length === 2)
-              ? `${coords[1]},${coords[0]}`
-              : `${name}, ${p.country || ''}`.trim();
-
-            let category: WorldLocationItem['category'] = 'place';
-            if (p.type === 'city' || p.type === 'state' || p.type === 'country') category = 'city';
-            else if (p.osm_key === 'tourism' || p.osm_key === 'historic' || p.osm_value === 'monument') category = 'monument';
-            else if (p.street || p.osm_key === 'highway') category = 'street';
-
-            return {
-              id: `photon-${p.osm_id || idx}-${idx}`,
-              name,
-              detail,
-              query,
-              zoom,
-              country: p.country,
-              category
-            };
-          });
-
-          // Also check if any famous local/world items match
-          const localMatches = [...WORLD_FAMOUS_LOCATIONS, ...COLOMBIA_HIGHLIGHTS].filter(item =>
-            item.name.toLowerCase().includes(trimmed.toLowerCase()) ||
-            item.detail.toLowerCase().includes(trimmed.toLowerCase())
-          );
-
-          const existingNames = new Set(mapped.map(m => m.name.toLowerCase()));
-          const combined = [...mapped];
-          for (const loc of localMatches) {
-            if (!existingNames.has(loc.name.toLowerCase()) && combined.length < 9) {
-              combined.push(loc);
-              existingNames.add(loc.name.toLowerCase());
-            }
-          }
-
-          setWorldSearchResults(combined);
-        }
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          const fallbackMatches = [...WORLD_FAMOUS_LOCATIONS, ...COLOMBIA_HIGHLIGHTS].filter(item =>
-            item.name.toLowerCase().includes(trimmed.toLowerCase()) ||
-            item.detail.toLowerCase().includes(trimmed.toLowerCase())
-          );
-          setWorldSearchResults(fallbackMatches);
-        }
-      } finally {
-        setIsSearchingWorld(false);
-      }
-    }, 220);
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [mapSearchInput]);
-
-  const handleSelectCorridor = (corridor: CorridorItem) => {
-    if (activeCorridorId === corridor.id) {
-      // Si ya está activo, restablecer a vista panorámica de Medellín
-      setActiveCorridorId(null);
-      setMapQuery('Medellín, Antioquia, Colombia');
-      setMapZoom(13);
-      setMapDisplayName('Medellín (Vista General)');
-      setMapSearchInput('');
-      setIsForegroundActive(false);
-      setForegroundNotice(null);
-    } else {
-      setActiveCorridorId(corridor.id);
-      setMapQuery(corridor.query);
-      setMapZoom(Math.max(corridor.zoom, 16));
-      setMapDisplayName(corridor.name);
-      setMapSearchInput(corridor.name);
-      setIsForegroundActive(true);
-      setForegroundNotice(`Corredor en primer plano: ${corridor.name}`);
-
-      const mapSection = document.getElementById('mapa-en-vivo-medellin');
-      if (mapSection) {
-        mapSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-
-      setTimeout(() => {
-        setForegroundNotice(null);
-      }, 4000);
-    }
-  };
-
-  const handleSelectWorldLocation = (location: WorldLocationItem) => {
-    setMapQuery(location.query);
-    const displayName = location.name + (location.country ? ` (${location.country})` : '');
-    setMapDisplayName(displayName);
-    setMapSearchInput(location.name);
-    setMapZoom(location.zoom ? Math.max(location.zoom, 16) : 17);
-    const matchCorridor = MEDELLIN_CORRIDORS.find(c => c.name.toLowerCase() === location.name.toLowerCase());
-    setActiveCorridorId(matchCorridor ? matchCorridor.id : null);
-    setIsMapSuggestionsOpen(false);
-    setIsForegroundActive(true);
-    setForegroundNotice(`Ubicado en primer plano: ${displayName}`);
-
-    const mapSection = document.getElementById('mapa-en-vivo-medellin');
-    if (mapSection) {
-      mapSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    setTimeout(() => {
-      setForegroundNotice(null);
-    }, 4500);
-  };
-
-  const handleMapSearchSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = mapSearchInput.trim();
-    if (!query) return;
-
-    setIsMapSuggestionsOpen(false);
-
-    // Centrar mapa inmediatamente en primer plano visual de la pantalla
-    const mapSection = document.getElementById('mapa-en-vivo-medellin');
-    if (mapSection) {
-      mapSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    let finalQuery = query;
-    let finalDisplayName = query;
-    let finalZoom = 17; // Zoom de primer plano detallado a nivel de calle/lugar
-
-    // 1. Verificar si coincide con algún resultado ya encontrado
-    const matchingWorld = worldSearchResults.find(
-      loc => loc.name.toLowerCase() === query.toLowerCase() ||
-             loc.detail.toLowerCase().includes(query.toLowerCase())
-    );
-
-    if (matchingWorld) {
-      finalQuery = matchingWorld.query;
-      finalDisplayName = `${matchingWorld.name}${matchingWorld.country ? ` (${matchingWorld.country})` : ''}`;
-      finalZoom = matchingWorld.zoom ? Math.max(matchingWorld.zoom, 16) : 17;
-    } else {
-      // 2. Verificar corredores o lugares colombianos destacados
-      const localMatches = [...MEDELLIN_CORRIDORS, ...COLOMBIA_HIGHLIGHTS, ...WORLD_FAMOUS_LOCATIONS];
-      const matchLocal = localMatches.find(l => 
-        l.name.toLowerCase().includes(query.toLowerCase()) ||
-        ('detail' in l && (l as any).detail.toLowerCase().includes(query.toLowerCase()))
-      );
-
-      if (matchLocal) {
-        finalQuery = matchLocal.query;
-        finalDisplayName = matchLocal.name;
-        finalZoom = matchLocal.zoom ? Math.max(matchLocal.zoom, 16) : 17;
-      } else {
-        // 3. Geocodificación instantánea para obtener coordenadas exactas en primer plano
-        try {
-          const resp = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`);
-          if (resp.ok) {
-            const data = await resp.json();
-            const feat = data.features?.[0];
-            if (feat && feat.geometry?.coordinates) {
-              const [lon, lat] = feat.geometry.coordinates;
-              const p = feat.properties || {};
-              const name = p.name || p.street || p.city || query;
-              const country = p.country ? `, ${p.country}` : '';
-              finalQuery = `${lat},${lon}`;
-              finalDisplayName = `${name}${country}`;
-              finalZoom = p.type === 'country' ? 8 : (p.type === 'city' ? 14 : 17);
-            }
-          }
-        } catch (_) {
-          finalQuery = query;
-        }
-      }
-    }
-
-    setMapQuery(finalQuery);
-    setMapDisplayName(finalDisplayName);
-    setMapZoom(finalZoom);
-    setActiveCorridorId(null);
-    setIsForegroundActive(true);
-    setForegroundNotice(`Ubicado en primer plano: ${finalDisplayName}`);
-
-    setTimeout(() => {
-      setForegroundNotice(null);
-    }, 4500);
-  };
-
-  const handleResetMap = () => {
-    setActiveCorridorId(null);
-    setMapQuery('Medellín, Antioquia, Colombia');
-    setMapZoom(13);
-    setMapDisplayName('Medellín (Vista General)');
-    setMapSearchInput('');
-    setIsMapSuggestionsOpen(false);
-    setIsForegroundActive(false);
-    setForegroundNotice(null);
-
-    const mapSection = document.getElementById('mapa-en-vivo-medellin');
-    if (mapSection) {
-      mapSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
 
   // Close dropdown on outside click
   React.useEffect(() => {
@@ -426,6 +222,16 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       tags: ['sr-01', 'pare']
     },
     {
+      id: 'quick-sim',
+      title: 'Simulador de Examen Oficial',
+      categoryType: 'evaluacion',
+      categoryLabel: 'Simulador Licencias',
+      subtitle: 'Prueba teórica de 30 preguntas con temporizador',
+      targetScreen: 'simulador',
+      description: 'Simulador oficial',
+      tags: ['simulador', 'examen']
+    },
+    {
       id: 'quick-quiz',
       title: 'Quiz de Conocimiento Vial',
       categoryType: 'evaluacion',
@@ -438,12 +244,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
     {
       id: 'quick-ley2251',
       title: 'Límites de Velocidad (Ley 2251)',
-      categoryType: 'senales',
-      categoryLabel: 'Señales y Normas',
+      categoryType: 'educacion',
+      categoryLabel: 'Educación Vial',
       subtitle: 'Ley Julián Esteban: 50 km/h urbanas y 30 km/h residenciales',
-      targetScreen: 'senales',
+      targetScreen: 'educacion_vial',
       description: 'Ley Julián Esteban',
-      tags: ['velocidad', 'ley 2251', 'normas']
+      tags: ['velocidad', 'ley 2251']
     },
     {
       id: 'quick-mapa',
@@ -563,8 +369,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               </div>
             </div>
 
-            {/* Right: Quizzes Interactivos (5 cols) */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-[#0052cc] to-sky-600 dark:from-blue-700 dark:to-sky-800 text-white rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden flex flex-col justify-between">
+            {/* Right: Simulador Vial (5 cols) */}
+            <div className="lg:col-span-5 bg-[#0052cc] dark:bg-blue-700 text-white rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden flex flex-col justify-between">
               {/* Background Globe Watermark */}
               <div className="absolute -right-6 -top-6 opacity-20 pointer-events-none text-white">
                 <Globe size={220} />
@@ -576,21 +382,21 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                   <span>{t('dash_recommended', 'Recomendado')}</span>
                 </div>
                 <h2 className="text-2xl font-black text-white">
-                  Quizzes Didácticos
+                  {t('dash_road_simulator', 'Simulador Vial')}
                 </h2>
                 <p className="text-sm text-blue-100 leading-relaxed max-w-sm">
-                  Preguntas visuales de señales de tránsito con retroalimentación inmediata y explicaciones normativas en cada respuesta.
+                  {t('dash_simulator_pitch', 'Pon a prueba tus conocimientos en un entorno seguro antes del examen práctico.')}
                 </p>
               </div>
 
               <div className="pt-6 relative z-10">
                 <button
                   type="button"
-                  id="dashboard-start-quiz-btn"
-                  onClick={() => onNavigate('quiz')}
+                  id="dashboard-start-simulation-btn"
+                  onClick={() => onNavigate('simulador')}
                   className="w-full py-3 px-4 bg-white/95 hover:bg-white text-[#0052cc] font-bold text-sm rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
-                  <span>Practicar Quiz Ahora</span>
+                  <span>{t('dash_start_sim_btn', 'Iniciar Simulación')}</span>
                   <ArrowRight size={16} />
                 </button>
               </div>
@@ -670,7 +476,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                   }}
                   onFocus={() => setIsSearchDropdownOpen(true)}
                   onClick={() => setIsSearchDropdownOpen(true)}
-                  placeholder={t('search_prompt', '¿Qué deseas consultar hoy en ViaNova? (Señales, leyes, quiz, reportes...)')}
+                  placeholder={t('search_prompt', '¿Qué deseas consultar hoy en ViaNova? (Señales, leyes, quiz, simulador...)')}
                   className="w-full py-2 pr-8 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 bg-transparent focus:outline-none"
                 />
                 {dashboardSearchQuery && (
@@ -784,7 +590,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               ) : (
                 <div className="p-6 text-center text-xs text-slate-500">
                   <p className="font-semibold text-slate-700">No encontramos resultados directos para "{dashboardSearchQuery}"</p>
-                  <p className="text-slate-400 mt-1">Prueba buscando "SR-01", "Pare", "Quiz", "Reportes" o "Velocidad"</p>
+                  <p className="text-slate-400 mt-1">Prueba buscando "SR-01", "Pare", "Simulador", "Quiz" o "Velocidad"</p>
                   <button
                     type="button"
                     onClick={() => {
@@ -802,8 +608,118 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
           )}
         </div>
 
+      {/* ===================== BARRITA HORIZONTAL CON ACCESOS RÁPIDOS (CHIP PILL) ===================== */}
+      <div className="w-full -mt-2">
+        <div 
+          className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-2 px-0.5 scroll-smooth"
+          role="navigation"
+          aria-label="Accesos rápidos"
+        >
+          {quickAccessChips.map((chip) => {
+            const Icon = chip.icon;
+            const isLive = chip.isLive;
 
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                id={`quick-chip-${chip.id}`}
+                onClick={chip.action}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shadow-2xs shrink-0 select-none active:scale-95 border ${
+                  isLive
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-400 hover:text-[#0052cc] dark:hover:text-sky-300 hover:bg-blue-50/50 dark:hover:bg-slate-800'
+                }`}
+              >
+                {isLive && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                )}
+                <Icon size={15} className={isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#0052cc] dark:text-sky-400'} />
+                <span>{chip.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* ===================== 3 KEY METRICS / STATS (If logged in) ===================== */}
+      {user && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm transition-colors">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-[#64748b] dark:text-slate-400 uppercase tracking-wider">
+                {t('dash_stat_training_hrs', 'Horas de Formación')}
+              </span>
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ 
+                  backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                  color: activeThemeConfig.primaryHex 
+                }}
+              >
+                <Clock size={18} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-[#0f172a] dark:text-white">{progress.completedModulesCount || user.completedHours || 0}</span>
+              <span className="text-xs text-[#64748b] dark:text-slate-400">{t('dash_hours_unit', 'horas certificadas')}</span>
+            </div>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium flex items-center gap-1">
+              <TrendingUp size={14} />
+              <span>{t('dash_advancement_modules', 'Avance en módulos viales')}</span>
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm transition-colors">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-[#64748b] dark:text-slate-400 uppercase tracking-wider">
+                {t('dash_stat_approved_exams', 'Exámenes Aprobados')}
+              </span>
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ 
+                  backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                  color: activeThemeConfig.primaryHex 
+                }}
+              >
+                <Award size={18} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-[#0f172a] dark:text-white">{user.passedExams || 0}</span>
+              <span className="text-xs text-[#64748b] dark:text-slate-400">{t('dash_exams_unit', 'evaluaciones')}</span>
+            </div>
+            <p 
+              className="text-xs mt-2 font-medium flex items-center gap-1"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <CheckCircle2 size={14} />
+              <span>{t('dash_norm_colombiana', 'Normativa colombiana')}</span>
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm transition-colors">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-[#64748b] dark:text-slate-400 uppercase tracking-wider">
+                {t('dash_stat_active_reports', 'Reportes Ciudadanos')}
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                <MapPin size={18} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-[#0f172a] dark:text-white">{user.activeReports}</span>
+              <span className="text-xs text-[#64748b] dark:text-slate-400">{t('dash_reports_unit', 'en seguimiento')}</span>
+            </div>
+            <p className="text-xs text-[#64748b] dark:text-slate-400 mt-2">
+              {t('dash_comunidad_activa', 'Comunidad activa')}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ===================== MAPA EN VIVO - MEDELLÍN (ALWAYS VISIBLE GOOGLE MAPS) ===================== */}
       <section 
@@ -850,378 +766,326 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
           </div>
         </div>
 
-        {/* Quick Corridor Buttons for Medellín (Now fully interactive) */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
-          <span className="font-bold text-slate-700 dark:text-slate-200 shrink-0 text-xs flex items-center gap-1.5">
-            <SlidersHorizontal size={13} className="text-[#0052cc] dark:text-sky-400" />
-            Corredores viales:
-          </span>
-          {MEDELLIN_CORRIDORS.map((corridor) => {
-            const isActive = activeCorridorId === corridor.id;
-            return (
-              <button
-                key={corridor.id}
-                type="button"
-                onClick={() => handleSelectCorridor(corridor)}
-                className={`px-3 py-1.5 rounded-xl font-medium shrink-0 text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#0052cc] text-white font-bold shadow-md ring-2 ring-blue-400/40 scale-102'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-                title={`${corridor.name}: ${corridor.highlight}. Clic para centrar mapa`}
-              >
-                <MapPin size={12} className={isActive ? 'text-amber-300' : 'text-slate-400'} />
-                <span>{corridor.name}</span>
-                {isActive && <CheckCircle2 size={12} className="text-emerald-300 ml-0.5" />}
-              </button>
-            );
-          })}
 
-          {(activeCorridorId || mapQuery !== 'Medellín, Antioquia, Colombia') && (
-            <button
-              type="button"
-              onClick={handleResetMap}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-200/90 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
-              title="Restablecer vista a Medellín"
-            >
-              <RotateCcw size={12} />
-              <span>Ver todo Medellín</span>
-            </button>
-          )}
-        </div>
-
-        {/* Google Maps Medellín Container with Authentic Floating Search Bar & Controls */}
-        <div 
-          id="google-maps-viewport-box"
-          className="relative w-full h-[520px] sm:h-[600px] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-md transition-all duration-300"
-        >
-          {/* Foreground Location Indicator Banner */}
-          {foregroundNotice && (
-            <div className="absolute top-16 left-3 sm:left-4 z-30 bg-[#0052cc] text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-2xl border border-blue-400/60 flex items-center gap-2 animate-bounce">
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-300"></span>
-              </span>
-              <span className="truncate max-w-[260px] sm:max-w-md">{foregroundNotice}</span>
-              <span className="bg-white/20 px-2 py-0.5 rounded-md text-[10px] uppercase font-black tracking-wider shrink-0">
-                Primer Plano ({mapZoom}x)
-              </span>
-            </div>
-          )}
-
-          {/* Floating Google Maps Search Bar (Top Left) */}
-          <div 
-            ref={mapSearchContainerRef} 
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 w-[calc(100%-24px)] sm:w-[460px] max-w-full"
-          >
-            <form 
-              onSubmit={handleMapSearchSubmit}
-              className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 dark:border-slate-700/80 p-1.5 flex items-center gap-1.5 transition-all"
-            >
-              <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-[#0052cc] dark:text-sky-400 shrink-0">
-                <Globe size={16} />
-              </div>
-
-              <input
-                type="text"
-                value={mapSearchInput}
-                onChange={(e) => {
-                  setMapSearchInput(e.target.value);
-                  setIsMapSuggestionsOpen(true);
-                }}
-                onFocus={() => setIsMapSuggestionsOpen(true)}
-                placeholder="Buscar cualquier ubicación del mundo (ciudades, vías, monumentos)..."
-                className="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none px-1"
-              />
-
-              {mapSearchInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMapSearchInput('');
-                    setIsMapSuggestionsOpen(true);
-                  }}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors shrink-0"
-                  title="Limpiar búsqueda"
-                >
-                  <X size={14} />
-                </button>
-              )}
-
-              <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
-
-              <button
-                type="submit"
-                id="btn-buscar-mapa-dashboard"
-                className="p-2 rounded-xl bg-[#0052cc] hover:bg-[#0047b3] text-white transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5 text-xs font-bold px-3.5"
-                title="Buscar y ubicar en el mapa en primer plano"
-              >
-                <Search size={14} />
-                <span>Buscar</span>
-              </button>
-
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-xl text-slate-500 hover:text-[#0052cc] dark:text-slate-400 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-                title="Abrir en Google Maps externo"
-              >
-                <ExternalLink size={14} />
-              </a>
-            </form>
-
-            {/* Suggestions / Worldwide Locations Dropdown */}
-            {isMapSuggestionsOpen && (
-              <div className="mt-1.5 w-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/80 overflow-hidden max-h-80 overflow-y-auto animate-fade-in text-xs">
-                {/* Mode 1: Live Worldwide Results when user types >= 2 characters */}
-                {mapSearchInput.trim().length >= 2 ? (
-                  <>
-                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between font-bold text-[11px] text-slate-500 dark:text-slate-400 px-3">
-                      <div className="flex items-center gap-1.5 truncate mr-2">
-                        <Globe size={13} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
-                        <span className="truncate">Resultados para «{mapSearchInput}»</span>
-                      </div>
-                      {isSearchingWorld ? (
-                        <div className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0">
-                          <Loader2 size={11} className="animate-spin text-[#0052cc]" />
-                          <span>Buscando...</span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-[#0052cc] dark:text-sky-400 font-semibold shrink-0">
-                          Mundial • Clic para ubicar
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-1 space-y-0.5">
-                      {worldSearchResults.length > 0 ? (
-                        worldSearchResults.map((loc) => {
-                          const IconComp = loc.category === 'city' 
-                            ? Building2 
-                            : loc.category === 'monument' 
-                            ? Landmark 
-                            : loc.category === 'street' || loc.category === 'corridor' 
-                            ? Compass 
-                            : MapPin;
-
-                          return (
-                            <button
-                              key={loc.id}
-                              type="button"
-                              onClick={() => handleSelectWorldLocation(loc)}
-                              className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2.5 transition-colors cursor-pointer group"
-                            >
-                              <div className="flex items-center gap-2.5 truncate">
-                                <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-950/80 flex items-center justify-center shrink-0 transition-colors">
-                                  <IconComp size={14} className="text-slate-600 dark:text-slate-300 group-hover:text-[#0052cc] dark:group-hover:text-sky-400" />
-                                </div>
-                                <div className="truncate">
-                                  <p className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#0052cc] dark:group-hover:text-sky-400 truncate">
-                                    {loc.name}
-                                  </p>
-                                  <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                    {loc.detail}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {loc.country && (
-                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-blue-200/60 dark:group-hover:bg-blue-900/60 group-hover:text-[#0052cc] dark:group-hover:text-sky-300">
-                                    {loc.country}
-                                  </span>
-                                )}
-                                <span className="text-[10px] text-slate-400 group-hover:text-[#0052cc] font-medium hidden sm:inline">
-                                  Ubicar →
-                                </span>
-                              </div>
-                            </button>
-                          );
-                        })
-                      ) : !isSearchingWorld ? (
-                        <div className="p-4 text-center">
-                          <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">
-                            Presiona Buscar para ver «{mapSearchInput}» en Google Maps
-                          </p>
-                          <button
-                            type="button"
-                            onClick={(e) => handleMapSearchSubmit(e)}
-                            className="w-full py-2 px-3 rounded-xl bg-[#0052cc] text-white font-bold hover:bg-[#0047b3] transition-colors cursor-pointer text-xs"
-                          >
-                            Centrar mapa en «{mapSearchInput}»
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </>
-                ) : (
-                  /* Mode 2: Category Tabs when input is empty */
-                  <>
-                    <div className="p-1.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setDefaultSuggestionsTab('mundo')}
-                        className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1 transition-colors cursor-pointer ${
-                          defaultSuggestionsTab === 'mundo'
-                            ? 'bg-white dark:bg-slate-700 text-[#0052cc] dark:text-sky-300 shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
-                        }`}
-                      >
-                        <Globe size={12} />
-                        <span>Destinos Mundiales</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDefaultSuggestionsTab('colombia')}
-                        className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1 transition-colors cursor-pointer ${
-                          defaultSuggestionsTab === 'colombia'
-                            ? 'bg-white dark:bg-slate-700 text-[#0052cc] dark:text-sky-300 shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
-                        }`}
-                      >
-                        <MapPin size={12} />
-                        <span>Medellín & Colombia</span>
-                      </button>
-                    </div>
-
-                    <div className="p-1 space-y-0.5">
-                      {(defaultSuggestionsTab === 'mundo' ? WORLD_FAMOUS_LOCATIONS : COLOMBIA_HIGHLIGHTS).map((loc) => {
-                        const IconComp = loc.category === 'city' 
-                          ? Building2 
-                          : loc.category === 'monument' 
-                          ? Landmark 
-                          : loc.category === 'street' || loc.category === 'corridor' 
-                          ? Compass 
-                          : MapPin;
-
-                        return (
-                          <button
-                            key={loc.id}
-                            type="button"
-                            onClick={() => handleSelectWorldLocation(loc)}
-                            className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2.5 transition-colors cursor-pointer group"
-                          >
-                            <div className="flex items-center gap-2.5 truncate">
-                              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-950/80 flex items-center justify-center shrink-0 transition-colors">
-                                <IconComp size={14} className="text-slate-600 dark:text-slate-300 group-hover:text-[#0052cc] dark:group-hover:text-sky-400" />
-                              </div>
-                              <div className="truncate">
-                                <p className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#0052cc] dark:group-hover:text-sky-400 truncate">
-                                  {loc.name}
-                                </p>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                  {loc.detail}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {loc.country && (
-                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-blue-200/60 dark:group-hover:bg-blue-900/60 group-hover:text-[#0052cc] dark:group-hover:text-sky-300">
-                                  {loc.country}
-                                </span>
-                              )}
-                              <span className="text-[10px] text-slate-400 group-hover:text-[#0052cc] font-medium hidden sm:inline">
-                                Ubicar →
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Floating Google Maps Layer Selector (Top Right) */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl p-1 shadow-lg border border-slate-200/90 dark:border-slate-700/80">
-            <button
-              type="button"
-              onClick={() => setMapLayer('m')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                mapLayer === 'm'
-                  ? 'bg-[#0052cc] text-white shadow-2xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Capa Mapa y Tráfico"
-            >
-              Mapa
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapLayer('k')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                mapLayer === 'k'
-                  ? 'bg-[#0052cc] text-white shadow-2xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Capa Satélite"
-            >
-              Satélite
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapLayer('p')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                mapLayer === 'p'
-                  ? 'bg-[#0052cc] text-white shadow-2xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Capa Relieve"
-            >
-              Relieve
-            </button>
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-            <button
-              type="button"
-              onClick={handleResetMap}
-              className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title="Centrar Medellín completo"
-            >
-              <RotateCcw size={13} />
-            </button>
-          </div>
-
-          {/* Floating Live Location & Traffic Status Pill (Bottom) */}
-          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl p-2 px-3 shadow-lg border border-slate-200/90 dark:border-slate-700/80 flex items-center gap-2 max-w-[calc(100%-24px)] text-xs">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="font-bold text-slate-700 dark:text-slate-200 truncate">
-              {mapDisplayName}
-            </span>
-            {isForegroundActive && (
-              <span className="text-[10px] font-black text-white bg-[#0052cc] dark:bg-sky-500 px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1 shadow-xs animate-pulse">
-                <MapPin size={10} />
-                <span>En primer plano ({mapZoom}x)</span>
-              </span>
-            )}
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:inline shrink-0">
-              • Google Maps en Vivo
-            </span>
-            {activeCorridorId && (
-              <span className="text-[10px] font-bold text-[#0052cc] dark:text-sky-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full shrink-0">
-                Punto fijado
-              </span>
-            )}
-          </div>
-
-          {/* Embedded Google Maps with Dynamic Query & Layer */}
-          <iframe
-            key={`${mapQuery}-${mapLayer}-${mapZoom}`}
-            title="Google Maps Mundial con Tráfico y Ubicaciones en Vivo"
-            src={`https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=${mapLayer}&z=${mapZoom}&output=embed`}
-            className="w-full h-full border-0"
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
+        {/* Official Google Maps Platform Live Component */}
+        <GoogleMapsLive 
+          initialCenter={{ lat: 6.2476, lng: -75.5658 }}
+          initialZoom={14}
+          heightClass="h-[520px] sm:h-[600px]"
+          showSurroundingSelector={true}
+          showSearchBar={true}
+        />
       </section>
 
+      {/* ===================== 7 MAIN SYSTEM APARTADOS ===================== */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-black text-[#0f172a] dark:text-white">
+              {t('dash_modules_title', 'Apartados de la Plataforma ViaNova')}
+            </h2>
+            <p className="text-xs text-[#64748b] dark:text-slate-400">
+              {t('dash_modules_sub', 'Accede a las herramientas de educación, evaluación y reporte vial de Colombia.')}
+            </p>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* 1. Educación Vial */}
+          <div 
+            onClick={() => onNavigate('educacion_vial')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <BookOpen size={22} />
+                </div>
+                <span 
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-full border"
+                  style={{ 
+                    backgroundColor: activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex,
+                    borderColor: activeThemeConfig.borderLightHex 
+                  }}
+                >
+                  {t('dash_badge_law', 'Fundamentos & Teoría')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-sky-500 transition-colors">
+                Aprende: Teoría y Normas Viales
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                Insumos teóricos indispensables antes de realizar las actividades y simuladores: Ley Julián Esteban (50/30 km/h), glorietas, cascos y ciclistas a 1.5m.
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>Aprender teoría y normas</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 2. Señales de Tránsito */}
+          <div 
+            onClick={() => onNavigate('senales')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <SlidersHorizontal size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-sky-800 bg-sky-50 dark:bg-sky-950/60 dark:text-sky-300 px-2.5 py-1 rounded-full border border-sky-200 dark:border-sky-900">
+                  {t('dash_badge_mintransporte', 'Manual Mintransporte')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-sky-500 transition-colors">
+                {t('nav_signs', 'Señales de Tránsito')}
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                {t('dash_mod_signs_desc', 'Catálogo oficial con códigos colombianos SR (Reglamentarias), SP (Preventivas), SI (Informativas) y ST (Obras). Incluye modo Flashcards.')}
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>{t('dash_view_signs', 'Ver señales y flashcards')}</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 3. Quiz */}
+          <div 
+            onClick={() => onNavigate('quiz')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <HelpCircle size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-900">
+                  {t('dash_badge_self_eval', 'Autoevaluación')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-amber-500 transition-colors">
+                {t('nav_quiz', 'Quiz de Conocimiento')}
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                {t('dash_mod_quiz_desc', 'Pruebas rápidas por temas con retroalimentación inmediata, explicaciones legales y sistema de puntuación.')}
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>{t('dash_take_quiz', 'Hacer un quiz')}</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 4. Simulador Examen */}
+          <div 
+            onClick={() => onNavigate('simulador')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <FileCheck2 size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-900">
+                  {t('dash_badge_official_runt', 'Examen Oficial RUNT')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-emerald-500 transition-colors">
+                {t('nav_simulator', 'Simulador de Examen Teórico')}
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                {t('dash_mod_sim_desc', 'Simula el examen oficial de los Centros de Enseñanza Automovilística (CEA) para categorías A2 (Motos), B1 (Carros) y C1 (Público).')}
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>{t('dash_start_simulation', 'Iniciar simulación')}</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 5. Google Maps & Reportes en Vía */}
+          <div 
+            onClick={() => onNavigate('reportes')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 flex items-center justify-center">
+                  <MapPin size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-[#0052cc] bg-blue-50 dark:bg-blue-950/60 dark:text-sky-300 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-900">
+                  Google Maps
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-[#0052cc] transition-colors">
+                Google Maps & Incidencias Viales
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                Visualiza el mapa interactivo con capa de tráfico en tiempo real, geolocaliza baches, semáforos y obras, o traza rutas seguras en Colombia.
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-sky-400"
+            >
+              <span>Abrir Google Maps</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 6. Búsqueda y Recursos */}
+          <div 
+            onClick={() => onNavigate('busqueda')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <Search size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-300 px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-900">
+                  {t('dash_badge_global_search', 'Buscador Global')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-purple-500 transition-colors">
+                {t('nav_search', 'Búsqueda & Recursos')}
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                {t('dash_mod_search_desc', 'Encuentra al instante contenidos sobre educación vial, señales, campañas preventivas y descarga de manuales oficiales.')}
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>{t('dash_explore_search', 'Explorar buscador')}</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* 7. Mi Perfil */}
+          <div 
+            onClick={() => onNavigate('perfil')}
+            className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                  style={{ 
+                    backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : activeThemeConfig.bgLightHex, 
+                    color: activeThemeConfig.primaryHex 
+                  }}
+                >
+                  <Car size={22} />
+                </div>
+                <span className="text-[10px] font-bold text-sky-700 bg-sky-50 dark:bg-sky-950/60 dark:text-sky-300 px-2.5 py-1 rounded-full border border-sky-200 dark:border-sky-900">
+                  {t('dash_badge_digital_credential', 'Credencial Digital')}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-sky-500 transition-colors">
+                {t('dash_my_profile', 'Mi Perfil & Credencial')}
+              </h3>
+              <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
+                {t('dash_mod_profile_desc', 'Consulta tu credencial digital de conductor seguro con código QR, historial de certificados, exámenes aprobados e insignias.')}
+              </p>
+            </div>
+            <div 
+              className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
+              style={{ color: activeThemeConfig.primaryHex }}
+            >
+              <span>{t('dash_manage_account', 'Ver mi credencial')}</span>
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Colombian Daily Road Safety Fact */}
+      <div 
+        className="rounded-3xl p-5 border flex items-start gap-4 transition-colors"
+        style={{ 
+          backgroundColor: themeMode === 'dark' ? 'rgba(30, 41, 59, 0.6)' : activeThemeConfig.bgLightHex,
+          borderColor: activeThemeConfig.borderLightHex 
+        }}
+      >
+        <div 
+          className="w-10 h-10 rounded-2xl text-white flex items-center justify-center shrink-0 shadow-xs"
+          style={{ backgroundColor: activeThemeConfig.primaryHex }}
+        >
+          <Sparkles size={20} />
+        </div>
+        <div>
+          <h4 
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: activeThemeConfig.primaryHex }}
+          >
+            {t('dash_safety_tip_title', 'Consejo de Seguridad Vial en Colombia (Ley 2251 de 2022)')}
+          </h4>
+          <p className="text-xs sm:text-sm text-[#1e293b] dark:text-slate-200 mt-1 leading-relaxed">
+            {t('dash_safety_tip_content', 'Recuerda que en Colombia la velocidad máxima en zonas urbanas es de 50 km/h y en zonas escolares es de 30 km/h. Reducir la velocidad en solo 10 km/h duplica la posibilidad de salvar la vida de un peatón o ciclista ante una colisión.')}
+          </p>
+        </div>
+      </div>
+
+      {/* ===================== RUTA 2D INTERACTIVA CON VEHÍCULO EN MOVIMIENTO ===================== */}
+      <div id="simulacion-2d" className="pt-6">
+        <CityRouteSimulator2D />
+      </div>
+
+      {/* ===================== RUTA DE APRENDIZAJE "CÓMO FUNCIONA VIANOVA" EN 4 PASOS ===================== */}
+      <div id="storyboard" className="pt-6">
+        <InteractiveStoryboard />
+      </div>
+
+      {/* ===================== CÁPSULAS MULTIMEDIA DE VIDEO Y AUDIO ===================== */}
+      <div id="multimedia" className="pt-6">
+        <MultimediaVideoSection />
+      </div>
     </div>
   );
 };

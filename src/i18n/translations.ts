@@ -1118,7 +1118,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     dash_badge_official_runt: 'Official RUNT Exam',
     dash_mod_sim_desc: 'Simulates the official test required by Driving Training Centers (CEA) for categories A2 (Motorcycles), B1 (Cars), and C1 (Public transport).',
     dash_badge_citizen: 'Citizen',
-    dash_mod_rep_desc: 'Report potholes, damaged traffic signals, fallen signs, or road blockages in Bogota, Medellin, Cali, Barranquilla, and nationwide.',
+    dash_mod_rep_desc: 'Report potholes, damaged traffic signals, fallen signs, or road blockages in Medellin and the Aburra Valley, Antioquia.',
     dash_badge_global_search: 'Global Search',
     dash_mod_search_desc: 'Quickly find road safety educational topics, traffic signs, preventive campaigns, and official manual downloads.',
     dash_badge_digital_credential: 'Digital Credential',
@@ -1288,7 +1288,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     rep_photo_attached: '✓ Photo attached successfully',
     rep_photo_attach_btn: 'Attach road photo',
     rep_modal_header: 'Report Road Incident in Colombia',
-    rep_location_ph: 'e.g. Bogota - NQS Ave & 68th St or Medellin - El Poblado Ave',
+    rep_location_ph: 'e.g. Medellin - El Poblado Ave & 10th St or Laureles - San Juan',
 
     // Profile Screen & Digital ID
     prof_badge: 'Official ViaNova Digital Document',
