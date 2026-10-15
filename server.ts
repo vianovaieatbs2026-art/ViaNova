@@ -911,8 +911,13 @@ async function startServer() {
       return res.status(400).json({ exists: false, message: 'Correo no proporcionado' });
     }
     const cleanEmail = email.trim().toLowerCase();
+
+    // REQUISITO ESTRICTO: Si la cuenta fue eliminada, informar que no existe
+    if (SERVER_DELETED_USERS[cleanEmail]) {
+      return res.json({ exists: false, deleted: true });
+    }
+
     if (cleanEmail === 'narvaezpetroisa@gmail.com') {
-      delete SERVER_DELETED_USERS[cleanEmail];
       if (!SERVER_USERS[cleanEmail]) {
         SERVER_USERS[cleanEmail] = {
           id: 'usr-isabella-narvaez',
@@ -936,9 +941,6 @@ async function startServer() {
       const { password: _, ...safeProfile } = SERVER_USERS[cleanEmail];
       return res.json({ exists: true, user: safeProfile });
     }
-    if (SERVER_DELETED_USERS[cleanEmail]) {
-      return res.json({ exists: false, deleted: true });
-    }
     const user = SERVER_USERS[cleanEmail];
     if (user) {
       const { password: _, ...safeProfile } = user;
@@ -961,8 +963,16 @@ async function startServer() {
     const cleanEmail = String(email).trim().toLowerCase();
     const cleanPass = String(password).trim();
 
+    // REQUISITO ESTRICTO: Si la cuenta fue eliminada, bloquear login
+    if (SERVER_DELETED_USERS[cleanEmail]) {
+      return res.status(404).json({
+        success: false,
+        code: 'USER_DELETED',
+        message: 'Debes crear una cuenta primero'
+      });
+    }
+
     if (cleanEmail === 'narvaezpetroisa@gmail.com') {
-      delete SERVER_DELETED_USERS[cleanEmail];
       if (cleanPass === 'Isabella#Narvaez2026!' || cleanPass === 'Isabella#Narvaez') {
         if (!SERVER_USERS[cleanEmail]) {
           SERVER_USERS[cleanEmail] = {
@@ -995,14 +1005,6 @@ async function startServer() {
           message: 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'
         });
       }
-    }
-
-    if (SERVER_DELETED_USERS[cleanEmail]) {
-      return res.status(404).json({
-        success: false,
-        code: 'USER_DELETED',
-        message: 'Debes crear una cuenta primero'
-      });
     }
 
     const user = SERVER_USERS[cleanEmail];

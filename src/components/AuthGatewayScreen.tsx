@@ -169,15 +169,19 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
     setLoginSubmitting(true);
 
-    // Direct authentic validation for Isabella Narváez Petro:
-    // Guarantees Isabella#Narvaez2026! always succeeds and clears any legacy deletion flags
+    // REQUISITO ESTRICTO: Si el usuario eliminó su cuenta, NO puede ingresar por login; DEBE crear una cuenta nueva
+    const isDeletedAccount = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${trimmedEmail}`) === 'true';
+    if (isDeletedAccount) {
+      setLoginSubmitting(false);
+      setActiveTab('register');
+      setRegEmail(trimmedEmail);
+      setRegError('Esta cuenta fue eliminada. Debes crear una cuenta de nuevo para ingresar a la plataforma.');
+      return;
+    }
+
+    // Direct authentic validation for Isabella Narváez Petro (solo si NO ha sido eliminada):
     if (trimmedEmail === 'narvaezpetroisa@gmail.com') {
       if (cleanPassword === 'Isabella#Narvaez2026!' || cleanPassword === 'Isabella#Narvaez') {
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.removeItem('vianova_deleted_narvaezpetroisa@gmail.com');
-          } catch (_) {}
-        }
         const acc = saveRegisteredUser(DEFAULT_USER_ISABELLA.profile, 'Isabella#Narvaez2026!');
         updateRegisteredUserPassword('narvaezpetroisa@gmail.com', 'Isabella#Narvaez2026!');
         try {
@@ -206,6 +210,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       if (userError || !userCheck?.user) {
         setLoginSubmitting(false);
         setActiveTab('register');
+        setRegEmail(trimmedEmail);
         setRegError('Debes crear una cuenta primero');
         return;
       }
@@ -294,13 +299,19 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
 
     setRegSubmitting(true);
 
+    // REQUISITO ESTRICTO: Al crear o volver a crear la cuenta, se remueve el bloqueo de cuenta eliminada
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`vianova_deleted_${trimmedEmail}`);
+        localStorage.removeItem(`vianova_completed_modules_${trimmedEmail}`);
+        localStorage.removeItem(`vianova_quiz_history_${trimmedEmail}`);
+        localStorage.removeItem(`vianova_exam_results_${trimmedEmail}`);
+        localStorage.removeItem(`vianova_reports_${trimmedEmail}`);
+      } catch (_) {}
+    }
+
     // Direct registration for official account Isabella Narváez Petro
     if (trimmedEmail === 'narvaezpetroisa@gmail.com') {
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.removeItem('vianova_deleted_narvaezpetroisa@gmail.com');
-        } catch (_) {}
-      }
       const isabellaProfile: UserProfile = {
         ...DEFAULT_USER_ISABELLA.profile,
         name: regName.trim() || DEFAULT_USER_ISABELLA.profile.name,

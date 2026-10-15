@@ -3,18 +3,17 @@ import {
   ArrowLeft, 
   ShieldCheck, 
   Award, 
-  QrCode, 
   FileBadge, 
   CheckCircle2, 
   User, 
-  Car,
-  Share2,
-  LogIn,
-  UserPlus,
-  LogOut,
-  Trash2,
-  AlertTriangle,
-  Shield
+  Car, 
+  Share2, 
+  LogIn, 
+  UserPlus, 
+  LogOut, 
+  Trash2, 
+  AlertTriangle, 
+  Shield 
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { ViaNovaLogo } from './ViaNovaLogo';
@@ -68,7 +67,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               {t('profile_title', 'Mi Perfil & Credencial Digital')}
             </h1>
             <p className="text-xs sm:text-sm text-[#475569] dark:text-slate-300 max-w-md mx-auto leading-relaxed">
-              Aún no has iniciado sesión en <strong>ViaNova</strong>. Ingresa con tu cuenta o regístrate para acceder a tu credencial digital de conductor seguro con código QR, guardar tus certificaciones y registrar reportes viales.
+              Aún no has iniciado sesión en <strong>ViaNova</strong>. Ingresa con tu cuenta o regístrate para acceder a tu credencial digital de conductor seguro, guardar tus certificaciones y registrar reportes viales.
             </p>
           </div>
 
@@ -173,22 +172,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </div>
           </div>
 
-          {/* QR Code Validation Box */}
-          <div className="bg-white text-[#0f172a] p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center shrink-0 self-center md:self-auto border border-white/20">
-            <div 
-              className="w-24 h-24 rounded-xl flex items-center justify-center border"
-              style={{ 
-                backgroundColor: activeThemeConfig.bgLightHex, 
-                borderColor: activeThemeConfig.borderLightHex,
-                color: activeThemeConfig.primaryHex 
-              }}
-            >
-              <QrCode size={72} />
-            </div>
-            <span className="text-[9px] font-bold text-[#64748b] mt-2 text-center uppercase tracking-wider">
-              {t('profile_qr_badge', 'Validación QR Digital')}
-            </span>
-          </div>
         </div>
       </div>
 

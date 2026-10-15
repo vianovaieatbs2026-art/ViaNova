@@ -1032,7 +1032,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                 {t('dash_my_profile', 'Mi Perfil & Credencial')}
               </h3>
               <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
-                {t('dash_mod_profile_desc', 'Consulta tu credencial digital de conductor seguro con código QR, historial de certificados, exámenes aprobados e insignias.')}
+                {t('dash_mod_profile_desc', 'Consulta tu credencial digital de conductor seguro, historial de certificados, exámenes aprobados e insignias.')}
               </p>
             </div>
             <div 

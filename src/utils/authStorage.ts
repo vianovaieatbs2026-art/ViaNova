@@ -258,7 +258,12 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
 
-  // Direct resolution for official system account Isabella Narváez Petro
+  // REQUISITO ESTRICTO: Si el usuario eliminó su cuenta, NO existe y debe crear una nueva obligatoriamente
+  if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
+    return null;
+  }
+
+  // Direct resolution for official system account Isabella Narváez Petro (siempre que no haya sido eliminada)
   if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
     if (typeof window !== 'undefined') {
       try {
@@ -279,10 +284,6 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
   }
 
   if (typeof window !== 'undefined') {
-    // If account was deleted by the user, do not return it
-    if (localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
-      return null;
-    }
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
@@ -326,12 +327,18 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
   const normalizedEmail = email.trim().toLowerCase();
   const cleanCandidate = (candidatePassword || '').trim();
 
-  // Special direct validation for Isabella Narváez Petro:
-  // Guarantees Isabella#Narvaez2026! always succeeds and clears any legacy deletion flags
+  // REQUISITO ESTRICTO: Si el usuario eliminó su cuenta, NO puede ingresar por login; DEBE crear una cuenta nueva
+  if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
+    return {
+      valid: false,
+      message: 'Debes crear una cuenta primero'
+    };
+  }
+
+  // Special direct validation for Isabella Narváez Petro (cuando la cuenta no esté eliminada):
   if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
     if (cleanCandidate === 'Isabella#Narvaez2026!' || cleanCandidate === 'Isabella#Narvaez') {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem(`vianova_deleted_${normalizedEmail}`);
         try {
           localStorage.setItem(`${USER_KEY_PREFIX}${normalizedEmail}`, JSON.stringify(DEFAULT_USER_ISABELLA));
         } catch (_) {}
@@ -347,14 +354,6 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
         message: 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'
       };
     }
-  }
-
-  // Si la cuenta fue eliminada, el usuario DEBE crear una nueva cuenta obligatoriamente
-  if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
-    return {
-      valid: false,
-      message: 'Debes crear una cuenta primero'
-    };
   }
 
   const account = findRegisteredUserByEmail(normalizedEmail) || SYSTEM_ACCOUNTS_MAP[normalizedEmail];

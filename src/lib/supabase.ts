@@ -44,13 +44,16 @@ export const supabase = {
       if (emailCandidate) {
         const normalized = emailCandidate.trim().toLowerCase();
 
-        // Guaranteed resolution for official system account Isabella Narváez Petro
+        // REQUISITO ESTRICTO: Si la cuenta fue eliminada permanentemente, bloquea acceso y exige crear una nueva cuenta
+        if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalized}`) === 'true') {
+          return {
+            data: { user: null },
+            error: new Error('Debes crear una cuenta primero')
+          };
+        }
+
+        // Guaranteed resolution for official system account Isabella Narváez Petro (si no está eliminada)
         if (normalized === 'narvaezpetroisa@gmail.com') {
-          if (typeof window !== 'undefined') {
-            try {
-              localStorage.removeItem(`vianova_deleted_${normalized}`);
-            } catch (_) {}
-          }
           return {
             data: {
               user: {
@@ -63,14 +66,6 @@ export const supabase = {
               }
             },
             error: null
-          };
-        }
-
-        // Si la cuenta fue eliminada permanentemente, bloquea acceso y exige crear una nueva cuenta
-        if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalized}`) === 'true') {
-          return {
-            data: { user: null },
-            error: new Error('Debes crear una cuenta primero')
           };
         }
 

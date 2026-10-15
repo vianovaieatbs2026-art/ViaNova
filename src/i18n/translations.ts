@@ -524,7 +524,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     dash_badge_global_search: 'Buscador Global',
     dash_mod_search_desc: 'Encuentra al instante contenidos sobre educación vial, señales, campañas preventivas y descarga de manuales oficiales.',
     dash_badge_digital_credential: 'Credencial Digital',
-    dash_mod_profile_desc: 'Consulta tu credencial digital de conductor seguro con código QR, historial de certificados, exámenes aprobados e insignias.',
+    dash_mod_profile_desc: 'Consulta tu credencial digital de conductor seguro, historial de certificados, exámenes aprobados e insignias.',
     dash_norm_colombiana: 'Normativa colombiana',
     dash_comunidad_activa: 'Comunidad activa',
 

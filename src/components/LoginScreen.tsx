@@ -191,14 +191,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // Direct login validation for official system account Isabella Narváez Petro
+    // REQUISITO ESTRICTO: Si el usuario eliminó su cuenta, NO puede ingresar por login; DEBE crear una cuenta nueva
+    const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true';
+    if (isDeleted) {
+      setIsSubmitting(false);
+      setRecaptchaState('idle');
+      setErrorMessage('Esta cuenta fue eliminada. Debes crear una cuenta de nuevo para ingresar a la plataforma.');
+      onNavigateToRegister();
+      return;
+    }
+
+    // Direct login validation for official system account Isabella Narváez Petro (solo si NO está eliminada)
     if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
       if (password === 'Isabella#Narvaez2026!' || password === 'Isabella#Narvaez') {
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.removeItem('vianova_deleted_narvaezpetroisa@gmail.com');
-          } catch (_) {}
-        }
         const acc = saveRegisteredUser(DEFAULT_USER_ISABELLA.profile, 'Isabella#Narvaez2026!');
         updateRegisteredUserPassword('narvaezpetroisa@gmail.com', 'Isabella#Narvaez2026!');
         setIsSubmitting(false);
@@ -206,16 +211,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         onLoginSuccess(acc.profile || DEFAULT_USER_ISABELLA.profile);
         return;
       }
-    }
-
-    // Requisito estricto: Si la cuenta fue eliminada previamente, sí o sí debe crearse una nueva cuenta
-    const isDeleted = typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true';
-    if (isDeleted) {
-      setIsSubmitting(false);
-      setRecaptchaState('idle');
-      setErrorMessage('Debes crear una cuenta primero');
-      onNavigateToRegister();
-      return;
     }
 
     setIsSubmitting(true);
