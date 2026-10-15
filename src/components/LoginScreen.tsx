@@ -32,7 +32,8 @@ import {
   updateRegisteredUserPassword,
   formatNameFromEmail,
   saveRegisteredUser,
-  verifyUserPassword
+  verifyUserPassword,
+  DEFAULT_USER_ISABELLA
 } from '../utils/authStorage';
 import { executeInvisibleRecaptcha, RecaptchaVerificationResult } from '../utils/security';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
@@ -188,6 +189,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     if (!password) {
       setErrorMessage(t('login_err_empty_pass', 'Por favor ingresa tu contraseña.'));
       return;
+    }
+
+    // Direct login validation for official system account Isabella Narváez Petro
+    if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
+      if (password === 'Isabella#Narvaez2026!' || password === 'Isabella#Narvaez') {
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem('vianova_deleted_narvaezpetroisa@gmail.com');
+          } catch (_) {}
+        }
+        const acc = saveRegisteredUser(DEFAULT_USER_ISABELLA.profile, 'Isabella#Narvaez2026!');
+        updateRegisteredUserPassword('narvaezpetroisa@gmail.com', 'Isabella#Narvaez2026!');
+        setIsSubmitting(false);
+        setRecaptchaState('idle');
+        onLoginSuccess(acc.profile || DEFAULT_USER_ISABELLA.profile);
+        return;
+      }
     }
 
     // Requisito estricto: Si la cuenta fue eliminada previamente, sí o sí debe crearse una nueva cuenta

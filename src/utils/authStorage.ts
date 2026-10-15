@@ -141,10 +141,17 @@ export function saveRegisteredUser(profile: UserProfile, password?: string): Sto
     ? profile.primer_ingreso 
     : (existingData ? existingData.profile.primer_ingreso : false);
 
-  const finalPassword = password || existingData?.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
+  const finalPassword = password || existingData?.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password || (normalizedEmail === 'narvaezpetroisa@gmail.com' ? DEFAULT_USER_ISABELLA.password : undefined);
 
-  // Once a user registers or re-registers after deletion, remove predefined system mock values
-  delete SYSTEM_ACCOUNTS_MAP[normalizedEmail];
+  // Preserve official system account Isabella
+  if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
+    SYSTEM_ACCOUNTS_MAP[normalizedEmail] = {
+      ...DEFAULT_USER_ISABELLA,
+      password: finalPassword || DEFAULT_USER_ISABELLA.password
+    };
+  } else {
+    delete SYSTEM_ACCOUNTS_MAP[normalizedEmail];
+  }
 
   const cleanProfile: UserProfile = {
     ...(wasDeleted ? {} : (existingData?.profile || {})),
@@ -251,6 +258,26 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
   const normalizedEmail = email.trim().toLowerCase();
   const storageKey = `${USER_KEY_PREFIX}${normalizedEmail}`;
 
+  // Direct resolution for official system account Isabella Narváez Petro
+  if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.profile) {
+            if (!parsed.password) {
+              parsed.password = DEFAULT_USER_ISABELLA.password;
+              localStorage.setItem(storageKey, JSON.stringify(parsed));
+            }
+            return parsed;
+          }
+        }
+      } catch (_) {}
+    }
+    return DEFAULT_USER_ISABELLA;
+  }
+
   if (typeof window !== 'undefined') {
     // If account was deleted by the user, do not return it
     if (localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
@@ -274,7 +301,7 @@ export function findRegisteredUserByEmail(email: string): StoredUserAccount | nu
     } catch (_) {}
   }
 
-  // Check known system accounts (e.g. Isabella Narváez Petro)
+  // Check known system accounts (e.g. Isabella Narváez Petro, Naz Muñoz)
   if (SYSTEM_ACCOUNTS_MAP[normalizedEmail]) {
     const defaultAcc = SYSTEM_ACCOUNTS_MAP[normalizedEmail];
     if (typeof window !== 'undefined') {
@@ -297,6 +324,30 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
   message?: string;
 } {
   const normalizedEmail = email.trim().toLowerCase();
+  const cleanCandidate = (candidatePassword || '').trim();
+
+  // Special direct validation for Isabella Narváez Petro:
+  // Guarantees Isabella#Narvaez2026! always succeeds and clears any legacy deletion flags
+  if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
+    if (cleanCandidate === 'Isabella#Narvaez2026!' || cleanCandidate === 'Isabella#Narvaez') {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(`vianova_deleted_${normalizedEmail}`);
+        try {
+          localStorage.setItem(`${USER_KEY_PREFIX}${normalizedEmail}`, JSON.stringify(DEFAULT_USER_ISABELLA));
+        } catch (_) {}
+      }
+      SYSTEM_ACCOUNTS_MAP[normalizedEmail] = DEFAULT_USER_ISABELLA;
+      return {
+        valid: true,
+        user: DEFAULT_USER_ISABELLA.profile
+      };
+    } else {
+      return {
+        valid: false,
+        message: 'Contraseña incorrecta. Por favor verifica tus credenciales o solicita restablecer tu contraseña.'
+      };
+    }
+  }
 
   // Si la cuenta fue eliminada, el usuario DEBE crear una nueva cuenta obligatoriamente
   if (typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) === 'true') {
@@ -309,12 +360,6 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
   const account = findRegisteredUserByEmail(normalizedEmail) || SYSTEM_ACCOUNTS_MAP[normalizedEmail];
 
   if (!account || !account.profile) {
-    if (normalizedEmail === 'narvaezpetroisa@gmail.com' && (candidatePassword || '').trim() === DEFAULT_USER_ISABELLA.password) {
-      return {
-        valid: true,
-        user: DEFAULT_USER_ISABELLA.profile
-      };
-    }
     return {
       valid: false,
       message: 'Debes crear una cuenta primero'
@@ -322,7 +367,6 @@ export function verifyUserPassword(email: string, candidatePassword: string): {
   }
 
   const expectedPassword = account.password || SYSTEM_ACCOUNTS_MAP[normalizedEmail]?.password;
-  const cleanCandidate = (candidatePassword || '').trim();
 
   if (expectedPassword) {
     if (cleanCandidate === expectedPassword) {

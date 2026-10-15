@@ -17,7 +17,7 @@ import {
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { UserType, UserProfile } from '../types';
 import { TermsModal } from './TermsModal';
-import { findRegisteredUserByEmail, saveRegisteredUser } from '../utils/authStorage';
+import { findRegisteredUserByEmail, saveRegisteredUser, updateRegisteredUserPassword, DEFAULT_USER_ISABELLA } from '../utils/authStorage';
 import { evaluatePasswordStrength, validateColombianPhone } from '../utils/security';
 import { PasswordRequirementsGuide } from './PasswordRequirementsGuide';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
@@ -88,9 +88,39 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Direct registration for official system account Isabella Narváez Petro
+    if (normalizedEmail === 'narvaezpetroisa@gmail.com') {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('vianova_deleted_narvaezpetroisa@gmail.com');
+        } catch (_) {}
+      }
+      const isabellaUser: UserProfile = {
+        ...DEFAULT_USER_ISABELLA.profile,
+        name: name.trim() || DEFAULT_USER_ISABELLA.profile.name,
+        phone: phone.trim() || DEFAULT_USER_ISABELLA.profile.phone,
+        userType: (userType as UserType) || 'conductor',
+        primer_ingreso: false,
+        emailVerified: true,
+        termsAccepted: true
+      };
+      saveRegisteredUser(isabellaUser, password);
+      updateRegisteredUserPassword(normalizedEmail, password);
+      try {
+        fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: isabellaUser, password })
+        }).catch(() => {});
+      } catch (_) {}
+      setIsSubmitting(false);
+      onRegisterSuccess(isabellaUser);
+      return;
+    }
+
     // Check if an account already exists with this email
     const existing = findRegisteredUserByEmail(normalizedEmail);
-    if (existing) {
+    if (existing && typeof window !== 'undefined' && localStorage.getItem(`vianova_deleted_${normalizedEmail}`) !== 'true') {
       setIsSubmitting(false);
       setErrorMessage(t('reg_err_already_exists', 'Ya existe una cuenta registrada con este correo electrónico.'));
       return;
