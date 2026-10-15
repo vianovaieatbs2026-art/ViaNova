@@ -610,7 +610,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                     Sopa de Letras Vial
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Encuentra 8 términos de seguridad vial en la cuadrícula interactiva. Arrastra las letras, gana sonidos chimes y revisa definiciones legales.
+                    Encuentra 10 términos de seguridad vial en la cuadrícula interactiva. Arrastra o toca las letras, gana sonidos chimes y revisa definiciones legales.
                   </p>
                 </div>
 

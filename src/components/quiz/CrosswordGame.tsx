@@ -7,16 +7,14 @@ import {
   CheckCircle2, 
   Clock, 
   Trophy, 
-  HelpCircle, 
+  Check, 
   Sparkles,
-  Check,
-  ChevronRight,
   Info
 } from 'lucide-react';
 import { soundEngine } from '../../utils/soundEffects';
 import { QuizConfetti } from './QuizConfetti';
 
-interface CrosswordClue {
+export interface CrosswordClue {
   id: string;
   number: number;
   direction: 'horizontal' | 'vertical';
@@ -28,7 +26,8 @@ interface CrosswordClue {
   length: number;
 }
 
-const CLUES_DATA: CrosswordClue[] = [
+// 8 Fully Interlocking Road Safety Clues (0 Collisions, 100% Solvable)
+export const CLUES_DATA: CrosswordClue[] = [
   {
     id: 'c-1h',
     number: 1,
@@ -41,8 +40,8 @@ const CLUES_DATA: CrosswordClue[] = [
     length: 4
   },
   {
-    id: 'c-2v',
-    number: 2,
+    id: 'c-1v',
+    number: 1,
     direction: 'vertical',
     word: 'PEATON',
     clue: 'Actor más vulnerable en la pirámide de la movilidad; tiene prelación absoluta en cruces y cebras.',
@@ -52,8 +51,8 @@ const CLUES_DATA: CrosswordClue[] = [
     length: 6
   },
   {
-    id: 'c-3h',
-    number: 3,
+    id: 'c-2h',
+    number: 2,
     direction: 'horizontal',
     word: 'ALCOHOL',
     clue: 'Sustancia con Cero Tolerancia al volante en Colombia bajo la Ley 1696; genera suspensión de licencia.',
@@ -63,8 +62,8 @@ const CLUES_DATA: CrosswordClue[] = [
     length: 7
   },
   {
-    id: 'c-4v',
-    number: 4,
+    id: 'c-3v',
+    number: 3,
     direction: 'vertical',
     word: 'CASCO',
     clue: 'Elemento de protección de uso obligatorio y certificado (DOT/ECE) para motociclistas.',
@@ -72,6 +71,17 @@ const CLUES_DATA: CrosswordClue[] = [
     startRow: 3,
     startCol: 4,
     length: 5
+  },
+  {
+    id: 'c-4h',
+    number: 4,
+    direction: 'horizontal',
+    word: 'TRANSITO',
+    clue: 'Desplazamiento ordenado de personas, vehículos y animales regulado por el Código Nacional.',
+    legalReference: 'Art. 1 Ley 769 de 2002',
+    startRow: 4,
+    startCol: 2,
+    length: 8
   },
   {
     id: 'c-5h',
@@ -125,14 +135,12 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   onBackToHub,
   onRecordScore
 }) => {
-  // User letter entries grid
   const [userGrid, setUserGrid] = useState<string[][]>(() => 
     Array.from({ length: ROWS }, () => Array(COLS).fill(''))
   );
   const [activeClueId, setActiveClueId] = useState<string>('c-1h');
   const [activeCell, setActiveCell] = useState<CellCoord>({ r: 1, c: 2 });
   const [solvedWordIds, setSolvedWordIds] = useState<string[]>([]);
-  const [checkedResults, setCheckedResults] = useState<{ [key: string]: boolean }>({});
   const [timerSeconds, setTimerSeconds] = useState<number>(0);
   const [gameFinished, setGameFinished] = useState<boolean>(false);
   const [wrongShake, setWrongShake] = useState<boolean>(false);
@@ -172,7 +180,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
     return map;
   }, []);
 
-  // Check which clues are currently solved by user letters
+  // Check solved clues
   useEffect(() => {
     const newSolved: string[] = [];
     CLUES_DATA.forEach(clue => {
@@ -211,12 +219,11 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   // Handle cell click
   const handleSelectCell = (r: number, c: number) => {
     const key = `${r}-${c}`;
-    if (!solutionMap[key]) return; // empty black cell
+    if (!solutionMap[key]) return;
 
     soundEngine.playLetterSelect(0);
     setActiveCell({ r, c });
 
-    // Find clue that includes this cell
     const matchingClues = CLUES_DATA.filter(clue => {
       if (clue.direction === 'horizontal') {
         return clue.startRow === r && c >= clue.startCol && c < clue.startCol + clue.length;
@@ -226,7 +233,6 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
     });
 
     if (matchingClues.length > 0) {
-      // Toggle between H and V if on intersection
       if (matchingClues.some(m => m.id === activeClueId) && matchingClues.length > 1) {
         const other = matchingClues.find(m => m.id !== activeClueId);
         if (other) setActiveClueId(other.id);
@@ -234,6 +240,8 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
         setActiveClueId(matchingClues[0].id);
       }
     }
+
+    inputRefs.current[key]?.focus();
   };
 
   const handleSelectClue = (clue: CrosswordClue) => {
@@ -244,6 +252,29 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
     inputRefs.current[key]?.focus();
   };
 
+  // Centralized letter input handler (used by physical keyboard, mobile software keyboard and touch alphabet)
+  const handleLetterInput = (letter: string, r: number, c: number) => {
+    soundEngine.playLetterSelect(c);
+    const newGrid = [...userGrid.map(row => [...row])];
+    newGrid[r][c] = letter.toUpperCase();
+    setUserGrid(newGrid);
+
+    // Advance along active clue direction
+    if (activeClue.direction === 'horizontal') {
+      const nextC = c + 1;
+      if (nextC < activeClue.startCol + activeClue.length) {
+        setActiveCell({ r, c: nextC });
+        inputRefs.current[`${r}-${nextC}`]?.focus();
+      }
+    } else {
+      const nextR = r + 1;
+      if (nextR < activeClue.startRow + activeClue.length) {
+        setActiveCell({ r: nextR, c });
+        inputRefs.current[`${nextR}-${c}`]?.focus();
+      }
+    }
+  };
+
   // Keyboard navigation & typing
   const handleKeyDown = (e: React.KeyboardEvent, r: number, c: number) => {
     const key = e.key.toUpperCase();
@@ -252,16 +283,22 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
       e.preventDefault();
       soundEngine.playClick();
       const newGrid = [...userGrid.map(row => [...row])];
-      newGrid[r][c] = '';
-      setUserGrid(newGrid);
-
-      // Move backward along active clue
-      if (activeClue.direction === 'horizontal' && c > activeClue.startCol) {
-        setActiveCell({ r, c: c - 1 });
-        inputRefs.current[`${r}-${c - 1}`]?.focus();
-      } else if (activeClue.direction === 'vertical' && r > activeClue.startRow) {
-        setActiveCell({ r: r - 1, c });
-        inputRefs.current[`${r - 1}-${c}`]?.focus();
+      if (newGrid[r][c] !== '') {
+        newGrid[r][c] = '';
+        setUserGrid(newGrid);
+      } else {
+        // Move backward along active clue
+        if (activeClue.direction === 'horizontal' && c > activeClue.startCol) {
+          newGrid[r][c - 1] = '';
+          setUserGrid(newGrid);
+          setActiveCell({ r, c: c - 1 });
+          inputRefs.current[`${r}-${c - 1}`]?.focus();
+        } else if (activeClue.direction === 'vertical' && r > activeClue.startRow) {
+          newGrid[r - 1][c] = '';
+          setUserGrid(newGrid);
+          setActiveCell({ r: r - 1, c });
+          inputRefs.current[`${r - 1}-${c}`]?.focus();
+        }
       }
       return;
     }
@@ -280,29 +317,11 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
       inputRefs.current[`${r + 1}-${c}`]?.focus();
     } else if (/^[A-ZÑ]$/.test(key)) {
       e.preventDefault();
-      soundEngine.playLetterSelect(c);
-      const newGrid = [...userGrid.map(row => [...row])];
-      newGrid[r][c] = key;
-      setUserGrid(newGrid);
-
-      // Advance along active clue direction
-      if (activeClue.direction === 'horizontal') {
-        const nextC = c + 1;
-        if (nextC < activeClue.startCol + activeClue.length) {
-          setActiveCell({ r, c: nextC });
-          inputRefs.current[`${r}-${nextC}`]?.focus();
-        }
-      } else {
-        const nextR = r + 1;
-        if (nextR < activeClue.startRow + activeClue.length) {
-          setActiveCell({ r: nextR, c });
-          inputRefs.current[`${nextR}-${c}`]?.focus();
-        }
-      }
+      handleLetterInput(key, r, c);
     }
   };
 
-  // Provide a hint: reveal next letter in active clue
+  // Hint: reveal next letter in active clue
   const handleRevealLetter = () => {
     soundEngine.playSuccess();
     for (let i = 0; i < activeClue.length; i++) {
@@ -345,7 +364,6 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
     soundEngine.playClick();
     setUserGrid(Array.from({ length: ROWS }, () => Array(COLS).fill('')));
     setSolvedWordIds([]);
-    setCheckedResults({});
     setTimerSeconds(0);
     setGameFinished(false);
     setActiveCell({ r: 1, c: 2 });
@@ -359,16 +377,16 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
+    <div className="space-y-6 animate-fade-in relative max-w-6xl mx-auto">
       {gameFinished && <QuizConfetti />}
 
       {/* Header bar */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBackToHub}
-            className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors cursor-pointer shrink-0"
             title="Volver a Modos de Quiz"
           >
             <ArrowLeft size={18} />
@@ -382,7 +400,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                 {CLUES_DATA.length} Palabras
               </span>
             </div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
               Crucigrama de Leyes y Normas Viales
             </h2>
           </div>
@@ -439,15 +457,15 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
             {activeClue.number}
           </span>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-black uppercase tracking-wider text-blue-200">
                 {activeClue.direction === 'horizontal' ? 'Horizontal' : 'Vertical'} • {activeClue.length} Letras
               </span>
-              <span className="text-[10px] bg-white/20 px-2 py-0.2 rounded-full font-bold">
+              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">
                 {activeClue.legalReference}
               </span>
             </div>
-            <p className="text-sm font-bold text-white mt-0.5">
+            <p className="text-xs sm:text-sm font-bold text-white mt-0.5">
               {activeClue.clue}
             </p>
           </div>
@@ -465,7 +483,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left: Crossword Matrix Board */}
-        <div className={`lg:col-span-7 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md flex flex-col items-center select-none ${wrongShake ? 'animate-shake' : ''}`}>
+        <div className={`lg:col-span-7 bg-white dark:bg-slate-900 p-3 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md flex flex-col items-center select-none ${wrongShake ? 'animate-shake' : ''}`}>
           
           <div className="grid grid-cols-10 gap-1 sm:gap-1.5 p-2 bg-slate-900 dark:bg-slate-950 rounded-2xl border border-slate-800 max-w-full overflow-x-auto">
             {Array.from({ length: ROWS }).map((_, r) =>
@@ -493,7 +511,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                   <div
                     key={key}
                     onClick={() => handleSelectCell(r, c)}
-                    className={`w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 rounded-xl relative cursor-pointer flex items-center justify-center font-black text-xs sm:text-base transition-all border ${
+                    className={`w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 rounded-lg sm:rounded-xl relative cursor-pointer flex items-center justify-center font-black text-xs sm:text-base transition-all border ${
                       isActive
                         ? 'bg-amber-300 dark:bg-amber-400 text-slate-950 border-amber-500 shadow-md scale-105 z-10'
                         : isInActiveClue
@@ -513,7 +531,12 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                       type="text"
                       maxLength={1}
                       value={userGrid[r][c]}
-                      onChange={() => {}}
+                      onChange={(e) => {
+                        const val = e.target.value.slice(-1).toUpperCase();
+                        if (/^[A-ZÑ]$/.test(val)) {
+                          handleLetterInput(val, r, c);
+                        }
+                      }}
                       onKeyDown={(e) => handleKeyDown(e, r, c)}
                       className="w-full h-full text-center uppercase font-black bg-transparent focus:outline-hidden cursor-pointer"
                     />
@@ -526,7 +549,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
           {/* Quick Virtual Alphabet for Touch Mobile Devices */}
           <div className="mt-5 w-full max-w-md">
             <span className="text-[10px] font-black uppercase text-slate-400 block text-center mb-1.5">
-              Teclado de Apoyo Táctil
+              Teclado Táctil de Apoyo
             </span>
             <div className="flex flex-wrap justify-center gap-1">
               {'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').map(letter => (
@@ -534,24 +557,8 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                   key={letter}
                   type="button"
                   onClick={() => {
-                    soundEngine.playLetterSelect(0);
                     const { r, c } = activeCell;
-                    const newGrid = [...userGrid.map(row => [...row])];
-                    newGrid[r][c] = letter;
-                    setUserGrid(newGrid);
-
-                    // Advance
-                    if (activeClue.direction === 'horizontal') {
-                      const nextC = c + 1;
-                      if (nextC < activeClue.startCol + activeClue.length) {
-                        setActiveCell({ r, c: nextC });
-                      }
-                    } else {
-                      const nextR = r + 1;
-                      if (nextR < activeClue.startRow + activeClue.length) {
-                        setActiveCell({ r: nextR, c });
-                      }
-                    }
+                    handleLetterInput(letter, r, c);
                   }}
                   className="w-7 h-8 sm:w-8 sm:h-9 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
                 >
@@ -580,7 +587,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
         <div className="lg:col-span-5 space-y-4">
           
           {/* Horizontales */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
             <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center justify-between">
               <span>Pistas Horizontales</span>
               <span className="text-xs font-bold text-slate-400">
@@ -598,7 +605,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                     key={clue.id}
                     type="button"
                     onClick={() => handleSelectClue(clue)}
-                    className={`w-full p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+                    className={`w-full p-2.5 sm:p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
                       isSelected
                         ? 'bg-blue-50 dark:bg-blue-950/60 border-[#0052cc] shadow-xs'
                         : isSolved
@@ -632,7 +639,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
           </div>
 
           {/* Verticales */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
             <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center justify-between">
               <span>Pistas Verticales</span>
               <span className="text-xs font-bold text-slate-400">
@@ -650,7 +657,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
                     key={clue.id}
                     type="button"
                     onClick={() => handleSelectClue(clue)}
-                    className={`w-full p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+                    className={`w-full p-2.5 sm:p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
                       isSelected
                         ? 'bg-blue-50 dark:bg-blue-950/60 border-[#0052cc] shadow-xs'
                         : isSolved
