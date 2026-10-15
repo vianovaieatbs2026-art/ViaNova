@@ -16,7 +16,6 @@ import {
   Sparkles,
   KeyRound,
   RotateCcw,
-  Zap,
   HelpCircle,
   ExternalLink
 } from 'lucide-react';
@@ -148,13 +147,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     setLoginError('');
     setRegError('');
     setLoginPassword('');
-  };
-
-  // Quick fill test credentials (email and password pre-loaded for instant review)
-  const handleFillDemo = () => {
-    setLoginEmail('conductor.demo@vianova.edu.co');
-    setLoginPassword('Demo#ViaNova2026!');
-    setLoginError('');
   };
 
   // ===================== HANDLE LOGIN SUBMIT =====================
@@ -581,22 +573,6 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     </>
                   )}
                 </button>
-
-                {/* Demo Test Account Shortcut */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs transition-colors">
-                  <span data-i18n="login_demo_question" className="text-slate-500 dark:text-slate-400 font-medium">
-                    {t('login_demo_question', '¿Deseas probar la plataforma?')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleFillDemo}
-                    data-i18n="login_demo_btn"
-                    className="text-[#0052cc] dark:text-[#00FF88] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Zap size={13} />
-                    <span data-i18n-text>{t('login_demo_btn', 'Cargar Cuenta Demo')}</span>
-                  </button>
-                </div>
               </motion.form>
             ) : (
               /* ================= TAB 2: FORMULARIO CREAR CUENTA ================= */

@@ -277,24 +277,26 @@ export const ThemeLanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     // Run DOM translation immediately
     translateEntireDom(language);
 
-    // Keep active DOM observer for newly rendered elements in either language
+    // Keep active DOM observer for newly rendered elements only when English mode is active
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
-    let timeoutId: any = null;
-    observerRef.current = new MutationObserver(() => {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        translateEntireDom(language);
-      }, 30);
-    });
+    if (language === 'en') {
+      let timeoutId: any = null;
+      observerRef.current = new MutationObserver(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          translateEntireDom('en');
+        }, 50);
+      });
 
-    observerRef.current.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: false
-    });
+      observerRef.current.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: false
+      });
+    }
 
     return () => {
       if (observerRef.current) {

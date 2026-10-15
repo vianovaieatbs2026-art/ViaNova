@@ -11,7 +11,9 @@ export type ScreenId =
   | 'reportes'
   | 'perfil'
   | 'registro'
-  | 'login';
+  | 'login'
+  | 'educacion_vial'
+  | 'simulador';
 
 export interface UserProfile {
   id: string;

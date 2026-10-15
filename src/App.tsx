@@ -194,7 +194,7 @@ function AppContent() {
         ) : (
           /* ================= ESTADO 2: DENTRO DE LA APP (USUARIO AUTENTICADO) ================= */
           <ErrorBoundary onReset={() => setCurrentScreen('inicio')}>
-            {currentScreen === 'inicio' && (
+            {(currentScreen === 'inicio' || currentScreen === 'educacion_vial' || currentScreen === 'simulador') && (
               <DashboardScreen
                 user={user}
                 onNavigate={setCurrentScreen}

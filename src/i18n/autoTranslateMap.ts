@@ -276,10 +276,70 @@ export const SPANISH_TO_ENGLISH_MAP: Record<string, string> = {
   'Ubicado en tu posición actual (Google Maps GPS)': 'Located at your current position (Google Maps GPS)',
   'Medellín, Antioquia (Valle de Aburrá) • Cobertura en vivo': 'Medellín, Antioquia (Aburrá Valley) • Live Coverage',
   'Medellín, Antioquia • Vista Metropolitana': 'Medellín, Antioquia • Metropolitan View',
+  'Medellín, Antioquia (Centrado)': 'Medellín, Antioquia (Centered)',
   'Tráfico en vivo': 'Live traffic',
   'Capa de Tráfico Activa': 'Live Traffic Layer Active',
   'Capa de Tráfico Desactivada': 'Traffic Layer Inactive',
   'Abrir mapa en pantalla completa': 'Open map in fullscreen',
+  'Capa de tráfico en tiempo real de Google Maps': 'Google Maps real-time traffic layer',
+  'Vista de mapa estándar': 'Standard map view',
+  'Vista satelital fotográfica': 'Satellite photographic view',
+  'Vista de relieve topográfico': 'Topographic terrain view',
+  'Centrar en mi ubicación actual GPS': 'Center on my current GPS location',
+  'Buscar en Medellín (ej: Av. El Poblado, San Juan, Cra 70, La 80)...': 'Search in Medellín (e.g.: Av. El Poblado, San Juan, Cra 70, La 80)...',
+  'Buscar y ubicar en el mapa de Medellín': 'Search and locate on Medellín map',
+  'Calles': 'Streets',
+  'Zonas aledañas en Medellín (Acceso rápido):': 'Surrounding areas in Medellín (Quick access):',
+  'Atajos de teclado': 'Keyboard shortcuts',
+  'Datos del mapa': 'Map data',
+  'Términos de uso': 'Terms of Use',
+  'mapa en vivo - Medellín': 'Live Map - Medellín',
+  'Mapa en vivo - Medellín': 'Live Map - Medellín',
+  'Mapa en Vivo - Medellín': 'Live Map - Medellín',
+  'Eje comercial y administrativo de Medellín': 'Commercial and administrative hub of Medellín',
+  'Milla de Oro, Calle 10 y Parque Lleras': 'Golden Mile, 10th St & Lleras Park',
+  'Corredor Carrera 70 y Calle San Juan': 'Carrera 70 & San Juan Corridor',
+  'Corredor vial Av. 80 y Parque de Belén': 'Av. 80 road corridor & Belén Park',
+  'Eje estructurante multimodal del Valle de Aburrá': 'Multimodal corridor of Aburrá Valley',
+  'Conexión con Itagüí, La Estrella y Envigado': 'Connection with Itagüí, La Estrella & Envigado',
+  'Área Metropolitana del Valle de Aburrá': 'Aburrá Valley Metropolitan Area',
+  'Acceso norte Valle de Aburrá': 'Northern access to Aburrá Valley',
+  'Centro industrial y comercial del sur': 'Southern industrial & commercial hub',
+  'Sur Metropolitano': 'Southern Metropolitan Area',
+  'Norte Metropolitano': 'Northern Metropolitan Area',
+  'Suroeste Metropolitano': 'Southwestern Metropolitan Area',
+  'Corredor Norte-Sur': 'North-South Corridor',
+  'Cargando Google Maps en vivo...': 'Loading live Google Maps...',
+  'Centrado en': 'Centered on',
+  'Búsqueda:': 'Search:',
+
+  // ===================== EDUCAPLAY & QUIZ ARCADE =====================
+  'Educaplay • Crucigrama': 'Educaplay • Crossword',
+  'Educaplay • Sopa 10x10': 'Educaplay • Word Search 10x10',
+  'Reto Rápido • 10s': 'Speed Challenge • 10s',
+  'Encuestas • En Vivo': 'Live Polls',
+  'Dilemas y Encuestas en Vía': 'Road Dilemmas & Polls',
+  'Crucigrama de Normas': 'Traffic Rules Crossword',
+  'Sopa de Letras Vial': 'Road Safety Word Search',
+  '¿Verdadero o Falso? (Relámpago)': 'True or False? (Lightning Round)',
+  'Relacionar Columnas': 'Match Columns',
+  'Completar la Norma': 'Complete the Regulation',
+  'Jugar Crucigrama': 'Play Crossword',
+  'Jugar Sopa de Letras': 'Play Word Search',
+  'Jugar Reto Rápido': 'Play Speed Challenge',
+  'Votar y Aprender': 'Vote & Learn',
+  'Jugar Emparejamiento': 'Play Matching Game',
+  'Completar Frases': 'Complete Sentences',
+  'Plataforma Interactiva CEA • Estilo Educaplay': 'CEA Interactive Arcade • Educaplay Style',
+  'Actividades y Quizzes Interactivos': 'Interactive Quizzes & Activities',
+  'Todos los Juegos (6 Modos)': 'All Games (6 Modes)',
+  'Crucigrama y Sopa de Letras': 'Crossword & Word Search',
+  'Retos Rápidos': 'Speed Challenges',
+  'Encuestas y Dilemas': 'Polls & Dilemmas',
+  'Volver a Modos de Juego': 'Back to Game Modes',
+  'Volver al Menú de Juegos': 'Back to Games Menu',
+  'Sonido Activo': 'Sound Active',
+  'Silenciado': 'Muted',
 
   // ===================== CORRIDORS & ZONES =====================
   'Autopista Sur': 'Autopista Sur',
@@ -811,9 +871,9 @@ export function translateTextToEnglish(text: string): string {
   working = working.replace(/Módulo (\d+):?/gi, 'Module $1:');
   working = working.replace(/Paso (\d+):?/gi, 'Step $1:');
 
-  // 4. Substring / multi-word phrase replacement (ordered by longest phrases first)
+  // 4. Substring / multi-word phrase replacement (ordered by longest multi-word phrases first)
   const phrases = Object.keys(SPANISH_TO_ENGLISH_MAP)
-    .filter(k => k.length >= 4)
+    .filter(k => k.includes(' ') && k.length >= 4)
     .sort((a, b) => b.length - a.length);
 
   for (const esPhrase of phrases) {
@@ -974,9 +1034,9 @@ export function translateTextToSpanish(text: string): string {
   working = working.replace(/Module (\d+):?/gi, 'Módulo $1:');
   working = working.replace(/Step (\d+):?/gi, 'Paso $1:');
 
-  // 4. Substring / multi-word phrase replacement (longest English phrases first)
+  // 4. Substring / multi-word phrase replacement (longest multi-word English phrases first)
   const enPhrases = Object.keys(ENGLISH_TO_SPANISH_MAP)
-    .filter(k => k.length >= 4)
+    .filter(k => k.includes(' ') && k.length >= 4)
     .sort((a, b) => b.length - a.length);
 
   for (const enPhrase of enPhrases) {

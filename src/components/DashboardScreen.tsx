@@ -141,7 +141,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
   const { 
     themeMode, 
     activeThemeConfig, 
-    t 
+    t,
+    language
   } = useThemeLanguage();
 
   const progress = getUserDashboardProgress(user);
@@ -733,25 +734,25 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>TRÁFICO EN TIEMPO REAL • GOOGLE MAPS</span>
+              <span>{t('dash_traffic_badge', 'TRÁFICO EN TIEMPO REAL • GOOGLE MAPS')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] dark:text-white tracking-tight flex items-center gap-2.5">
               <MapPin className="text-rose-500 shrink-0" size={28} />
-              <span>mapa en vivo - Medellín</span>
+              <span>{t('dash_map_title', 'Mapa en Vivo - Medellín')}</span>
             </h2>
             <p className="text-xs sm:text-sm text-[#475569] dark:text-slate-400 max-w-2xl">
-              Monitoreo del tráfico y estado de vías en tiempo real para Medellín y el Valle de Aburrá (Av. Regional, Autopista Sur, Las Vegas, Av. Oriental, Av. 80 y San Juan).
+              {t('dash_map_sub', 'Monitoreo del tráfico y estado de vías en tiempo real para Medellín y el Valle de Aburrá (Av. Regional, Autopista Sur, Las Vegas, Av. Oriental, Av. 80 y San Juan).')}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <a
-              href="https://www.google.com/maps/@6.25184,-75.5898,13z/data=!5m1!1e1"
+              href={language === 'en' ? 'https://www.google.com/maps/@6.25184,-75.5898,13z/data=!5m1!1e1?hl=en' : 'https://www.google.com/maps/@6.25184,-75.5898,13z/data=!5m1!1e1?hl=es'}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5 shadow-2xs"
             >
-              <span>Abrir en Google Maps</span>
+              <span>{t('dash_open_gmaps', 'Abrir en Google Maps')}</span>
               <ExternalLink size={13} />
             </a>
 
@@ -761,7 +762,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0052cc] hover:bg-[#0047b3] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
             >
               <AlertTriangle size={13} />
-              <span>Reportes de Incidencias</span>
+              <span>{t('dash_incident_reports_btn', 'Reportes de Incidencias')}</span>
             </button>
           </div>
         </div>
