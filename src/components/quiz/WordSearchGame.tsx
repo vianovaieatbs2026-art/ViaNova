@@ -8,8 +8,8 @@ import {
   CheckCircle2, 
   Clock, 
   Sparkles,
-  Check,
-  Info
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { soundEngine } from '../../utils/soundEffects';
 import { QuizConfetti } from './QuizConfetti';
@@ -24,113 +24,112 @@ export interface WordItem {
   color: string;
 }
 
-// 10 Road Safety Words 100% placed and verified in a 10x10 matrix
-export const WORDS_DATABASE: WordItem[] = [
+export interface WordSearchLevel {
+  id: number;
+  title: string;
+  subtitle: string;
+  difficulty: 'Básico' | 'Intermedio' | 'Avanzado';
+  words: WordItem[];
+  grid: string[][];
+}
+
+// 3 Complete, Fully Verified Word Searches (10 Words each, 0 Collisions)
+export const WORD_SEARCH_LEVELS: WordSearchLevel[] = [
   {
-    id: 'w-1',
-    word: 'SEMAFORO',
-    hint: 'Dispositivo luminoso que regula el tránsito con luces verde, amarilla y roja.',
-    legalReference: 'Art. 116 Ley 769 de 2002',
-    start: [0, 1],
-    end: [0, 8],
-    color: '#00AFFF'
+    id: 1,
+    title: 'Señales y Normas Urbanas',
+    subtitle: 'Nivel 1 • Seguridad Vial Esencial',
+    difficulty: 'Básico',
+    words: [
+      { id: 'w1-1', word: 'SEMAFORO', hint: 'Dispositivo luminoso que regula el tránsito con luces verde, amarilla y roja.', legalReference: 'Art. 116 Ley 769 de 2002', start: [0, 1], end: [0, 8], color: '#00AFFF' },
+      { id: 'w1-2', word: 'SOAT', hint: 'Seguro Obligatorio de Accidentes de Tránsito que ampara a todas las víctimas.', legalReference: 'Art. 42 Ley 769 de 2002', start: [1, 3], end: [1, 6], color: '#3B82F6' },
+      { id: 'w1-3', word: 'PARE', hint: 'Señal reglamentaria octagonal SR-01 de detención total e inequívoca a 0 km/h.', legalReference: 'Art. 109 Ley 769 de 2002', start: [2, 2], end: [2, 5], color: '#EAB308' },
+      { id: 'w1-4', word: 'CINTURON', hint: 'Elemento de seguridad pasiva obligatorio en asientos delanteros y traseros.', legalReference: 'Art. 82 Ley 769 de 2002', start: [4, 1], end: [4, 8], color: '#FF6B00' },
+      { id: 'w1-5', word: 'VELOCIDAD', hint: 'Límite urbano general de 50 km/h fijado por la Ley Julián Esteban.', legalReference: 'Ley 2251 de 2022', start: [6, 0], end: [6, 8], color: '#A855F7' },
+      { id: 'w1-6', word: 'LUCES', hint: 'Sistema de alumbrado reglamentario activo obligatorio para visibilidad en vía.', legalReference: 'Art. 86 Ley 769 de 2002', start: [7, 2], end: [7, 6], color: '#EC4899' },
+      { id: 'w1-7', word: 'CEBRA', hint: 'Demarcación vial de líneas blancas longitudinales para cruce peatonal seguro.', legalReference: 'Manual de Señalización Mintransporte', start: [8, 2], end: [8, 6], color: '#06B6D4' },
+      { id: 'w1-8', word: 'FRENOS', hint: 'Sistema de detención mecánica e hidráulica clave en la revisión técnico-mecánica.', legalReference: 'Art. 28 Ley 769 de 2002', start: [9, 1], end: [9, 6], color: '#10B981' },
+      { id: 'w1-9', word: 'CASCO', hint: 'Protección reglamentaria y certificada (DOT/ECE) para motociclistas.', legalReference: 'Resolución 23385 de 2020', start: [1, 0], end: [5, 0], color: '#F43F5E' },
+      { id: 'w1-10', word: 'PEATON', hint: 'Actor vial más vulnerable en la pirámide de movilidad con prelación de paso.', legalReference: 'Art. 105 Ley 769 de 2002', start: [1, 9], end: [6, 9], color: '#00FF88' }
+    ],
+    grid: [
+      ['X', 'S', 'E', 'M', 'A', 'F', 'O', 'R', 'O', 'V'],
+      ['C', 'Y', 'U', 'S', 'O', 'A', 'T', 'P', 'T', 'P'],
+      ['A', 'P', 'P', 'A', 'R', 'E', 'B', 'S', 'U', 'E'],
+      ['S', 'S', 'J', 'T', 'Y', 'Z', 'X', 'E', 'D', 'A'],
+      ['C', 'C', 'I', 'N', 'T', 'U', 'R', 'O', 'N', 'T'],
+      ['O', 'R', 'V', 'E', 'M', 'I', 'N', 'R', 'B', 'O'],
+      ['V', 'E', 'L', 'O', 'C', 'I', 'D', 'A', 'D', 'N'],
+      ['O', 'T', 'L', 'U', 'C', 'E', 'S', 'L', 'T', 'D'],
+      ['X', 'M', 'C', 'E', 'B', 'R', 'A', 'E', 'W', 'E'],
+      ['J', 'F', 'R', 'E', 'N', 'O', 'S', 'U', 'I', 'A']
+    ]
   },
   {
-    id: 'w-2',
-    word: 'SOAT',
-    hint: 'Seguro Obligatorio de Accidentes de Tránsito que ampara a todas las víctimas.',
-    legalReference: 'Art. 42 Ley 769 de 2002',
-    start: [1, 3],
-    end: [1, 6],
-    color: '#3B82F6'
+    id: 2,
+    title: 'Normas y Actores Viales',
+    subtitle: 'Nivel 2 • Movilidad y Tránsito',
+    difficulty: 'Intermedio',
+    words: [
+      { id: 'w2-1', word: 'CICLISTA', hint: 'Actor vial vulnerable que debe usar casco y chaleco reflectivo nocturno.', legalReference: 'Ley 1811 de 2016', color: '#00AFFF', start: [0, 2], end: [7, 2] },
+      { id: 'w2-2', word: 'GLORIETA', hint: 'Intersección circular donde tiene prelación el vehículo que ya circula dentro.', legalReference: 'Art. 119 Ley 769 de 2002', color: '#10B981', start: [3, 1], end: [3, 8] },
+      { id: 'w2-3', word: 'PASAJERO', hint: 'Persona distinta del conductor que se transporta legalmente en un vehículo.', legalReference: 'Art. 2 Ley 769 de 2002', color: '#06B6D4', start: [1, 9], end: [8, 9] },
+      { id: 'w2-4', word: 'CALZADA', hint: 'Parte de la vía destinada a la circulación regular de vehículos automotores.', legalReference: 'Art. 2 Ley 769 de 2002', color: '#8B5CF6', start: [0, 2], end: [0, 8] },
+      { id: 'w2-5', word: 'CHALECO', hint: 'Prenda reflectiva obligatoria para motociclistas y ciclistas entre 18:00 y 06:00.', legalReference: 'Art. 94 Ley 769 de 2002', color: '#EC4899', start: [0, 0], end: [6, 0] },
+      { id: 'w2-6', word: 'CARRIL', hint: 'Faja longitudinal delimitada en la calzada para el tránsito de una fila de vehículos.', legalReference: 'Art. 2 Ley 769 de 2002', color: '#E11D48', start: [4, 3], end: [4, 8] },
+      { id: 'w2-7', word: 'ANDEN', hint: 'Zona longitudinal de la vía urbana destinada exclusivamente al tránsito de peatones.', legalReference: 'Art. 2 Ley 769 de 2002', color: '#F59E0B', start: [5, 4], end: [5, 8] },
+      { id: 'w2-8', word: 'BERMA', hint: 'Franja lateral contigua a la calzada para emergencias y detención temporal.', legalReference: 'Art. 2 Ley 769 de 2002', color: '#3B82F6', start: [1, 3], end: [1, 7] },
+      { id: 'w2-9', word: 'PLACA', hint: 'Identificación metálica oficial e intransferible expedida por el RUNT.', legalReference: 'Art. 43 Ley 769 de 2002', color: '#D97706', start: [6, 3], end: [6, 7] },
+      { id: 'w2-10', word: 'TIMON', hint: 'Mando mecánico de dirección del vehículo automotor para maniobrar en la vía.', legalReference: 'Manual de Conducción Segura', color: '#6366F1', start: [2, 4], end: [2, 8] }
+    ],
+    grid: [
+      ['C', 'E', 'C', 'A', 'L', 'Z', 'A', 'D', 'A', 'C'],
+      ['H', 'C', 'I', 'B', 'E', 'R', 'M', 'A', 'Q', 'P'],
+      ['A', 'T', 'C', 'G', 'T', 'I', 'M', 'O', 'N', 'A'],
+      ['L', 'G', 'L', 'O', 'R', 'I', 'E', 'T', 'A', 'S'],
+      ['E', 'L', 'I', 'C', 'A', 'R', 'R', 'I', 'L', 'A'],
+      ['C', 'E', 'S', 'B', 'A', 'N', 'D', 'E', 'N', 'J'],
+      ['O', 'B', 'T', 'P', 'L', 'A', 'C', 'A', 'S', 'E'],
+      ['X', 'A', 'A', 'T', 'O', 'W', 'S', 'U', 'J', 'R'],
+      ['X', 'G', 'X', 'I', 'W', 'Z', 'P', 'Z', 'D', 'O'],
+      ['D', 'N', 'O', 'H', 'S', 'D', 'A', 'E', 'H', 'H']
+    ]
   },
   {
-    id: 'w-3',
-    word: 'PARE',
-    hint: 'Señal reglamentaria octagonal SR-01 de detención total e inequívoca a 0 km/h.',
-    legalReference: 'Art. 109 Ley 769 de 2002',
-    start: [2, 2],
-    end: [2, 5],
-    color: '#EAB308'
-  },
-  {
-    id: 'w-4',
-    word: 'CINTURON',
-    hint: 'Elemento de seguridad pasiva obligatorio en asientos delanteros y traseros.',
-    legalReference: 'Art. 82 Ley 769 de 2002',
-    start: [4, 1],
-    end: [4, 8],
-    color: '#FF6B00'
-  },
-  {
-    id: 'w-5',
-    word: 'VELOCIDAD',
-    hint: 'Límite urbano general de 50 km/h fijado por la Ley Julián Esteban.',
-    legalReference: 'Ley 2251 de 2022',
-    start: [6, 0],
-    end: [6, 8],
-    color: '#A855F7'
-  },
-  {
-    id: 'w-6',
-    word: 'LUCES',
-    hint: 'Sistema de alumbrado reglamentario activo obligatorio para visibilidad en vía.',
-    legalReference: 'Art. 86 Ley 769 de 2002',
-    start: [7, 2],
-    end: [7, 6],
-    color: '#EC4899'
-  },
-  {
-    id: 'w-7',
-    word: 'CEBRA',
-    hint: 'Demarcación vial de líneas blancas longitudinales para cruce peatonal seguro.',
-    legalReference: 'Manual de Señalización Mintransporte',
-    start: [8, 2],
-    end: [8, 6],
-    color: '#06B6D4'
-  },
-  {
-    id: 'w-8',
-    word: 'FRENOS',
-    hint: 'Sistema de detención mecánica e hidráulica clave en la revisión técnico-mecánica.',
-    legalReference: 'Art. 28 Ley 769 de 2002',
-    start: [9, 1],
-    end: [9, 6],
-    color: '#10B981'
-  },
-  {
-    id: 'w-9',
-    word: 'CASCO',
-    hint: 'Protección reglamentaria y certificada (DOT/ECE) para motociclistas.',
-    legalReference: 'Resolución 23385 de 2020',
-    start: [1, 0],
-    end: [5, 0],
-    color: '#F43F5E'
-  },
-  {
-    id: 'w-10',
-    word: 'PEATON',
-    hint: 'Actor vial más vulnerable en la pirámide de movilidad con prelación de paso.',
-    legalReference: 'Art. 105 Ley 769 de 2002',
-    start: [1, 9],
-    end: [6, 9],
-    color: '#00FF88'
+    id: 3,
+    title: 'Prevención y Carretera',
+    subtitle: 'Nivel 3 • Mecánica y Emergencias',
+    difficulty: 'Avanzado',
+    words: [
+      { id: 'w3-1', word: 'EXTINTOR', hint: 'Equipo contra incendios de polvo químico seco exigido en el equipo de carretera.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#EF4444', start: [5, 0], end: [5, 7] },
+      { id: 'w3-2', word: 'BOTIQUIN', hint: 'Kit de primeros auxilios obligatorio con gasas, antisépticos y vendajes.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#10B981', start: [7, 0], end: [7, 7] },
+      { id: 'w3-3', word: 'REVISION', hint: 'Inspección técnico-mecánica y de gases obligatoria en Centros de Diagnóstico (CDA).', legalReference: 'Art. 50 Ley 769 de 2002', color: '#8B5CF6', start: [0, 8], end: [7, 8] },
+      { id: 'w3-4', word: 'REFLEJOS', hint: 'Capacidad de respuesta neuromotora del conductor ante un obstáculo inesperado.', legalReference: 'Resolución 217 de 2014', color: '#EC4899', start: [1, 0], end: [1, 7] },
+      { id: 'w3-5', word: 'LLANTAS', hint: 'Neumáticos que deben tener un labrado mínimo de 1.6 mm para evitar hidroplaneo.', legalReference: 'Resolución 567 de 2018', color: '#6366F1', start: [0, 9], end: [6, 9] },
+      { id: 'w3-6', word: 'BALIZAS', hint: 'Señales reflectivas triangulares de emergencia colocadas a 30m y 50m del vehículo.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#F59E0B', start: [9, 0], end: [9, 6] },
+      { id: 'w3-7', word: 'CRUCETA', hint: 'Llave en cruz metálica para aflojar y apretar pernos de las ruedas.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#E11D48', start: [3, 0], end: [3, 6] },
+      { id: 'w3-8', word: 'AIRBAG', hint: 'Bolsa de aire de inflado pirotécnico en milisegundos para protección de colisión.', legalReference: 'Norma Técnica NTC 5550', color: '#00AFFF', start: [2, 0], end: [2, 5] },
+      { id: 'w3-9', word: 'GATO', hint: 'Herramienta hidráulica o mecánica para elevación en cambio de rueda pinchada.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#14B8A6', start: [0, 1], end: [0, 4] },
+      { id: 'w3-10', word: 'TACO', hint: 'Bloques de seguridad para acuñar las ruedas cuando el vehículo se detiene en pendiente.', legalReference: 'Art. 30 Ley 769 de 2002', color: '#D97706', start: [2, 6], end: [5, 6] }
+    ],
+    grid: [
+      ['I', 'G', 'A', 'T', 'O', 'D', 'S', 'O', 'R', 'L'],
+      ['R', 'E', 'F', 'L', 'E', 'J', 'O', 'S', 'E', 'L'],
+      ['A', 'I', 'R', 'B', 'A', 'G', 'T', 'M', 'V', 'A'],
+      ['C', 'R', 'U', 'C', 'E', 'T', 'A', 'Q', 'I', 'N'],
+      ['P', 'Y', 'K', 'O', 'U', 'A', 'C', 'H', 'S', 'T'],
+      ['E', 'X', 'T', 'I', 'N', 'T', 'O', 'R', 'I', 'A'],
+      ['J', 'W', 'X', 'S', 'X', 'V', 'Z', 'D', 'O', 'S'],
+      ['B', 'O', 'T', 'I', 'Q', 'U', 'I', 'N', 'N', 'E'],
+      ['B', 'J', 'S', 'K', 'B', 'S', 'P', 'N', 'Q', 'Z'],
+      ['B', 'A', 'L', 'I', 'Z', 'A', 'S', 'A', 'B', 'R']
+    ]
   }
 ];
 
-// Exact 10x10 pre-computed grid: all 10 words completely verified without overlap defects
-export const BASE_GRID: string[][] = [
-  ['X', 'S', 'E', 'M', 'A', 'F', 'O', 'R', 'O', 'V'], // Row 0: SEMAFORO (0,1)..(0,8)
-  ['C', 'Y', 'U', 'S', 'O', 'A', 'T', 'P', 'T', 'P'], // Row 1: CASCO(1..5,0), SOAT(1,3)..(1,6), PEATON(1..6,9)
-  ['A', 'P', 'P', 'A', 'R', 'E', 'B', 'S', 'U', 'E'], // Row 2: PARE (2,2)..(2,5)
-  ['S', 'S', 'J', 'T', 'Y', 'Z', 'X', 'E', 'D', 'A'], // Row 3: filler
-  ['C', 'C', 'I', 'N', 'T', 'U', 'R', 'O', 'N', 'T'], // Row 4: CINTURON (4,1)..(4,8)
-  ['O', 'R', 'V', 'E', 'M', 'I', 'N', 'R', 'B', 'O'], // Row 5: CASCO ends at (5,0)
-  ['V', 'E', 'L', 'O', 'C', 'I', 'D', 'A', 'D', 'N'], // Row 6: VELOCIDAD (6,0)..(6,8), PEATON ends at (6,9)
-  ['O', 'T', 'L', 'U', 'C', 'E', 'S', 'L', 'T', 'D'], // Row 7: LUCES (7,2)..(7,6)
-  ['X', 'M', 'C', 'E', 'B', 'R', 'A', 'E', 'W', 'E'], // Row 8: CEBRA (8,2)..(8,6)
-  ['J', 'F', 'R', 'E', 'N', 'O', 'S', 'U', 'I', 'A']  // Row 9: FRENOS (9,1)..(9,6)
-];
+// Fallback constant for backwards compatibility
+export const WORDS_DATABASE = WORD_SEARCH_LEVELS[0].words;
+export const BASE_GRID = WORD_SEARCH_LEVELS[0].grid;
 
 interface WordSearchGameProps {
   onBackToHub: () => void;
@@ -141,8 +140,11 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
   onBackToHub,
   onRecordScore
 }) => {
-  const [grid] = useState<string[][]>(BASE_GRID);
+  const [currentLevelId, setCurrentLevelId] = useState<number>(1);
+  const currentLevel = WORD_SEARCH_LEVELS.find(l => l.id === currentLevelId) || WORD_SEARCH_LEVELS[0];
+
   const [foundWordIds, setFoundWordIds] = useState<string[]>([]);
+  const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [selectedCells, setSelectedCells] = useState<[number, number][]>([]);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [firstTapCell, setFirstTapCell] = useState<[number, number] | null>(null);
@@ -150,9 +152,25 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
   const [pulsingCell, setPulsingCell] = useState<[number, number] | null>(null);
   const [timerSeconds, setTimerSeconds] = useState<number>(0);
   const [gameFinished, setGameFinished] = useState<boolean>(false);
-  const [selectedWordDetail, setSelectedWordDetail] = useState<WordItem | null>(WORDS_DATABASE[0]);
+  const [selectedWordDetail, setSelectedWordDetail] = useState<WordItem | null>(currentLevel.words[0]);
 
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Switch level cleanly
+  const handleSelectLevel = (levelId: number) => {
+    soundEngine.playClick();
+    setCurrentLevelId(levelId);
+    setFoundWordIds([]);
+    setSelectedCells([]);
+    setFirstTapCell(null);
+    setDragStartCell(null);
+    setIsDragging(false);
+    setPulsingCell(null);
+    setTimerSeconds(0);
+    setGameFinished(false);
+    const target = WORD_SEARCH_LEVELS.find(l => l.id === levelId) || WORD_SEARCH_LEVELS[0];
+    setSelectedWordDetail(target.words[0]);
+  };
 
   // Timer
   useEffect(() => {
@@ -165,8 +183,11 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
 
   // Victory check
   useEffect(() => {
-    if (foundWordIds.length === WORDS_DATABASE.length && !gameFinished) {
+    if (foundWordIds.length === currentLevel.words.length && !gameFinished && currentLevel.words.length > 0) {
       setGameFinished(true);
+      if (!completedLevels.includes(currentLevelId)) {
+        setCompletedLevels(prev => [...prev, currentLevelId]);
+      }
       soundEngine.playWordFound();
       setTimeout(() => {
         soundEngine.playComplete();
@@ -176,12 +197,12 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
         onRecordScore(100);
       }
     }
-  }, [foundWordIds, gameFinished, onRecordScore]);
+  }, [foundWordIds, gameFinished, currentLevel.words.length, currentLevelId, completedLevels, onRecordScore]);
 
   // Check if cell is in any found word
   const getCellFoundColor = (r: number, c: number): string | null => {
     for (const id of foundWordIds) {
-      const item = WORDS_DATABASE.find(w => w.id === id);
+      const item = currentLevel.words.find(w => w.id === id);
       if (!item) continue;
       if (isCellInWord(r, c, item)) {
         return item.color;
@@ -194,11 +215,9 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     const [sr, sc] = item.start;
     const [er, ec] = item.end;
     if (sr === er) {
-      // Horizontal
       return r === sr && c >= Math.min(sc, ec) && c <= Math.max(sc, ec);
     }
     if (sc === ec) {
-      // Vertical
       return c === sc && r >= Math.min(sr, er) && r <= Math.max(sr, er);
     }
     return false;
@@ -208,13 +227,11 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     return selectedCells.some(([sr, sc]) => sr === r && sc === c);
   };
 
-  // Generate line between two points (supports Horizontal, Vertical, Diagonal)
   const getLineCells = (start: [number, number], end: [number, number]): [number, number][] => {
     const [r1, c1] = start;
     const [r2, c2] = end;
     const cells: [number, number][] = [];
 
-    // Horizontal
     if (r1 === r2) {
       const step = c2 >= c1 ? 1 : -1;
       for (let c = c1; c !== c2 + step; c += step) {
@@ -223,7 +240,6 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
       return cells;
     }
 
-    // Vertical
     if (c1 === c2) {
       const step = r2 >= r1 ? 1 : -1;
       for (let r = r1; r !== r2 + step; r += step) {
@@ -232,7 +248,6 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
       return cells;
     }
 
-    // Diagonal
     const dr = r2 - r1;
     const dc = c2 - c1;
     if (Math.abs(dr) === Math.abs(dc)) {
@@ -252,14 +267,13 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     return [[r1, c1]];
   };
 
-  // Evaluate candidate cells array against words database
   const tryMatchWord = (cells: [number, number][]): boolean => {
     if (cells.length < 3) return false;
-    const selectedString = cells.map(([r, c]) => grid[r][c]).join('');
+    const selectedString = cells.map(([r, c]) => currentLevel.grid[r][c]).join('');
     const reversedString = selectedString.split('').reverse().join('');
 
     let matchedWord: WordItem | null = null;
-    for (const w of WORDS_DATABASE) {
+    for (const w of currentLevel.words) {
       if (w.word === selectedString || w.word === reversedString) {
         const [sr, sc] = w.start;
         const [er, ec] = w.end;
@@ -288,31 +302,26 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     return false;
   };
 
-  // Interaction handlers (dual support: drag OR 2-tap selection)
   const handleCellClickOrTap = (r: number, c: number) => {
     soundEngine.playLetterSelect(0);
 
     if (!firstTapCell) {
-      // First tap: mark as candidate start
       setFirstTapCell([r, c]);
       setSelectedCells([[r, c]]);
       return;
     }
 
-    // Second tap on the exact same cell deselects
     if (firstTapCell[0] === r && firstTapCell[1] === c) {
       setFirstTapCell(null);
       setSelectedCells([]);
       return;
     }
 
-    // Second tap on a different cell: calculate line and attempt match
     const line = getLineCells(firstTapCell, [r, c]);
     setSelectedCells(line);
 
     const isMatch = tryMatchWord(line);
     if (!isMatch) {
-      // Brief visual flash, then reset
       soundEngine.playClick();
       setTimeout(() => {
         setSelectedCells([]);
@@ -321,14 +330,12 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     }
   };
 
-  // Drag start
   const handlePointerDown = (r: number, c: number) => {
     setIsDragging(true);
     setDragStartCell([r, c]);
     setSelectedCells([[r, c]]);
   };
 
-  // Drag over
   const handlePointerEnter = (r: number, c: number) => {
     if (!isDragging || !dragStartCell) return;
     const line = getLineCells(dragStartCell, [r, c]);
@@ -338,7 +345,6 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     setSelectedCells(line);
   };
 
-  // Drag end
   const handlePointerUp = () => {
     if (!isDragging) return;
     setIsDragging(false);
@@ -350,7 +356,6 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
         setSelectedCells([]);
       }
     } else if (selectedCells.length === 1) {
-      // Single click: handle as tap-tap start
       const [r, c] = selectedCells[0];
       handleCellClickOrTap(r, c);
       return;
@@ -358,9 +363,8 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     setDragStartCell(null);
   };
 
-  // Hint: highlights start cell of next unfound word
   const handleUseHint = () => {
-    const remaining = WORDS_DATABASE.filter(w => !foundWordIds.includes(w.id));
+    const remaining = currentLevel.words.filter(w => !foundWordIds.includes(w.id));
     if (remaining.length === 0) return;
     const hintWord = remaining[Math.floor(Math.random() * remaining.length)];
     setPulsingCell(hintWord.start);
@@ -378,7 +382,15 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
     setPulsingCell(null);
     setTimerSeconds(0);
     setGameFinished(false);
-    setSelectedWordDetail(WORDS_DATABASE[0]);
+    setSelectedWordDetail(currentLevel.words[0]);
+  };
+
+  const handleNextLevel = () => {
+    if (currentLevelId < WORD_SEARCH_LEVELS.length) {
+      handleSelectLevel(currentLevelId + 1);
+    } else {
+      handleSelectLevel(1);
+    }
   };
 
   const formatTimer = (s: number) => {
@@ -405,14 +417,14 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-[#00AFFF] tracking-wider">
-                EDUCAPLAY STYLE • SOPA DE LETRAS COMPLETA
+                EDUCAPLAY STYLE • 3 SOPAS DE LETRAS
               </span>
               <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-300 text-[10px] font-bold">
-                10x10
+                {currentLevel.difficulty}
               </span>
             </div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-              Sopa de Letras de Seguridad Vial
+              Sopa de Letras: {currentLevel.title}
             </h2>
           </div>
         </div>
@@ -426,7 +438,7 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
 
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
             <CheckCircle2 size={15} />
-            <span>{foundWordIds.length}/{WORDS_DATABASE.length} Encontradas</span>
+            <span>{foundWordIds.length}/{currentLevel.words.length} Encontradas</span>
           </div>
 
           <button
@@ -451,6 +463,50 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
         </div>
       </div>
 
+      {/* 3 SOPAS DE LETRAS TABS SELECTOR */}
+      <div className="bg-slate-100 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+        {WORD_SEARCH_LEVELS.map((lvl) => {
+          const isActive = lvl.id === currentLevelId;
+          const isDone = completedLevels.includes(lvl.id);
+
+          return (
+            <button
+              key={lvl.id}
+              type="button"
+              onClick={() => handleSelectLevel(lvl.id)}
+              className={`p-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                isActive
+                  ? 'bg-white dark:bg-slate-800 text-[#0052cc] dark:text-[#00AFFF] shadow-sm font-black border border-blue-200 dark:border-blue-900/60'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 overflow-hidden">
+                <span className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
+                  isActive 
+                    ? 'bg-[#0052cc] text-white' 
+                    : isDone
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                }`}>
+                  {lvl.id}
+                </span>
+                <div className="truncate">
+                  <p className="text-xs font-bold leading-tight truncate">
+                    {lvl.title}
+                  </p>
+                  <span className="text-[10px] text-slate-400">
+                    {lvl.difficulty} • 10 Palabras
+                  </span>
+                </div>
+              </div>
+              {isDone && (
+                <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Game Layout: Grid (Left) + Word Clues (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
@@ -472,7 +528,7 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
           >
-            {grid.map((row, r) =>
+            {currentLevel.grid.map((row, r) =>
               row.map((letter, c) => {
                 const foundColor = getCellFoundColor(r, c);
                 const isSelected = isCellSelected(r, c);
@@ -547,7 +603,7 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Sparkles size={18} className="text-[#0052cc] dark:text-[#00AFFF]" />
-                <span>Palabras por Encontrar ({WORDS_DATABASE.length})</span>
+                <span>Palabras por Encontrar ({currentLevel.words.length})</span>
               </h3>
               <span className="text-[11px] font-bold text-slate-400">
                 Toca para ver pista
@@ -555,7 +611,7 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              {WORDS_DATABASE.map((item) => {
+              {currentLevel.words.map((item) => {
                 const isFound = foundWordIds.includes(item.id);
                 const isSelectedForHint = selectedWordDetail?.id === item.id;
 
@@ -677,10 +733,10 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
                   ¡SOPA DE LETRAS COMPLETADA!
                 </span>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                  ¡Excelente Visión Vial!
+                  {currentLevel.title}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                  Has descubierto todas las {WORDS_DATABASE.length} palabras de seguridad vial y normativa colombiana en{' '}
+                  Has descubierto las {currentLevel.words.length} palabras de este nivel en{' '}
                   <span className="font-bold text-[#0052cc] dark:text-[#00AFFF]">{formatTimer(timerSeconds)}</span>.
                 </p>
               </div>
@@ -691,8 +747,10 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
                   <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">100 Pts</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400">Tiempo</span>
-                  <p className="text-xl font-black text-slate-800 dark:text-white">{formatTimer(timerSeconds)}</p>
+                  <span className="text-xs text-slate-400">Progreso Sopas</span>
+                  <p className="text-xl font-black text-slate-800 dark:text-white">
+                    {completedLevels.length} de {WORD_SEARCH_LEVELS.length}
+                  </p>
                 </div>
               </div>
 
@@ -704,13 +762,24 @@ export const WordSearchGame: React.FC<WordSearchGameProps> = ({
                 >
                   Jugar de Nuevo
                 </button>
-                <button
-                  type="button"
-                  onClick={onBackToHub}
-                  className="flex-1 py-3 px-4 rounded-xl bg-[#0052cc] hover:bg-[#0047b3] text-white font-bold text-xs transition-all shadow-md cursor-pointer"
-                >
-                  Otros Quizzes
-                </button>
+                {currentLevelId < WORD_SEARCH_LEVELS.length ? (
+                  <button
+                    type="button"
+                    onClick={handleNextLevel}
+                    className="flex-1 py-3 px-4 rounded-xl bg-[#0052cc] hover:bg-[#0047b3] text-white font-bold text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span>Siguiente Nivel</span>
+                    <ChevronRight size={15} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onBackToHub}
+                    className="flex-1 py-3 px-4 rounded-xl bg-[#0052cc] hover:bg-[#0047b3] text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                  >
+                    Otros Quizzes
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>
