@@ -534,18 +534,166 @@ export const TrafficSignGraphic: React.FC<TrafficSignGraphicProps> = ({
       );
     }
 
-    // 23. SI-27 FOTOMULTA / DETECCIÓN ELECTRÓNICA
-    if (normalizedType.includes('si-27') || normalizedType.includes('fotodeteccion') || normalizedType.includes('camara')) {
+    // 24. SP-44 ZONA DE DERRUMBE O DESLIZAMIENTO (Yellow Diamond)
+    if (normalizedType.includes('sp-44') || normalizedType.includes('deslizamiento') || normalizedType.includes('derrumbe')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <polygon points="50,4 96,50 50,96 4,50" fill="#facc15" stroke="#0f172a" strokeWidth="3" />
+          <polygon points="50,9 91,50 50,91 9,50" fill="none" stroke="#0f172a" strokeWidth="1" />
+          {/* Mountain cliff on the left */}
+          <path d="M 22 76 L 22 36 L 40 54 L 46 76 Z" fill="#0f172a" />
+          {/* Road line */}
+          <line x1="22" y1="76" x2="78" y2="76" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
+          {/* Falling rocks tumbling down */}
+          <polygon points="52,44 58,40 62,46 56,50" fill="#0f172a" />
+          <polygon points="62,56 68,52 72,58 66,62" fill="#0f172a" />
+          <polygon points="54,66 60,62 64,68 58,72" fill="#0f172a" />
+        </svg>
+      );
+    }
+
+    // 25. SP-55 SUPERFICIE DESLIZANTE (Yellow Diamond)
+    if (normalizedType.includes('sp-55-slip') || normalizedType.includes('superficie deslizante') || normalizedType.includes('resbalosa')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <polygon points="50,4 96,50 50,96 4,50" fill="#facc15" stroke="#0f172a" strokeWidth="3" />
+          <polygon points="50,9 91,50 50,91 9,50" fill="none" stroke="#0f172a" strokeWidth="1" />
+          {/* Skidding car tilted */}
+          <g transform="translate(50, 48) rotate(-14) translate(-50, -48)">
+            <rect x="36" y="38" width="28" height="15" rx="3" fill="#0f172a" />
+            <circle cx="42" cy="54" r="3" fill="#0f172a" />
+            <circle cx="58" cy="54" r="3" fill="#0f172a" />
+          </g>
+          {/* Wavy skidding tire marks */}
+          <path d="M 32 70 Q 38 62, 44 70 T 56 70" fill="none" stroke="#0f172a" strokeWidth="3.5" strokeLinecap="round" />
+          <path d="M 44 76 Q 50 68, 56 76 T 68 76" fill="none" stroke="#0f172a" strokeWidth="3.5" strokeLinecap="round" />
+        </svg>
+      );
+    }
+
+    // 26. SI-05 RUTA NACIONAL / IDENTIFICACIÓN DE RUTA (Blue/Green with Colombian highway shield)
+    if (normalizedType.includes('si-05-ruta') || normalizedType.includes('ruta nacional') || (normalizedType.includes('ruta') && !normalizedType.includes('ciclorruta'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="10" width="84" height="80" rx="8" fill="#0052cc" stroke="#ffffff" strokeWidth="3" />
+          {/* Colombian Highway Shield */}
+          <path
+            d="M 28 26 L 72 26 L 72 54 C 72 68, 50 78, 50 78 C 50 78, 28 68, 28 54 Z"
+            fill="#ffffff"
+            stroke="#0052cc"
+            strokeWidth="2.5"
+          />
+          <text x="50" y="40" textAnchor="middle" fill="#0052cc" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="8" letterSpacing="0.5">COLOMBIA</text>
+          <text x="50" y="62" textAnchor="middle" fill="#0f172a" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="22">45</text>
+        </svg>
+      );
+    }
+
+    // 27. SI-14 PARADERO DE BUSES / TRANSPORTE PÚBLICO (Blue Square)
+    if (normalizedType.includes('si-14') || normalizedType.includes('paradero') || normalizedType.includes('bus stop')) {
       return (
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
           <rect x="8" y="10" width="84" height="80" rx="8" fill="#0052cc" stroke="#ffffff" strokeWidth="3" />
           <rect x="18" y="20" width="64" height="60" rx="4" fill="#ffffff" />
-          {/* Camera body */}
-          <rect x="28" y="38" width="44" height="28" rx="4" fill="#0f172a" />
-          <polygon points="40,38 45,30 55,30 60,38" fill="#0f172a" />
-          <circle cx="50" cy="52" r="9" fill="#38bdf8" stroke="#ffffff" strokeWidth="2.5" />
-          <circle cx="64" cy="44" r="2.5" fill="#f59e0b" />
-          <text x="50" y="76" textAnchor="middle" fill="#0052cc" fontWeight="900" fontSize="7">RADAR SAST</text>
+          {/* Bus body */}
+          <rect x="25" y="34" width="36" height="26" rx="4" fill="#0052cc" />
+          {/* Bus windows */}
+          <rect x="28" y="38" width="8" height="8" rx="1" fill="#ffffff" />
+          <rect x="39" y="38" width="8" height="8" rx="1" fill="#ffffff" />
+          <rect x="50" y="38" width="8" height="8" rx="1" fill="#ffffff" />
+          {/* Headlights */}
+          <circle cx="28" cy="54" r="1.5" fill="#facc15" />
+          <circle cx="58" cy="54" r="1.5" fill="#facc15" />
+          {/* Wheels */}
+          <circle cx="34" cy="60" r="3.5" fill="#0f172a" />
+          <circle cx="52" cy="60" r="3.5" fill="#0f172a" />
+          {/* Bus stop pole & sign */}
+          <line x1="71" y1="32" x2="71" y2="64" stroke="#0052cc" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="71" cy="34" r="5" fill="#0052cc" />
+          <circle cx="71" cy="34" r="3.5" fill="#ffffff" />
+        </svg>
+      );
+    }
+
+    // 28. SI-10 PARQUEADERO / ESTACIONAMIENTO PERMITIDO (Blue Square with White P)
+    if (normalizedType.includes('si-10') || (normalizedType.includes('parqueadero') && !normalizedType.includes('prohibido'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="10" width="84" height="80" rx="8" fill="#0052cc" stroke="#ffffff" strokeWidth="3" />
+          <text
+            x="50"
+            y="68"
+            textAnchor="middle"
+            fill="#ffffff"
+            fontFamily="Arial, sans-serif"
+            fontWeight="900"
+            fontSize="54"
+          >
+            P
+          </text>
+        </svg>
+      );
+    }
+
+    // 29. SI-24 CICLORRUTA / CICLOVÍA (Green Square with White Bicycle)
+    if (normalizedType.includes('si-24') || normalizedType.includes('ciclorruta') || normalizedType.includes('ciclovia')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="10" width="84" height="80" rx="8" fill="#15803d" stroke="#ffffff" strokeWidth="3" />
+          <rect x="18" y="20" width="64" height="60" rx="4" fill="#15803d" />
+          {/* White Bicycle */}
+          <circle cx="35" cy="56" r="9" fill="none" stroke="#ffffff" strokeWidth="3" />
+          <circle cx="65" cy="56" r="9" fill="none" stroke="#ffffff" strokeWidth="3" />
+          <path
+            d="M 35 56 L 48 44 L 60 44 L 65 56 M 48 44 L 43 36 L 49 36 M 57 40 L 57 56"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    }
+
+    // 30. SI-03 TALLER MECÁNICO / ASISTENCIA (Blue Square with Wrench)
+    if (normalizedType.includes('si-03') || normalizedType.includes('taller') || normalizedType.includes('mecanico')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="10" width="84" height="80" rx="8" fill="#0052cc" stroke="#ffffff" strokeWidth="3" />
+          <rect x="20" y="22" width="60" height="56" rx="4" fill="#ffffff" />
+          {/* Wrench */}
+          <path
+            d="M 38 66 L 56 48 C 53 43 54 38 58 34 C 62 30 67 29 72 31 L 66 37 L 68 41 L 74 39 C 76 43 75 48 71 52 C 67 56 62 57 58 55 L 40 73 Z"
+            fill="#0052cc"
+          />
+        </svg>
+      );
+    }
+
+    // 31. SR-38 SENTIDO ÚNICO DE CIRCULACIÓN (Black Rectangle with White Arrow)
+    if (normalizedType.includes('sr-38') || normalizedType.includes('sentido unico')) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <rect x="8" y="24" width="84" height="52" rx="6" fill="#0f172a" stroke="#ffffff" strokeWidth="3" />
+          <line x1="26" y1="50" x2="64" y2="50" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
+          <polygon points="62,38 78,50 62,62" fill="#ffffff" />
+          <text x="50" y="70" textAnchor="middle" fill="#ffffff" fontWeight="800" fontSize="7" letterSpacing="1">TRANSITO</text>
+        </svg>
+      );
+    }
+
+    // 32. SP-30 PEATONES EN LA VÍA (Yellow Diamond with Pedestrian)
+    if (normalizedType.includes('sp-30') || (normalizedType.includes('peaton') && !normalizedType.includes('escolar'))) {
+      return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+          <polygon points="50,4 96,50 50,96 4,50" fill="#facc15" stroke="#0f172a" strokeWidth="3" />
+          <polygon points="50,9 91,50 50,91 9,50" fill="none" stroke="#0f172a" strokeWidth="1" />
+          {/* Walking pedestrian */}
+          <circle cx="50" cy="34" r="5" fill="#0f172a" />
+          <path d="M 45 42 L 55 42 L 53 62 L 47 62 Z" fill="#0f172a" />
+          <line x1="48" y1="62" x2="42" y2="76" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
+          <line x1="52" y1="62" x2="58" y2="76" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
         </svg>
       );
     }

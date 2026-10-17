@@ -222,6 +222,32 @@ export const COLOMBIAN_TRAFFIC_SIGNS_ES: TrafficSign[] = [
     borderHex: '#101c2d',
     iconName: 'ShieldAlert'
   },
+  {
+    id: 'sp-44',
+    code: 'SP-44',
+    name: 'ZONA DE DERRUMBE O DESLIZAMIENTO',
+    category: 'preventiva',
+    description: 'Advierte el peligro de desprendimiento de rocas, lodo o tierra sobre la calzada.',
+    meaning: 'Disminuya la velocidad, manténgase alerta a posibles obstáculos en la vía y no se detenga en la zona de riesgo.',
+    colombianNorm: 'Manual de Señalización Vial - Mintransporte',
+    shape: 'diamond',
+    bgHex: '#ffb703',
+    borderHex: '#101c2d',
+    iconName: 'AlertTriangle'
+  },
+  {
+    id: 'sp-30',
+    code: 'SP-30',
+    name: 'PEATONES EN LA VÍA',
+    category: 'preventiva',
+    description: 'Advierte la proximidad de un lugar frecuentado por peatones con prelación de paso.',
+    meaning: 'Reduzca la marcha y conceda siempre la prelación al cruce del peatón.',
+    colombianNorm: 'Art. 105 Ley 769 de 2002',
+    shape: 'diamond',
+    bgHex: '#ffb703',
+    borderHex: '#101c2d',
+    iconName: 'User'
+  },
 
   // ===================== INFORMATIVAS (SI - Fondo azul / Rectángulo) =====================
   {
@@ -236,6 +262,32 @@ export const COLOMBIAN_TRAFFIC_SIGNS_ES: TrafficSign[] = [
     bgHex: '#0052cc',
     borderHex: '#ffffff',
     iconName: 'HeartPulse'
+  },
+  {
+    id: 'si-05',
+    code: 'SI-05',
+    name: 'IDENTIFICACIÓN DE RUTA NACIONAL',
+    category: 'informativa',
+    description: 'Informa el número oficial de la carretera nacional para orientar la trayectoria del viaje.',
+    meaning: 'Identifica el corredor vial nacional (por ejemplo Ruta 45) garantizando la orientación del conductor.',
+    colombianNorm: 'Manual de Señalización Vial - INVÍAS',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'MapPin'
+  },
+  {
+    id: 'si-14',
+    code: 'SI-14',
+    name: 'PARADERO DE TRANSPORTE PÚBLICO',
+    category: 'informativa',
+    description: 'Indica el sitio autorizado para el ascenso y descenso de pasajeros de transporte público.',
+    meaning: 'Zona exclusiva para detención momentánea de buses de servicio público; prohibido el parqueo de particulares.',
+    colombianNorm: 'Manual de Señalización Vial de Colombia',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'Bus'
   },
   {
     id: 'si-02',
@@ -262,6 +314,19 @@ export const COLOMBIAN_TRAFFIC_SIGNS_ES: TrafficSign[] = [
     bgHex: '#0052cc',
     borderHex: '#ffffff',
     iconName: 'ParkingCircle'
+  },
+  {
+    id: 'si-03',
+    code: 'SI-03',
+    name: 'TALLER MECÁNICO Y AUXILIO EN CARRETERA',
+    category: 'informativa',
+    description: 'Indica la cercanía de un taller automotriz y asistencia mecánica de emergencia.',
+    meaning: 'Punto de asistencia técnica y reparación para fallas mecánicas en ruta.',
+    colombianNorm: 'Manual de Señalización Vial de Colombia',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'Wrench'
   },
   {
     id: 'si-24',
@@ -528,6 +593,32 @@ export const COLOMBIAN_TRAFFIC_SIGNS_EN: TrafficSign[] = [
     borderHex: '#101c2d',
     iconName: 'ShieldAlert'
   },
+  {
+    id: 'sp-44',
+    code: 'SP-44',
+    name: 'FALLING ROCKS / LANDSLIDE ZONE',
+    category: 'preventiva',
+    description: 'Warns of danger of falling rocks, earth, or landslides onto the roadway.',
+    meaning: 'Reduce speed, stay alert for debris on the pavement, and do not stop in hazard areas.',
+    colombianNorm: 'Colombian Road Sign Manual - Mintransporte',
+    shape: 'diamond',
+    bgHex: '#ffb703',
+    borderHex: '#101c2d',
+    iconName: 'AlertTriangle'
+  },
+  {
+    id: 'sp-30',
+    code: 'SP-30',
+    name: 'PEDESTRIANS ON ROADWAY',
+    category: 'preventiva',
+    description: 'Warns of proximity to an area frequented by pedestrians who hold right-of-way.',
+    meaning: 'Slow down and always yield right-of-way to crossing pedestrians.',
+    colombianNorm: 'Art. 105 Law 769 of 2002',
+    shape: 'diamond',
+    bgHex: '#ffb703',
+    borderHex: '#101c2d',
+    iconName: 'User'
+  },
 
   // ===================== INFORMATIVE (SI) =====================
   {
@@ -542,6 +633,32 @@ export const COLOMBIAN_TRAFFIC_SIGNS_EN: TrafficSign[] = [
     bgHex: '#0052cc',
     borderHex: '#ffffff',
     iconName: 'HeartPulse'
+  },
+  {
+    id: 'si-05',
+    code: 'SI-05',
+    name: 'NATIONAL ROUTE IDENTIFIER',
+    category: 'informativa',
+    description: 'Displays the official route number of the national highway to assist journey routing.',
+    meaning: 'Identifies the national highway corridor (e.g. Route 45) for orientation.',
+    colombianNorm: 'Colombian Road Sign Manual - INVÍAS',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'MapPin'
+  },
+  {
+    id: 'si-14',
+    code: 'SI-14',
+    name: 'PUBLIC TRANSIT BUS STOP',
+    category: 'informativa',
+    description: 'Designates the authorized boarding and alight point for public transit buses.',
+    meaning: 'Exclusive zone for temporary public transit bus stops; private parking strictly prohibited.',
+    colombianNorm: 'Colombian Road Sign Manual',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'Bus'
   },
   {
     id: 'si-02',
@@ -568,6 +685,19 @@ export const COLOMBIAN_TRAFFIC_SIGNS_EN: TrafficSign[] = [
     bgHex: '#0052cc',
     borderHex: '#ffffff',
     iconName: 'ParkingCircle'
+  },
+  {
+    id: 'si-03',
+    code: 'SI-03',
+    name: 'MECHANICAL WORKSHOP & EMERGENCY REPAIR',
+    category: 'informativa',
+    description: 'Indicates proximity to an automotive workshop and roadside emergency assistance.',
+    meaning: 'Technical assistance point for mechanical repairs on the road.',
+    colombianNorm: 'Colombian Road Sign Manual',
+    shape: 'rectangle',
+    bgHex: '#0052cc',
+    borderHex: '#ffffff',
+    iconName: 'Wrench'
   },
   {
     id: 'si-24',
