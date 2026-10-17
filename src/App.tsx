@@ -207,13 +207,13 @@ function AppContent() {
               />
             )}
 
-            {currentScreen === 'senales' && (
+            {(currentScreen === 'senales' || currentScreen === 'educacion_vial') && (
               <TrafficSignsScreen
                 onBackToDashboard={() => setCurrentScreen('inicio')}
               />
             )}
 
-            {currentScreen === 'quiz' && (
+            {(currentScreen === 'quiz' || currentScreen === 'simulador') && (
               <QuizScreen
                 user={user}
               />

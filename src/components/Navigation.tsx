@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Menu, 
-  X, 
   Moon, 
   Sun, 
   Globe, 
@@ -10,8 +8,7 @@ import {
   ShieldCheck, 
   Trash2,
   UserPlus,
-  Sparkles,
-  ChevronDown
+  Sparkles
 } from 'lucide-react';
 import { ScreenId, UserProfile } from '../types';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
@@ -33,7 +30,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -47,8 +43,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   } = useThemeLanguage();
 
   const supportedLanguages: { id: 'es' | 'en'; label: string; flag: string }[] = [
-    { id: 'es', label: 'Español (Original)', flag: '🇪🇸' },
-    { id: 'en', label: 'Traducir al inglés (English)', flag: '🇺🇸' },
+    { id: 'es', label: 'ESPAÑOL', flag: '🇪🇸' },
+    { id: 'en', label: 'INGLÉS', flag: '🇺🇸' },
   ];
 
   // Close dropdowns when clicking outside
@@ -68,12 +64,9 @@ export const Navigation: React.FC<NavigationProps> = ({
     };
   }, []);
 
-  // Dashboard navigation items:
-  // Inicio, Aprende (Seguridad Vial), Práctica (Simulador), Quiz, Reportes
+  // Dashboard navigation items: Inicio, Quiz, Reportes
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
-    { id: 'educacion_vial', labelKey: 'nav_learn', defaultLabel: 'Aprende' },
-    { id: 'simulador', labelKey: 'nav_practice', defaultLabel: 'Práctica' },
     { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
   ];
@@ -81,7 +74,6 @@ export const Navigation: React.FC<NavigationProps> = ({
   const handleNavClick = (screen: ScreenId) => {
     onNavigate(screen);
     setUserDropdownOpen(false);
-    setMobileMenuOpen(false);
   };
 
   return (
@@ -118,7 +110,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Center Nav Items */}
           {user ? (
-            <nav className="hidden md:flex items-center gap-5 lg:gap-7 py-2">
+            <nav className="flex items-center gap-3 sm:gap-6 py-2">
               {navItems.map((item) => {
                 const isActive = currentScreen === item.id;
 
@@ -166,76 +158,28 @@ export const Navigation: React.FC<NavigationProps> = ({
               </span>
             </button>
 
-            {/* Language Selector Dropdown */}
-            {/* Direct 1-Click Translation & Language Selector */}
-            <div className="relative flex items-center" ref={langDropdownRef}>
-              <button
-                type="button"
-                id="header-lang-toggle-btn"
-                data-i18n="nav_lang_switch"
-                onClick={toggleLanguage}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all cursor-pointer shadow-xs select-none ${
-                  language === 'en'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/70 text-[#0052cc] dark:text-sky-300 ring-2 ring-blue-400/20'
-                    : 'border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-                title={language === 'es' ? 'Traducir al inglés / Translate to English' : 'Traducir al español / Translate to Spanish'}
-                aria-label={language === 'es' ? 'Traducir al inglés' : 'Traducir al español'}
-              >
-                <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
-                <span className="flex items-center gap-1">
-                  <span>{language === 'es' ? '🇺🇸' : '🇪🇸'}</span>
-                  <span className="hidden sm:inline">
-                    {language === 'es' ? 'Traducir al inglés' : 'Traducir al español'}
-                  </span>
-                  <span className="sm:hidden uppercase font-black">{language === 'es' ? 'EN' : 'ES'}</span>
+            {/* Direct 1-Click Language Toggle (no arrow/flechita) */}
+            <button
+              type="button"
+              id="header-lang-toggle-btn"
+              data-i18n="nav_lang_switch"
+              onClick={toggleLanguage}
+              className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all cursor-pointer shadow-xs select-none active:scale-95 ${
+                language === 'en'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/70 text-[#0052cc] dark:text-sky-300 ring-2 ring-blue-400/20'
+                  : 'border-slate-300 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+              title={language === 'es' ? 'Cambiar a Inglés' : 'Cambiar a Español'}
+              aria-label="Cambiar idioma"
+            >
+              <Globe size={16} className="text-[#0052cc] dark:text-sky-400 shrink-0" />
+              <span className="flex items-center gap-1 font-black">
+                <span>{language === 'es' ? '🇪🇸' : '🇺🇸'}</span>
+                <span className="uppercase tracking-wide">
+                  {language === 'es' ? 'ESPAÑOL' : 'INGLÉS'}
                 </span>
-              </button>
-
-              {/* Dropdown toggle chevron */}
-              <button
-                type="button"
-                id="header-lang-menu-btn"
-                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer ml-0.5"
-                title="Seleccionar idioma / Select language"
-                aria-label="Menú de idiomas"
-              >
-                <ChevronDown size={14} />
-              </button>
-
-              {langDropdownOpen && (
-                <div 
-                  id="language-picker-dropdown"
-                  className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-1.5 z-50 animate-fade-in"
-                >
-                  {supportedLanguages.map((langItem) => {
-                    const isSelected = language === langItem.id;
-                    return (
-                      <button
-                        key={langItem.id}
-                        type="button"
-                        onClick={() => {
-                          setLanguage(langItem.id);
-                          setLangDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 font-black'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">{langItem.flag}</span>
-                          <span>{langItem.label}</span>
-                        </span>
-                        {isSelected && <span className="text-[#0052cc] dark:text-sky-400 text-xs font-black">✓</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+              </span>
+            </button>
 
             {/* Authenticated User Controls */}
             {user ? (
@@ -321,56 +265,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   )}
                 </div>
 
-                {/* Mobile hamburger toggle */}
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                  aria-label="Abrir menú"
-                >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
               </>
             ) : null}
 
           </div>
         </div>
-
-        {/* Mobile Navigation Drawer */}
-        {user && mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
-            <div className="grid grid-cols-2 gap-2">
-                  {navItems.map((item) => {
-                    const isActive = currentScreen === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleNavClick(item.id)}
-                        className={`p-2.5 rounded-xl text-xs font-bold text-left transition-all ${
-                          isActive
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 border border-blue-200 dark:border-blue-900/40'
-                            : 'bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {t(item.labelKey, item.defaultLabel)}
-                      </button>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onLogout();
-                    }}
-                    className="p-2.5 rounded-xl text-xs font-bold text-left bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 flex items-center gap-1.5"
-                  >
-                    <LogOut size={14} />
-                    <span>{t('nav_logout', 'Cerrar Sesión')}</span>
-                  </button>
-                </div>
-              </div>
-            )}
       </div>
     </header>
   );

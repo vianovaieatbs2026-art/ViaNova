@@ -327,7 +327,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     brand_tagline: 'MOVILIDAD INTELIGENTE PARA TU CIUDAD',
     footerCopyright: '© 2026 ViaNova. Basado en el Código Nacional de Tránsito (Ley 769/2002) y Ley 2251/2022.',
     footer_legend: 'Normativa alineada con el Código Nacional de Tránsito (Ley 769 de 2002) y Ley Julián Esteban (Ley 2251 de 2022).',
-    footer_bottom: '© 2026 ViaNova. Plataforma educativa y de reporte comunitario para la seguridad vial en Colombia.',
+    footer_bottom: '© 2026 ViaNova. Plataforma de reporte comunitario para la seguridad vial en Colombia.',
     theme_label: 'Tema:',
     theme_light: 'Claro',
     theme_dark: 'Oscuro',
@@ -738,7 +738,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     search_results_title: 'Resultados de la Búsqueda',
     search_download_res: 'Descargar Archivo Oficial',
     search_open_finder: 'Abrir buscador',
-    search_prompt: '¿Qué deseas consultar hoy en ViaNova?',
+    search_prompt: '¿Qué deseas buscar hoy en ViaNova?',
 
     // Delete Account Modal
     del_title: 'Eliminar Cuenta de ViaNova',
@@ -964,7 +964,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     brand_tagline: 'SMART MOBILITY FOR YOUR CITY',
     footerCopyright: '© 2026 ViaNova. Based on the National Traffic Code (Law 769/2002) and Law 2251/2022.',
     footer_legend: 'Regulations aligned with Colombia National Traffic Code (Law 769 of 2002) and Julian Esteban Law (Law 2251 of 2022).',
-    footer_bottom: '© 2026 ViaNova. Educational and community reporting platform for road safety in Colombia.',
+    footer_bottom: '© 2026 ViaNova. Community reporting platform for road safety in Colombia.',
     theme_label: 'Theme:',
     theme_light: 'Light',
     theme_dark: 'Dark',
