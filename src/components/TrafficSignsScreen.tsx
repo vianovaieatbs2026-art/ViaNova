@@ -125,7 +125,7 @@ export const TrafficSignsScreen: React.FC<TrafficSignsScreenProps> = ({ onBackTo
             className="text-xs font-bold text-[#64748b] dark:text-slate-400 hover:text-[#0052cc] dark:hover:text-sky-400 flex items-center gap-1.5 transition-colors mb-2.5 cursor-pointer"
           >
             <ArrowLeft size={15} />
-            <span>{t('sim_back_to_dashboard', 'Volver al Inicio')}</span>
+            <span>Volver</span>
           </button>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/70 text-[#0052cc] dark:text-sky-300 text-[11px] font-extrabold mb-2 border border-blue-200 dark:border-blue-900">

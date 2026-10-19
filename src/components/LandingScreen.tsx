@@ -149,6 +149,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             >
               Servicios Viales
             </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('contacto')}
+              className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#00FF88] hover:text-[#00FF88] transition-all cursor-pointer shadow-xs"
+            >
+              {t('landing_nav_contact', 'Soporte y Contacto')}
+            </button>
           </div>
 
           {/* The Main Action Cards: Iniciar Sesión & Crear Cuenta Nueva */}

@@ -42,20 +42,21 @@ interface CityOption {
   zoom: number;
 }
 
-import { GoogleMapsLive, MapMarkerPoint } from './GoogleMapsLive';
+import { GoogleMapsLive, MapMarkerPoint, findMedellinPlace, parseMedellinStreetAddress } from './GoogleMapsLive';
 
-// Medellín, Antioquia is the PRIMARY and exclusive city of the platform (NO Bogotá)
+// Medellín, Antioquia is the exclusive city of the platform
 export const MEDELLIN_COORDS = { lat: 6.2476, lng: -75.5658 };
 
 export const COLOMBIAN_CITIES: CityOption[] = [
-  { name: 'Medellín (Centro)', department: 'Antioquia', coords: { lat: 6.2476, lng: -75.5658 }, zoom: 14 },
-  { name: 'El Poblado', department: 'Antioquia', coords: { lat: 6.2085, lng: -75.5678 }, zoom: 15 },
-  { name: 'Laureles / Estadio', department: 'Antioquia', coords: { lat: 6.25184, lng: -75.5898 }, zoom: 15 },
-  { name: 'Belén / Av. 80', department: 'Antioquia', coords: { lat: 6.2312, lng: -75.6015 }, zoom: 15 },
-  { name: 'Envigado', department: 'Antioquia', coords: { lat: 6.1685, lng: -75.5842 }, zoom: 15 },
-  { name: 'Bello', department: 'Antioquia', coords: { lat: 6.3355, lng: -75.5583 }, zoom: 15 },
-  { name: 'Itagüí', department: 'Antioquia', coords: { lat: 6.1725, lng: -75.6111 }, zoom: 15 },
-  { name: 'Sabaneta', department: 'Antioquia', coords: { lat: 6.1514, lng: -75.6156 }, zoom: 15 },
+  { name: 'Medellín (Centro)', department: 'Antioquia', coords: { lat: 6.2476, lng: -75.5658 }, zoom: 15 },
+  { name: 'El Poblado', department: 'Antioquia', coords: { lat: 6.2085, lng: -75.5678 }, zoom: 16 },
+  { name: 'Laureles / Estadio', department: 'Antioquia', coords: { lat: 6.25184, lng: -75.5898 }, zoom: 16 },
+  { name: 'Belén / Av. 80', department: 'Antioquia', coords: { lat: 6.2312, lng: -75.6015 }, zoom: 16 },
+  { name: 'San Javier (Comuna 13)', department: 'Antioquia', coords: { lat: 6.2525, lng: -75.6155 }, zoom: 16 },
+  { name: 'Robledo', department: 'Antioquia', coords: { lat: 6.2750, lng: -75.5950 }, zoom: 16 },
+  { name: 'Castilla / Aranjuez', department: 'Antioquia', coords: { lat: 6.2865, lng: -75.5655 }, zoom: 16 },
+  { name: 'Buenos Aires', department: 'Antioquia', coords: { lat: 6.2380, lng: -75.5510 }, zoom: 16 },
+  { name: 'Guayabal', department: 'Antioquia', coords: { lat: 6.2155, lng: -75.5842 }, zoom: 16 },
 ];
 
 export const MEDELLIN_SURROUNDING_ZONES = [
@@ -64,9 +65,9 @@ export const MEDELLIN_SURROUNDING_ZONES = [
   { id: 'centro', name: 'Centro / Av. Oriental', coords: { lat: 6.2486, lng: -75.5689 }, label: 'Centro' },
   { id: 'sur', name: 'Autopista Sur / Guayabal', coords: { lat: 6.2285, lng: -75.5795 }, label: 'Autopista Sur' },
   { id: 'vegas', name: 'Av. Las Vegas / EAFIT', coords: { lat: 6.1982, lng: -75.5786 }, label: 'Las Vegas' },
-  { id: 'regional', name: 'Av. Regional / Eje del Río', coords: { lat: 6.2401, lng: -75.5762 }, label: 'Av. Regional' },
+  { id: 'regional', name: 'Av. Regional / Parques del Río', coords: { lat: 6.2401, lng: -75.5762 }, label: 'Av. Regional' },
   { id: 'belen', name: 'Belén / Av. 80', coords: { lat: 6.2312, lng: -75.6015 }, label: 'Belén / La 80' },
-  { id: 'envigado', name: 'Envigado / Sabaneta', coords: { lat: 6.1685, lng: -75.5842 }, label: 'Envigado' },
+  { id: 'comuna13', name: 'San Javier / Comuna 13', coords: { lat: 6.2525, lng: -75.6155 }, label: 'Comuna 13' },
 ];
 
 // Helper to calculate distance between two coordinates in kilometers
@@ -228,7 +229,7 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
     return `https://maps.google.com/maps?q=${query}&z=${zoom}${mapTypeParam}&output=embed`;
   }, [currentMapCenter, mapZoom, submittedSearchLocation, activeIncident, userLocation, geolocationState, mapType]);
 
-  const handleSearchLocationSubmit = (e: React.FormEvent) => {
+  const handleSearchLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = customSearchLocation.trim();
     if (!query) return;
@@ -237,14 +238,42 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
     setSubmittedSearchLocation(query);
     setForegroundNotice(`Buscando y ubicando en Google Maps: ${query}`);
 
+    // Direct match via Medellín dictionary & street grid
+    let match = findMedellinPlace(query) || parseMedellinStreetAddress(query);
+
+    if (match) {
+      setCurrentMapCenter(match.coords);
+      setMapZoom(match.zoom || 17);
+      setForegroundNotice(`📍 Ubicado: ${match.name}`);
+      setTimeout(() => setForegroundNotice(null), 3500);
+    } else {
+      // Fast fallback geocoders
+      try {
+        const nomQuery = `${query}, Medellín, Antioquia, Colombia`;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(nomQuery)}`,
+          { headers: { 'Accept-Language': 'es' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+            const displayName = data[0].display_name.split(',').slice(0, 3).join(', ');
+            setCurrentMapCenter(coords);
+            setMapZoom(17);
+            setForegroundNotice(`📍 Ubicado: ${displayName}`);
+            setTimeout(() => setForegroundNotice(null), 3500);
+          }
+        }
+      } catch (err) {
+        console.warn('Geocoding notice:', err);
+      }
+    }
+
     const mapElement = document.getElementById('mapa-reportes-movilidad');
     if (mapElement) {
       mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-    setTimeout(() => {
-      setForegroundNotice(null);
-    }, 4500);
   };
 
   const handleSelectSurroundingZone = (zone: typeof MEDELLIN_SURROUNDING_ZONES[0]) => {
@@ -289,7 +318,7 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
   const handleUseCurrentLocationForReport = () => {
     if (userLocation) {
       setReportCoords({ lat: userLocation.lat, lng: userLocation.lng });
-      setLocation(`Mi Ubicación GPS (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}), Medellín`);
+      setLocation(`Ubicación (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}), Medellín`);
     } else {
       requestUserLocation(false);
       setReportCoords(MEDELLIN_COORDS);
@@ -351,9 +380,18 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
     setTimeout(() => setForegroundNotice(null), 4000);
   };
 
-  // Filter and sort incidents by proximity if user coordinates are known
+  // Filter and sort incidents by proximity if user coordinates are known (strictly Medellín)
   const filteredIncidents = useMemo(() => {
     let result = incidents.filter(inc => {
+      // Must strictly be Medellín
+      const isMedellin =
+        !inc.city ||
+        inc.city.toLowerCase() === 'medellín' ||
+        inc.city.toLowerCase() === 'medellin' ||
+        inc.location.toLowerCase().includes('medellín') ||
+        inc.location.toLowerCase().includes('medellin');
+      if (!isMedellin) return false;
+
       if (filterCategory !== 'todos' && inc.category !== filterCategory) return false;
       if (filterStatus !== 'todos' && inc.status !== filterStatus) return false;
       return true;
@@ -399,17 +437,8 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
               }`}></span>
             </span>
             <span className="font-bold text-slate-700 dark:text-slate-300">
-              {isLocating ? 'Localizando GPS...' : locationLabel}
+              Medellín, Antioquia • Cobertura en vivo
             </span>
-            <button
-              type="button"
-              onClick={handleCenterOnUserLocation}
-              disabled={isLocating}
-              title="Centrar en mi ubicación actual"
-              className="ml-1 p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-[#0052cc] dark:text-sky-400 cursor-pointer disabled:opacity-50"
-            >
-              <Crosshair size={13} className={isLocating ? 'animate-spin' : ''} />
-            </button>
           </div>
 
           {/* City Selector Tabs - Medellín is ALWAYS first */}
@@ -472,15 +501,6 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCenterOnUserLocation}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
-            >
-              <Crosshair size={14} />
-              <span>Mi Ubicación GPS</span>
-            </button>
-
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Medellin, Antioquia, Colombia')}`}
               target="_blank"
@@ -604,9 +624,18 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
             <GoogleMapsLive 
               initialCenter={selectedCity.coords}
               initialZoom={selectedCity.zoom}
+              targetCoords={currentMapCenter}
+              targetZoom={mapZoom}
               heightClass="h-[460px] sm:h-[540px]"
               customMarkers={incidentMarkers}
-              onMarkerClick={(m) => setActiveIncidentId(m.id)}
+              onMarkerClick={(m) => {
+                setActiveIncidentId(m.id);
+                const inc = incidents.find(i => i.id === m.id);
+                if (inc && inc.lat && inc.lng) {
+                  setCurrentMapCenter({ lat: inc.lat, lng: inc.lng });
+                  setMapZoom(17);
+                }
+              }}
               showSurroundingSelector={false}
               showSearchBar={false}
             />

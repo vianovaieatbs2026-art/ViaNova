@@ -147,6 +147,30 @@ function AppContent() {
       return;
     }
 
+    if (screen === 'senales') {
+      setCurrentScreen('inicio');
+      setTimeout(() => {
+        document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
+    if (screen === 'educacion_vial') {
+      setCurrentScreen('inicio');
+      setTimeout(() => {
+        document.getElementById('seccion-aprender-inicio')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
+    if (screen === 'simulador') {
+      setCurrentScreen('inicio');
+      setTimeout(() => {
+        document.getElementById('seccion-practica-inicio')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
     if (screen === 'servicios') {
       setCurrentScreen('inicio');
       setTimeout(() => {
@@ -177,7 +201,7 @@ function AppContent() {
         onOpenDeleteAccountModal={() => setIsDeleteModalOpen(true)}
       />
 
-      {/* Main Content Area: STRICT AUTH GATE */}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col justify-start">
         {!user ? (
           /* ================= ESTADO 1: PANTALLA INICIAL (SOLO AUTENTICACIÓN: [INICIAR SESIÓN] / [CREAR CUENTA]) ================= */
@@ -194,10 +218,11 @@ function AppContent() {
         ) : (
           /* ================= ESTADO 2: DENTRO DE LA APP (USUARIO AUTENTICADO) ================= */
           <ErrorBoundary onReset={() => setCurrentScreen('inicio')}>
-            {(currentScreen === 'inicio' || currentScreen === 'educacion_vial' || currentScreen === 'simulador') && (
+            {(currentScreen === 'inicio' || currentScreen === 'educacion_vial' || currentScreen === 'simulador' || currentScreen === 'senales') && (
               <DashboardScreen
                 user={user}
-                onNavigate={setCurrentScreen}
+                onNavigate={handleNavigate}
+                initialShowSigns={currentScreen === 'senales'}
               />
             )}
 
@@ -207,13 +232,7 @@ function AppContent() {
               />
             )}
 
-            {(currentScreen === 'senales' || currentScreen === 'educacion_vial') && (
-              <TrafficSignsScreen
-                onBackToDashboard={() => setCurrentScreen('inicio')}
-              />
-            )}
-
-            {(currentScreen === 'quiz' || currentScreen === 'simulador') && (
+            {currentScreen === 'quiz' && (
               <QuizScreen
                 user={user}
               />
