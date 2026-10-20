@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Menu, 
-  X, 
   Moon, 
   Sun, 
   Globe, 
@@ -31,7 +29,6 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenDeleteAccountModal,
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { 
@@ -68,7 +65,6 @@ export const Navigation: React.FC<NavigationProps> = ({
   const handleNavClick = (screen: ScreenId) => {
     onNavigate(screen);
     setUserDropdownOpen(false);
-    setMobileMenuOpen(false);
   };
 
   return (
@@ -105,7 +101,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Center Nav Items (Only when authenticated inside the page) */}
           {user ? (
-            <nav className="hidden md:flex items-center gap-5 lg:gap-7 py-2">
+            <nav className="flex items-center gap-3 sm:gap-5 lg:gap-7 py-2 overflow-x-auto max-w-[45vw] sm:max-w-none">
               {navItems.map((item) => {
                 const isActive = currentScreen === item.id;
 
@@ -115,7 +111,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                     type="button"
                     id={`nav-item-${item.id}`}
                     onClick={() => handleNavClick(item.id)}
-                    className={`relative py-1.5 px-1 text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`relative py-1.5 px-1 text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'text-[#0052cc] dark:text-sky-400'
                         : 'text-[#475569] dark:text-slate-300 hover:text-[#0052cc] dark:hover:text-white'
@@ -260,56 +256,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   )}
                 </div>
 
-                {/* Mobile hamburger toggle */}
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-slate-700 dark:text-slate-200 lg:hidden rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                  aria-label="Abrir menú"
-                >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
               </>
             ) : null}
 
           </div>
         </div>
-
-        {/* Mobile Navigation Drawer */}
-        {user && mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-100 dark:border-slate-800 py-3 animate-fade-in">
-            <div className="grid grid-cols-2 gap-2">
-                  {navItems.map((item) => {
-                    const isActive = currentScreen === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleNavClick(item.id)}
-                        className={`p-2.5 rounded-xl text-xs font-bold text-left transition-all ${
-                          isActive
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0052cc] dark:text-sky-400 border border-blue-200 dark:border-blue-900/40'
-                            : 'bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {t(item.labelKey, item.defaultLabel)}
-                      </button>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onLogout();
-                    }}
-                    className="p-2.5 rounded-xl text-xs font-bold text-left bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 flex items-center gap-1.5"
-                  >
-                    <LogOut size={14} />
-                    <span>{t('nav_logout', 'Cerrar Sesión')}</span>
-                  </button>
-                </div>
-              </div>
-            )}
       </div>
     </header>
   );

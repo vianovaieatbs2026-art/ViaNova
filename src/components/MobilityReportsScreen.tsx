@@ -20,7 +20,9 @@ import {
   ShieldAlert,
   Loader2,
   CheckCircle2,
-  Share2
+  Share2,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { COLOMBIAN_ROAD_INCIDENTS } from '../data/mockData';
 import { RoadIncident, UserProfile } from '../types';
@@ -42,7 +44,7 @@ interface CityOption {
   zoom: number;
 }
 
-import { GoogleMapsLive, MapMarkerPoint, findMedellinPlace, parseMedellinStreetAddress } from './GoogleMapsLive';
+import { findMedellinPlace, parseMedellinStreetAddress } from './GoogleMapsLive';
 
 // Medellín, Antioquia is the exclusive city of the platform
 export const MEDELLIN_COORDS = { lat: 6.2476, lng: -75.5658 };
@@ -127,6 +129,37 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
   // Search submit state
   const [submittedSearchLocation, setSubmittedSearchLocation] = useState<string>('');
   const [foregroundNotice, setForegroundNotice] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = () => {
+    if (!mapContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      mapContainerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {
+        setIsFullscreen(prev => !prev);
+      });
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {
+        setIsFullscreen(false);
+      });
+    }
+  };
+
+  const handleZoomIn = () => {
+    setMapZoom(prev => Math.min(prev + 1, 20));
+  };
+
+  const handleZoomOut = () => {
+    setMapZoom(prev => Math.max(prev - 1, 10));
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // New Report Modal State
   const [showNewModal, setShowNewModal] = useState(false);
@@ -139,19 +172,7 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
   const [hasAttachedPhoto, setHasAttachedPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Map incidents to GoogleMapsLive marker points
-  const incidentMarkers: MapMarkerPoint[] = useMemo(() => {
-    return incidents
-      .filter((inc) => inc.lat && inc.lng)
-      .map((inc) => ({
-        id: inc.id,
-        title: inc.title,
-        description: `${inc.location} • ${inc.description}`,
-        coords: { lat: inc.lat!, lng: inc.lng! },
-        category: 'incident' as const,
-        severity: inc.severity as any
-      }));
-  }, [incidents]);
+
 
   // 1. Initial Automatic Geolocation on Mount (Exactly like Google Maps does)
   useEffect(() => {
@@ -537,26 +558,68 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
       {/* Main Grid: Interactive Map (Left) + Incidents List (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left 7 Columns: Google Map Container & Controls */}
-        <div className="lg:col-span-7 space-y-4">
+        {/* Left 7 Columns: Google Map Container & Controls (Tal cual como Google Maps) */}
+        <div className="lg:col-span-7 space-y-3">
           
-          {/* Map Controls Header */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            
-            {/* Search address / avenue form */}
-            <form 
-              onSubmit={handleSearchLocationSubmit}
-              className="flex-1 min-w-[240px] flex items-center gap-2"
+          {/* Quick Surrounding Areas Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 flex items-center gap-1">
+              <MapPin size={12} className="text-[#0052cc] dark:text-sky-400" />
+              Sectores:
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveIncidentId(null);
+                setSubmittedSearchLocation('');
+                setCustomSearchLocation('');
+                setCurrentMapCenter(MEDELLIN_COORDS);
+                setMapZoom(14);
+                setForegroundNotice('Vista general de Medellín');
+                setTimeout(() => setForegroundNotice(null), 3000);
+              }}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors shrink-0 cursor-pointer"
             >
-              <div className="relative flex-1">
+              Todo Medellín
+            </button>
+            {MEDELLIN_SURROUNDING_ZONES.map((zone) => (
+              <button
+                key={zone.id}
+                type="button"
+                onClick={() => handleSelectSurroundingZone(zone)}
+                className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition-colors shrink-0 cursor-pointer"
+              >
+                {zone.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Interactive Google Map Canvas Box - Tal cual como Google Maps */}
+          <div 
+            ref={mapContainerRef}
+            id="mapa-reportes-movilidad"
+            className={`relative w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md bg-slate-100 dark:bg-slate-900 transition-all ${
+              isFullscreen 
+                ? 'fixed inset-0 z-50 w-screen h-screen rounded-none' 
+                : 'h-[490px] sm:h-[560px]'
+            }`}
+          >
+            {/* Top-Left: Google Maps Floating Search Bar */}
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 w-[calc(100%-24px)] sm:w-[380px] max-w-full">
+              <form 
+                onSubmit={handleSearchLocationSubmit}
+                className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 dark:border-slate-700/80 p-1.5 flex items-center gap-2 transition-all"
+              >
+                <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                  <MapPin size={16} />
+                </div>
                 <input
                   type="text"
-                  placeholder="Buscar en Medellín (ej: Av. El Poblado, San Juan, Cra 70, La 80)..."
+                  placeholder="Buscar en Google Maps Medellín..."
                   value={customSearchLocation}
                   onChange={(e) => setCustomSearchLocation(e.target.value)}
-                  className="w-full pl-8 pr-7 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#0052cc] dark:focus:border-sky-500"
+                  className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-white placeholder-slate-400 font-medium"
                 />
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 {customSearchLocation && (
                   <button
                     type="button"
@@ -565,112 +628,171 @@ export const MobilityReportsScreen: React.FC<MobilityReportsScreenProps> = ({
                       setSubmittedSearchLocation('');
                       setForegroundNotice(null);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
-                    title="Limpiar"
+                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title="Borrar búsqueda"
                   >
-                    <X size={12} />
+                    <X size={14} />
                   </button>
                 )}
-              </div>
+                <button
+                  type="submit"
+                  id="btn-buscar-mapa-reportes"
+                  className="px-3 py-1.5 bg-[#0052cc] hover:bg-[#0047b3] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+                  title="Buscar en Google Maps"
+                >
+                  <Search size={13} />
+                  <span>Buscar</span>
+                </button>
+              </form>
 
-              <button
-                type="submit"
-                id="btn-buscar-mapa-reportes"
-                className="px-3.5 py-2 bg-[#0052cc] hover:bg-[#0047b3] text-white text-xs font-bold rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer"
-                title="Buscar y ubicar en el mapa de Medellín"
-              >
-                <Search size={13} />
-                <span>Buscar</span>
-              </button>
-            </form>
+              {/* Notification Badge */}
+              {foregroundNotice && (
+                <div className="mt-2 bg-[#0052cc] text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-lg border border-blue-400/50 flex items-center gap-2 animate-fade-in w-fit max-w-full">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="truncate">{foregroundNotice}</span>
+                </div>
+              )}
+            </div>
 
-            {/* View Layers Toggle (Traffic, Satellite, Default) */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setMapType('traffic')}
-                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                  mapType === 'traffic' ? 'bg-[#0052cc] text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'
-                }`}
-              >
-                Tráfico
-              </button>
+            {/* Top-Right: Google Maps Layer Toggle & Fullscreen & Link */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl p-1 shadow-xl border border-slate-200/90 dark:border-slate-700/80">
               <button
                 type="button"
                 onClick={() => setMapType('roadmap')}
-                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                  mapType === 'roadmap' ? 'bg-[#0052cc] text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  mapType === 'roadmap'
+                    ? 'bg-[#0052cc] text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
+                title="Vista de mapa estándar de Google Maps"
               >
-                Calles
+                Mapa
               </button>
               <button
                 type="button"
                 onClick={() => setMapType('satellite')}
-                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                  mapType === 'satellite' ? 'bg-[#0052cc] text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  mapType === 'satellite'
+                    ? 'bg-[#0052cc] text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
+                title="Vista satelital fotográfica de Google Maps"
               >
                 Satélite
               </button>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="p-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((activeIncident?.location || submittedSearchLocation || `${currentMapCenter.lat},${currentMapCenter.lng}`) + ', Medellín, Colombia')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 text-slate-700 dark:text-slate-200 hover:text-[#0052cc] dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                title="Abrir en Google Maps (nueva pestaña)"
+              >
+                <ExternalLink size={16} />
+              </a>
             </div>
-          </div>
 
-          {/* Interactive Google Map Box with Official Google Maps Platform */}
-          <div 
-            id="mapa-reportes-movilidad"
-            className="relative w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
-          >
-            <GoogleMapsLive 
-              initialCenter={selectedCity.coords}
-              initialZoom={selectedCity.zoom}
-              targetCoords={currentMapCenter}
-              targetZoom={mapZoom}
-              heightClass="h-[460px] sm:h-[540px]"
-              customMarkers={incidentMarkers}
-              onMarkerClick={(m) => {
-                setActiveIncidentId(m.id);
-                const inc = incidents.find(i => i.id === m.id);
-                if (inc && inc.lat && inc.lng) {
-                  setCurrentMapCenter({ lat: inc.lat, lng: inc.lng });
-                  setMapZoom(17);
-                }
-              }}
-              showSurroundingSelector={false}
-              showSearchBar={false}
+            {/* Bottom-Right: Google Maps Zoom & Live GPS Position Controls */}
+            <div className="absolute bottom-4 right-4 z-20 flex flex-col items-center gap-1.5">
+              {/* GPS Geolocation Button */}
+              <button
+                type="button"
+                onClick={handleCenterOnUserLocation}
+                className={`p-2.5 rounded-2xl shadow-xl border backdrop-blur-md transition-all cursor-pointer ${
+                  userLocation
+                    ? 'bg-white/95 dark:bg-slate-900/95 text-[#0052cc] dark:text-sky-400 border-blue-400/50 hover:bg-blue-50'
+                    : 'bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-slate-700/80 hover:bg-slate-100'
+                }`}
+                title={isLocating ? 'Detectando GPS...' : 'Centrar en mi ubicación actual'}
+              >
+                {isLocating ? (
+                  <Loader2 size={18} className="animate-spin text-[#0052cc]" />
+                ) : (
+                  <Crosshair size={18} />
+                )}
+              </button>
+
+              {/* Google Maps Zoom In / Out */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 dark:border-slate-700/80 flex flex-col overflow-hidden">
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  className="p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors cursor-pointer border-b border-slate-200/80 dark:border-slate-700/80"
+                  title="Acercar mapa (+)"
+                >
+                  <ZoomIn size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  className="p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0052cc] dark:hover:text-sky-400 transition-colors cursor-pointer"
+                  title="Alejar mapa (-)"
+                >
+                  <ZoomOut size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Official Interactive Google Maps Engine */}
+            <iframe
+              key={`gmap-canvas-${mapEmbedUrl}`}
+              title="Google Maps Medellín"
+              src={mapEmbedUrl}
+              className="w-full h-full border-0 block bg-slate-100 dark:bg-slate-900"
+              loading="lazy"
+              allow="geolocation"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
             />
 
-            {/* Active Incident Overlay Card at bottom of map */}
+            {/* Active Incident Details Card (Floating over bottom of map) */}
             {activeIncident && (
-              <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-3 animate-fade-in z-20">
-                <div className="space-y-0.5 max-w-[70%]">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                    <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-sky-400 tracking-wider">
-                      {activeIncident.category.replace("_", " ")} • {activeIncident.city || "Medellín"}
+              <div className="absolute bottom-4 left-4 right-16 sm:right-24 md:max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex items-center justify-between gap-3 animate-fade-in z-20">
+                <div className="space-y-1 max-w-[75%]">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#0052cc] dark:text-sky-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded">
+                      {activeIncident.category.replace('_', ' ')}
                     </span>
                     {userLocation && activeIncident.lat && activeIncident.lng && (
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
                         A {calculateDistanceKm(userLocation.lat, userLocation.lng, activeIncident.lat, activeIncident.lng) < 1 
                           ? `${Math.round(calculateDistanceKm(userLocation.lat, userLocation.lng, activeIncident.lat, activeIncident.lng) * 1000)} m` 
-                          : `${calculateDistanceKm(userLocation.lat, userLocation.lng, activeIncident.lat, activeIncident.lng).toFixed(1)} km`} de ti
+                          : `${calculateDistanceKm(userLocation.lat, userLocation.lng, activeIncident.lat, activeIncident.lng).toFixed(1)} km`}
                       </span>
                     )}
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                     {activeIncident.title}
                   </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {activeIncident.location}
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
+                    <MapPin size={11} className="text-rose-500 shrink-0" />
+                    <span>{activeIncident.location}</span>
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveIncidentId(null)}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 cursor-pointer"
+                    title="Cerrar detalle"
+                  >
+                    <X size={14} />
+                  </button>
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((activeIncident.lat && activeIncident.lng ? `${activeIncident.lat},${activeIncident.lng}` : activeIncident.location) + ", Medellín, Colombia")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-[#0052cc] hover:bg-[#0047b3] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="bg-[#0052cc] hover:bg-[#0047b3] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
                   >
                     <NavigationIcon size={12} />
                     <span>Cómo llegar</span>

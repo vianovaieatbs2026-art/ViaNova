@@ -35,9 +35,7 @@ import {
   Play,
   Bike,
   FileText,
-  Check,
-  Volume2,
-  VolumeX
+  Check
 } from 'lucide-react';
 import { UserProfile, ScreenId, SearchResultItem } from '../types';
 import { ViaNovaLogo } from './ViaNovaLogo';
@@ -60,44 +58,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
   // Search Bar state in Dashboard (opens in small white dropdown, no black screen)
   const [dashboardSearchQuery, setDashboardSearchQuery] = React.useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = React.useState(false);
-  const [speakingTipId, setSpeakingTipId] = React.useState<number | null>(null);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // Close dropdown on outside click
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setIsSearchDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Audio speech narration for the 3 road safety tips
-  const handleSpeakTip = (tipId: number, text: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    if (speakingTipId === tipId) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {}
-      setSpeakingTipId(null);
-      return;
-    }
-    try {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.resume();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-CO';
-      utterance.rate = 0.95;
-      utterance.onend = () => setSpeakingTipId(null);
-      utterance.onerror = () => setSpeakingTipId(null);
-      window.speechSynthesis.speak(utterance);
-      setSpeakingTipId(tipId);
-    } catch {
-      setSpeakingTipId(null);
-    }
-  };
 
   // Popular suggested searches when search is focused/empty
   const popularDashboardItems: SearchResultItem[] = React.useMemo(() => [
@@ -452,24 +413,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
                 <CheckCircle2 size={13} />
                 <span>Evita choques por alcance</span>
               </span>
-              <button
-                type="button"
-                onClick={() => handleSpeakTip(1, 'Consejo número 1 de seguridad vial en Colombia: La regla de los 3 segundos y la distancia en vía húmeda. Según el artículo 108 del Código Nacional de Tránsito, debes mantener una distancia prudente con el vehículo que te antecede. En carreteras de montaña y con lluvia, cuenta mentalmente tres segundos en piso seco y duplica a seis segundos si el pavimento está mojado para prevenir el hidroplaneo y salvar tu vida.')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  speakingTipId === 1
-                    ? 'bg-rose-600 text-white animate-pulse'
-                    : 'bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-900/60 dark:hover:bg-cyan-800 text-cyan-800 dark:text-cyan-200'
-                }`}
-                title="Escuchar locución del consejo"
-              >
-                {speakingTipId === 1 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                <span>{speakingTipId === 1 ? 'Detener Voz' : 'Escuchar Voz'}</span>
-              </button>
+              <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800/60">
+                Art. 108 CNT
+              </span>
             </div>
           </div>
 
@@ -492,24 +443,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
                 <CheckCircle2 size={13} />
                 <span>Protege al ciclista</span>
               </span>
-              <button
-                type="button"
-                onClick={() => handleSpeakTip(2, 'Consejo número 2 de seguridad vial en Colombia: El margen sagrado de 1.50 metros al adelantar ciclistas. Por mandato de la Ley 1811 y la Ley 2251, al rebasar a un ciclista en cualquier vía del país debes disminuir tu velocidad y dejar al menos un metro y medio de separación lateral libre. No uses el pito detrás de ellos; protégelos como actores vulnerables de la vía.')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  speakingTipId === 2
-                    ? 'bg-rose-600 text-white animate-pulse'
-                    : 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200'
-                }`}
-                title="Escuchar locución del consejo"
-              >
-                {speakingTipId === 2 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                <span>{speakingTipId === 2 ? 'Detener Voz' : 'Escuchar Voz'}</span>
-              </button>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
+                Ley 1811 & 2251
+              </span>
             </div>
           </div>
 
@@ -532,24 +473,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
                 <CheckCircle2 size={13} />
                 <span>Cero siniestros en glorietas</span>
               </span>
-              <button
-                type="button"
-                onClick={() => handleSpeakTip(3, 'Consejo número 3 de seguridad vial en Colombia: Prelación en glorietas y desconexión total del celular al volante. En todas las rotondas del país, el vehículo que ya circula por el anillo interno tiene prelación absoluta sobre el que va a entrar. Además, queda prohibido manipular el teléfono celular al conducir; responder un mensaje equivale a avanzar setenta metros a ciegas. Pon siempre tu atención al cien por ciento en el camino.')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  speakingTipId === 3
-                    ? 'bg-rose-600 text-white animate-pulse'
-                    : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200'
-                }`}
-                title="Escuchar locución del consejo"
-              >
-                {speakingTipId === 3 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                <span>{speakingTipId === 3 ? 'Detener Voz' : 'Escuchar Voz'}</span>
-              </button>
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/60">
+                Art. 70 CNT
+              </span>
             </div>
           </div>
         </div>
