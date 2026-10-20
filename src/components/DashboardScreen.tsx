@@ -15,7 +15,6 @@ import {
   Sparkles, 
   CheckCircle2, 
   ChevronRight, 
-  ChevronDown,
   User,
   UserPlus, 
   LogIn, 
@@ -46,7 +45,6 @@ import {
 import { UserProfile, ScreenId, SearchResultItem } from '../types';
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { TrafficSignGraphic } from './TrafficSignGraphic';
-import { TrafficSignsSections } from './TrafficSignsSections';
 import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
 
@@ -65,7 +63,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
   // Search Bar state in Dashboard (opens in small white dropdown, no black screen)
   const [dashboardSearchQuery, setDashboardSearchQuery] = React.useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = React.useState(false);
-  const [isTrafficSignsOpen, setIsTrafficSignsOpen] = React.useState(false);
   const [speakingTipId, setSpeakingTipId] = React.useState<number | null>(null);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -112,10 +109,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       label: 'Señales de Tránsito',
       icon: ShieldAlert,
       action: () => {
-        setIsTrafficSignsOpen(true);
-        setTimeout(() => {
-          document.getElementById('btn-senales-de-transito')?.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
+        onNavigate('senales');
       },
     },
     {
@@ -217,9 +211,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
     setIsSearchDropdownOpen(false);
     setDashboardSearchQuery('');
     if (item.targetScreen) {
-      if (item.targetScreen === 'senales') {
-        setIsTrafficSignsOpen(true);
-      }
       onNavigate(item.targetScreen);
     }
   };
@@ -271,7 +262,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             </h1>
 
             <p className="text-sm sm:text-base text-[#475569] dark:text-slate-300 leading-relaxed">
-              Plataforma integral para aprender señales de tránsito colombianas, realizar simulacros de examen teórico para licencias de conducción (A2, B1, C1), practicar quizzes y reportar el estado de las vías en tiempo real.
+              Plataforma oficial para consultar normativa de tránsito colombiana, realizar simulacros de examen teórico para licencias de conducción (A2, B1, C1), practicar quizzes y reportar incidencias viales en tiempo real.
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
@@ -658,61 +649,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
           </div>
         </div>
       </section>
-
-      {/* ===================== BOTÓN OFICIAL: SEÑALES DE TRÁNSITO ===================== */}
-      <div className="w-full space-y-4">
-        {/* Banner with the official button: "SEÑALES DE TRÁNSITO" */}
-        <div className="bg-gradient-to-r from-[#003d99] via-[#0052cc] to-[#0284c7] text-white rounded-3xl p-6 sm:p-7 shadow-md relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="relative z-10 space-y-2 text-center md:text-left max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-white text-[11px] font-extrabold uppercase tracking-wide">
-              <Scale size={13} />
-              <span>Manual Oficial de Señalización Vial de Colombia</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              SEÑALES DE TRÁNSITO
-            </h2>
-            <p className="text-xs sm:text-sm text-blue-100 font-medium leading-relaxed">
-              Descubre las 3 categorías oficiales: <strong>1. Reglamentarias</strong> (obligan), <strong>2. Preventivas</strong> (peligro) y <strong>3. Informativas</strong> (información) con sus dibujos oficiales y descripciones normativas.
-            </p>
-          </div>
-
-          <div className="relative z-10 flex flex-wrap items-center justify-center md:justify-end gap-3 shrink-0">
-            <button
-              type="button"
-              id="btn-senales-de-transito"
-              onClick={() => setIsTrafficSignsOpen(prev => !prev)}
-              className="px-6 py-3.5 rounded-2xl bg-white text-[#0052cc] hover:bg-blue-50 active:scale-98 font-black text-sm transition-all shadow-md flex items-center gap-2.5 cursor-pointer"
-            >
-              <TrafficSignGraphic signType="sr-01 pare" size="xs" showCodeBadge={false} />
-              <span>{isTrafficSignsOpen ? 'Ocultar Señales' : 'SEÑALES DE TRÁNSITO'}</span>
-              <ChevronDown className={`transition-transform duration-300 ${isTrafficSignsOpen ? 'rotate-180' : ''}`} size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('senales')}
-              className="px-4 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-98 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer border border-white/20"
-              title="Abrir en pantalla completa"
-            >
-              <ExternalLink size={15} />
-              <span className="hidden sm:inline">Ver Completo</span>
-            </button>
-          </div>
-
-          {/* Decorative background cues */}
-          <div className="absolute -right-6 -bottom-6 opacity-15 pointer-events-none select-none flex items-center gap-4">
-            <div className="w-28 h-28 rounded-full border-8 border-white flex items-center justify-center font-black text-3xl">
-              PARE
-            </div>
-          </div>
-        </div>
-
-        {/* When clicked, opens the 3 sections right here on the dashboard */}
-        {isTrafficSignsOpen && (
-          <div className="animate-fade-in pt-2">
-            <TrafficSignsSections initialSectionId="todas" showFlashcardToggle={true} />
-          </div>
-        )}
-      </div>
     </div>
   );
 };

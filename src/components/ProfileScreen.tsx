@@ -193,13 +193,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               <span className="text-[#64748b] dark:text-slate-400">{t('profile_email', 'Correo Electrónico')}</span>
               <span className="font-bold text-[#0f172a] dark:text-white">{user.email}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-[#f1f5f9] dark:border-slate-800">
+            <div className="flex justify-between py-2">
               <span className="text-[#64748b] dark:text-slate-400">{t('profile_type', 'Tipo de Perfil')}</span>
               <span className="font-bold capitalize" style={{ color: activeThemeConfig.primaryHex }}>{user.userType}</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-[#64748b] dark:text-slate-400">Horas de Capacitación</span>
-              <span className="font-bold text-[#0f172a] dark:text-white">{user.completedHours} hrs</span>
             </div>
           </div>
         </div>
