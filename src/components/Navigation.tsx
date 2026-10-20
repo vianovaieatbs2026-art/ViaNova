@@ -68,10 +68,10 @@ export const Navigation: React.FC<NavigationProps> = ({
     };
   }, []);
 
-  // Top navigation bar items:
-  // ONLY Inicio, Quiz, and Reportes (Aprende, Práctica, and Señales de Tránsito are inside Inicio)
+  // Top navigation bar items: Inicio, Señales, Quiz, Reportes
   const navItems: { id: ScreenId; labelKey: string; defaultLabel: string }[] = [
     { id: 'inicio', labelKey: 'nav_home', defaultLabel: 'Inicio' },
+    { id: 'senales', labelKey: 'nav_signs', defaultLabel: 'Señales de Tránsito' },
     { id: 'quiz', labelKey: 'nav_quiz', defaultLabel: 'Quiz' },
     { id: 'reportes', labelKey: 'nav_reports', defaultLabel: 'Reportes' },
   ];

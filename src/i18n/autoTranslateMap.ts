@@ -313,9 +313,9 @@ export const SPANISH_TO_ENGLISH_MAP: Record<string, string> = {
   'Centrado en': 'Centered on',
   'Búsqueda:': 'Search:',
 
-  // ===================== EDUCAPLAY & QUIZ ARCADE =====================
-  'Educaplay • Crucigrama': 'Educaplay • Crossword',
-  'Educaplay • Sopa 10x10': 'Educaplay • Word Search 10x10',
+  // ===================== JUEGOS DIDÁCTICOS & QUIZ ARCADE =====================
+  'Juego Didáctico • Crucigrama': 'Didactic Game • Crossword',
+  'Juego Didáctico • Sopa 10x10': 'Didactic Game • Word Search 10x10',
   'Reto Rápido • 10s': 'Speed Challenge • 10s',
   'Encuestas • En Vivo': 'Live Polls',
   'Dilemas y Encuestas en Vía': 'Road Dilemmas & Polls',
@@ -330,7 +330,7 @@ export const SPANISH_TO_ENGLISH_MAP: Record<string, string> = {
   'Votar y Aprender': 'Vote & Learn',
   'Jugar Emparejamiento': 'Play Matching Game',
   'Completar Frases': 'Complete Sentences',
-  'Plataforma Interactiva CEA • Estilo Educaplay': 'CEA Interactive Arcade • Educaplay Style',
+  'Plataforma Interactiva CEA • Juegos Didácticos': 'CEA Interactive Arcade • Didactic Games',
   'Actividades y Quizzes Interactivos': 'Interactive Quizzes & Activities',
   'Todos los Juegos (6 Modos)': 'All Games (6 Modes)',
   'Crucigrama y Sopa de Letras': 'Crossword & Word Search',

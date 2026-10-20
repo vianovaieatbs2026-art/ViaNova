@@ -116,15 +116,7 @@ export const HeaderSearchBar: React.FC<HeaderSearchBarProps> = ({
     setIsOpen(false);
     setQuery('');
     if (item.id === 'quick-mapa' || item.title.toLowerCase().includes('mapa')) {
-      const target = document.getElementById('mapa-en-vivo-medellin');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        onNavigate('inicio');
-        setTimeout(() => {
-          document.getElementById('mapa-en-vivo-medellin')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 150);
-      }
+      onNavigate('reportes');
       return;
     }
     if (item.targetScreen) {

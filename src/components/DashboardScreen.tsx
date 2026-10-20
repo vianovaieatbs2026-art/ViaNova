@@ -38,115 +38,24 @@ import {
   Play,
   Bike,
   FileText,
-  Check
+  Check,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { UserProfile, ScreenId, SearchResultItem } from '../types';
 import { ViaNovaLogo } from './ViaNovaLogo';
 import { TrafficSignGraphic } from './TrafficSignGraphic';
-import { TrafficSignsScreen } from './TrafficSignsScreen';
 import { searchViaNovaItems } from '../data/searchIndex';
 import { useThemeLanguage } from '../context/ThemeLanguageContext';
-import { getUserDashboardProgress } from '../utils/userProgress';
 import { CityRouteSimulator2D } from './CityRouteSimulator2D';
-import { GoogleMapsLive } from './GoogleMapsLive';
 import { MultimediaVideoSection } from './MultimediaVideoSection';
-
-interface CorridorItem {
-  id: string;
-  name: string;
-  query: string;
-  zoom: number;
-  highlight: string;
-}
-
-export const MEDELLIN_CORRIDORS: CorridorItem[] = [
-  {
-    id: 'autopista-sur',
-    name: 'Autopista Sur',
-    query: 'Autopista Sur, Medellín, Antioquia, Colombia',
-    zoom: 15,
-    highlight: 'Acceso Sur, Envigado e Itagüí'
-  },
-  {
-    id: 'av-regional',
-    name: 'Av. Regional',
-    query: 'Avenida Regional, Medellín, Antioquia, Colombia',
-    zoom: 15,
-    highlight: 'Eje del Río Medellín Norte-Sur'
-  },
-  {
-    id: 'av-las-vegas',
-    name: 'Av. Las Vegas',
-    query: 'Avenida Las Vegas, Medellín, Antioquia, Colombia',
-    zoom: 15,
-    highlight: 'Poblado, Ciudad del Río y Envigado'
-  },
-  {
-    id: 'av-el-poblado',
-    name: 'Av. El Poblado',
-    query: 'Avenida El Poblado, Medellín, Antioquia, Colombia',
-    zoom: 15,
-    highlight: 'Milla de Oro y Parque Lleras'
-  },
-  {
-    id: 'av-oriental',
-    name: 'Av. Oriental',
-    query: 'Avenida Oriental, Medellín, Antioquia, Colombia',
-    zoom: 16,
-    highlight: 'Centro neurálgico de Medellín'
-  },
-  {
-    id: 'av-80-san-juan',
-    name: 'Av. 80 / San Juan',
-    query: 'Avenida 80 con Calle San Juan, Medellín, Antioquia, Colombia',
-    zoom: 16,
-    highlight: 'Corredor Occidente Laureles-La América'
-  }
-];
-
-export interface WorldLocationItem {
-  id: string;
-  name: string;
-  detail: string;
-  query: string;
-  zoom: number;
-  country?: string;
-  category?: 'monument' | 'city' | 'street' | 'corridor' | 'place';
-}
-
-export const WORLD_FAMOUS_LOCATIONS: WorldLocationItem[] = [
-  { id: 'w-eiffel', name: 'Torre Eiffel', detail: 'París, Francia', query: 'Tour Eiffel, Paris, France', zoom: 16, country: 'Francia', category: 'monument' },
-  { id: 'w-times', name: 'Times Square', detail: 'Manhattan, Nueva York, EE. UU.', query: 'Times Square, New York, USA', zoom: 16, country: 'EE. UU.', category: 'monument' },
-  { id: 'w-madrid', name: 'Gran Vía y Plaza Mayor', detail: 'Madrid, España', query: 'Gran Vía, Madrid, España', zoom: 15, country: 'España', category: 'city' },
-  { id: 'w-tokyo', name: 'Cruce de Shibuya', detail: 'Tokio, Japón', query: 'Shibuya Crossing, Tokyo, Japan', zoom: 16, country: 'Japón', category: 'monument' },
-  { id: 'w-roma', name: 'Coliseo Romano', detail: 'Roma, Italia', query: 'Colosseo, Roma, Italia', zoom: 16, country: 'Italia', category: 'monument' },
-  { id: 'w-londres', name: 'Big Ben y Westminster', detail: 'Londres, Reino Unido', query: 'Big Ben, London, UK', zoom: 16, country: 'Reino Unido', category: 'monument' },
-  { id: 'w-buenosaires', name: 'Obelisco de Buenos Aires', detail: 'Av. 9 de Julio, Buenos Aires, Argentina', query: 'Obelisco, Buenos Aires, Argentina', zoom: 16, country: 'Argentina', category: 'city' },
-  { id: 'w-cdmx', name: 'Zócalo Capitalino', detail: 'Ciudad de México, México', query: 'Zócalo, Ciudad de México, México', zoom: 16, country: 'México', category: 'city' },
-  { id: 'w-sydney', name: 'Ópera de Sídney', detail: 'Sídney, Australia', query: 'Sydney Opera House, Sydney, Australia', zoom: 16, country: 'Australia', category: 'monument' },
-  { id: 'w-rio', name: 'Cristo Redentor', detail: 'Río de Janeiro, Brasil', query: 'Cristo Redentor, Rio de Janeiro, Brasil', zoom: 16, country: 'Brasil', category: 'monument' },
-  { id: 'w-berlin', name: 'Puerta de Brandeburgo', detail: 'Berlín, Alemania', query: 'Brandenburger Tor, Berlin, Germany', zoom: 16, country: 'Alemania', category: 'monument' },
-  { id: 'w-cairo', name: 'Pirámides de Guiza', detail: 'El Cairo, Egipto', query: 'Giza Necropolis, Cairo, Egypt', zoom: 15, country: 'Egipto', category: 'monument' }
-];
-
-export const COLOMBIA_HIGHLIGHTS: WorldLocationItem[] = [
-  { id: 'co-botero', name: 'Plaza Botero / Centro', detail: 'Medellín, Antioquia', query: 'Plaza Botero, Medellín, Colombia', zoom: 17, country: 'Colombia', category: 'monument' },
-  { id: 'co-poblado', name: 'Parque Lleras / El Poblado', detail: 'Medellín, Antioquia', query: 'Parque Lleras, Medellín, Colombia', zoom: 16, country: 'Colombia', category: 'corridor' },
-  { id: 'co-sur', name: 'Autopista Sur (Itagüí - Medellín)', detail: 'Corredor vial metropolitano', query: 'Autopista Sur, Medellín, Colombia', zoom: 15, country: 'Colombia', category: 'corridor' },
-  { id: 'co-regional', name: 'Avenida Regional (Eje del Río)', detail: 'Corredor Norte - Sur', query: 'Avenida Regional, Medellín, Colombia', zoom: 15, country: 'Colombia', category: 'corridor' },
-  { id: 'co-nutibara', name: 'Cerro Nutibara / Pueblito Paisa', detail: 'Medellín, Antioquia', query: 'Cerro Nutibara, Medellín, Colombia', zoom: 16, country: 'Colombia', category: 'monument' },
-  { id: 'co-cartagena', name: 'Ciudad Amurallada', detail: 'Cartagena de Indias, Bolívar', query: 'Ciudad Amurallada, Cartagena, Colombia', zoom: 16, country: 'Colombia', category: 'city' },
-  { id: 'co-cali', name: 'San Antonio y Cristo Rey', detail: 'Cali, Valle del Cauca', query: 'Barrio San Antonio, Cali, Colombia', zoom: 15, country: 'Colombia', category: 'city' },
-  { id: 'co-oriente', name: 'Túnel de Oriente', detail: 'Conexión Valle de Aburrá - Aeropuerto JMC', query: 'Túnel de Oriente, Medellín, Colombia', zoom: 14, country: 'Colombia', category: 'corridor' }
-];
 
 interface DashboardScreenProps {
   user: UserProfile | null;
   onNavigate: (screen: ScreenId) => void;
-  initialShowSigns?: boolean;
 }
 
-export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNavigate, initialShowSigns }) => {
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNavigate }) => {
   const { 
     themeMode, 
     activeThemeConfig, 
@@ -154,20 +63,33 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
     language
   } = useThemeLanguage();
 
-  const [showSignsSection, setShowSignsSection] = React.useState<boolean>(initialShowSigns || false);
-  const [aprenderTab, setAprenderTab] = React.useState<'teoria' | 'decalogo' | 'multimedia'>('teoria');
+  const [aprenderTab, setAprenderTab] = React.useState<'teoria' | 'consejos' | 'decalogo' | 'multimedia'>('teoria');
   const [practicaTab, setPracticaTab] = React.useState<'simulador_2d' | 'examen_runt'>('simulador_2d');
+  const [speakingTipId, setSpeakingTipId] = React.useState<number | null>(null);
 
-  React.useEffect(() => {
-    if (initialShowSigns) {
-      setShowSignsSection(true);
-      setTimeout(() => {
-        document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+  const handleSpeakTip = (tipId: number, text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (speakingTipId === tipId) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+      setSpeakingTipId(null);
+      return;
     }
-  }, [initialShowSigns]);
-
-  const progress = getUserDashboardProgress(user);
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-CO';
+      utterance.rate = 0.95;
+      utterance.onend = () => setSpeakingTipId(null);
+      utterance.onerror = () => setSpeakingTipId(null);
+      window.speechSynthesis.speak(utterance);
+      setSpeakingTipId(tipId);
+    } catch {
+      setSpeakingTipId(null);
+    }
+  };
 
   const quickAccessChips = [
     {
@@ -175,10 +97,16 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       label: 'Señales de Tránsito',
       icon: ShieldAlert,
       action: () => {
-        setShowSignsSection(true);
-        setTimeout(() => {
-          document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
-        }, 80);
+        onNavigate('senales');
+      },
+    },
+    {
+      id: 'consejos',
+      label: '3 Consejos Viales',
+      icon: Lightbulb,
+      action: () => {
+        setAprenderTab('consejos');
+        document.getElementById('seccion-aprender-inicio')?.scrollIntoView({ behavior: 'smooth' });
       },
     },
     {
@@ -206,15 +134,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       },
     },
     {
-      id: 'mapa-en-vivo',
-      label: 'Mapa en Vivo',
+      id: 'reportes',
+      label: 'Reportes en Vía (Mapa)',
       icon: MapPin,
       isLive: true,
       action: () => {
-        const target = document.getElementById('mapa-en-vivo-medellin');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        onNavigate('reportes');
       },
     },
     {
@@ -287,13 +212,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
     },
     {
       id: 'quick-mapa',
-      title: 'mapa en vivo - Medellín',
+      title: 'Mapa de Tráfico y Reportes en Vía',
       categoryType: 'reportes',
-      categoryLabel: 'Tráfico en Vivo',
+      categoryLabel: 'Reportes en Vía',
       subtitle: 'Monitoreo de corredores viales de Medellín en Google Maps',
-      targetScreen: 'inicio',
-      description: 'Mapa de tráfico en tiempo real Medellín',
-      tags: ['mapa', 'medellin']
+      targetScreen: 'reportes',
+      description: 'Mapa de tráfico en tiempo real Medellín y reportes de movilidad',
+      tags: ['mapa', 'medellin', 'reportes']
     }
   ], []);
 
@@ -306,11 +231,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
   const handleSelectSearchResult = (item: SearchResultItem) => {
     setIsSearchDropdownOpen(false);
     setDashboardSearchQuery('');
-    if (item.id === 'quick-mapa') {
-      const target = document.getElementById('mapa-en-vivo-medellin');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+    if (item.id === 'quick-mapa' || item.title.toLowerCase().includes('mapa')) {
+      onNavigate('reportes');
     } else if (item.targetScreen) {
       onNavigate(item.targetScreen);
     }
@@ -342,100 +264,39 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             </div>
           </div>
 
-          {/* Two Hero Cards in One Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left: Progreso General (7 cols) */}
-            <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-6 transition-colors">
-              <div>
-                <h2 className="text-xl font-black text-[#0f172a] dark:text-white">
-                  {t('dash_general_progress', 'Progreso General')}
-                </h2>
-                <p className="text-sm text-[#475569] dark:text-slate-400 mt-1">
-                  {progress.hasProgress
-                    ? t('dash_progress_sub', 'Estás a un paso de dominar la teoría de conducción. ¡Sigue así!')
-                    : t('dash_progress_no_progress', '¡Bienvenido! Aún no has completado ningún módulo, empieza por el Módulo 1')
-                  }
-                </p>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between text-sm font-bold mb-2">
-                  <span className="text-slate-600 dark:text-slate-300">
-                    {t('dash_total_progress', 'Avance total')}
-                  </span>
-                  <span className="text-[#0052cc] dark:text-sky-400 text-lg font-black">
-                    {progress.totalProgress}%
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-[#0052cc] dark:bg-sky-500 rounded-full transition-all duration-700" 
-                    style={{ width: `${progress.totalProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div className="text-center">
-                  <span className="text-2xl font-black text-[#0f172a] dark:text-white block">
-                    {progress.completedModulesCount}
-                  </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    {t('dash_modules_completed', 'Módulos Completados')}
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="text-2xl font-black text-[#0f172a] dark:text-white block">
-                    {progress.quizAverage}
-                  </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    {t('dash_quizzes_avg', 'Promedio Quizzes')}
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="text-2xl font-black text-[#0f172a] dark:text-white block">
-                    {progress.badgesCount}
-                  </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    {t('dash_badges_earned', 'Insignias Obtenidas')}
-                  </span>
-                </div>
-              </div>
+          {/* Hero Featured Banner (Sin cuadro de progreso general) */}
+          <div className="bg-gradient-to-r from-[#0052cc] via-[#0047b3] to-[#1d4ed8] text-white rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            {/* Background Globe Watermark */}
+            <div className="absolute -right-6 -top-6 opacity-15 pointer-events-none text-white">
+              <Globe size={240} />
             </div>
 
-            {/* Right: Simulador Vial (5 cols) */}
-            <div className="lg:col-span-5 bg-[#0052cc] dark:bg-blue-700 text-white rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden flex flex-col justify-between">
-              {/* Background Globe Watermark */}
-              <div className="absolute -right-6 -top-6 opacity-20 pointer-events-none text-white">
-                <Globe size={220} />
+            <div className="space-y-3 relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-white text-xs font-bold w-fit">
+                <Sparkles size={13} />
+                <span>{t('dash_recommended', 'Formación Vial Integral')}</span>
               </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                {t('dash_road_simulator', 'Simulador de Conducción y Aprendizaje Vial')}
+              </h2>
+              <p className="text-sm text-blue-100 leading-relaxed max-w-xl">
+                {t('dash_simulator_pitch', 'Pon a prueba tus conocimientos en un entorno seguro antes del examen práctico y repasa las normas de tránsito de Colombia.')}
+              </p>
+            </div>
 
-              <div className="space-y-4 relative z-10">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-white text-xs font-bold w-fit">
-                  <Sparkles size={13} />
-                  <span>{t('dash_recommended', 'Recomendado')}</span>
-                </div>
-                <h2 className="text-2xl font-black text-white">
-                  {t('dash_road_simulator', 'Simulador Vial')}
-                </h2>
-                <p className="text-sm text-blue-100 leading-relaxed max-w-sm">
-                  {t('dash_simulator_pitch', 'Pon a prueba tus conocimientos en un entorno seguro antes del examen práctico.')}
-                </p>
-              </div>
-
-              <div className="pt-6 relative z-10">
-                <button
-                  type="button"
-                  id="dashboard-start-simulation-btn"
-                  onClick={() => {
-                    document.getElementById('seccion-practica-inicio')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="w-full py-3 px-4 bg-white/95 hover:bg-white text-[#0052cc] font-bold text-sm rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                >
-                  <span>{t('dash_start_sim_btn', 'Ir a Práctica y Simulador')}</span>
-                  <ArrowRight size={16} />
-                </button>
-              </div>
+            <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+              <button
+                type="button"
+                id="dashboard-start-simulation-btn"
+                onClick={() => {
+                  document.getElementById('seccion-practica-inicio')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="py-3 px-5 bg-white text-[#0052cc] hover:bg-blue-50 font-black text-sm rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Car size={16} />
+                <span>{t('dash_start_sim_btn', 'Ir a Práctica y Simulador')}</span>
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
         </div>
@@ -700,7 +561,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-black text-[#0f172a] dark:text-white">{progress.completedModulesCount || user.completedHours || 0}</span>
+              <span className="text-2xl font-black text-[#0f172a] dark:text-white">{user.completedHours || 0}</span>
               <span className="text-xs text-[#64748b] dark:text-slate-400">{t('dash_hours_unit', 'horas certificadas')}</span>
             </div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium flex items-center gap-1">
@@ -757,132 +618,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
         </div>
       )}
 
-      {/* ===================== MAPA EN VIVO - MEDELLÍN (ALWAYS VISIBLE GOOGLE MAPS) ===================== */}
-      <section 
-        id="mapa-en-vivo-medellin" 
-        className="scroll-mt-24 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-5 transition-colors"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold tracking-wide">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>{t('dash_traffic_badge', 'TRÁFICO EN TIEMPO REAL • GOOGLE MAPS')}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] dark:text-white tracking-tight flex items-center gap-2.5">
-              <MapPin className="text-rose-500 shrink-0" size={28} />
-              <span>{t('dash_map_title', 'Mapa en Vivo - Medellín')}</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-[#475569] dark:text-slate-400 max-w-2xl">
-              {t('dash_map_sub', 'Monitoreo del tráfico y estado de vías en tiempo real para Medellín y el Valle de Aburrá (Av. Regional, Autopista Sur, Las Vegas, Av. Oriental, Av. 80 y San Juan).')}
-            </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <a
-              href={language === 'en' ? 'https://www.google.com/maps/@6.25184,-75.5898,13z/data=!5m1!1e1?hl=en' : 'https://www.google.com/maps/@6.25184,-75.5898,13z/data=!5m1!1e1?hl=es'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5 shadow-2xs"
-            >
-              <span>{t('dash_open_gmaps', 'Abrir en Google Maps')}</span>
-              <ExternalLink size={13} />
-            </a>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('reportes')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0052cc] hover:bg-[#0047b3] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
-            >
-              <AlertTriangle size={13} />
-              <span>{t('dash_incident_reports_btn', 'Reportes de Incidencias')}</span>
-            </button>
-          </div>
-        </div>
-
-
-        {/* Official Google Maps Platform Live Component */}
-        <GoogleMapsLive 
-          initialCenter={{ lat: 6.2476, lng: -75.5658 }}
-          initialZoom={14}
-          heightClass="h-[520px] sm:h-[600px]"
-          showSurroundingSelector={true}
-          showSearchBar={true}
-        />
-      </section>
-
-      {/* ===================== APARTADO DE SEÑALES DE TRÁNSITO (DENTRO DE INICIO) ===================== */}
-      <section id="seccion-senales-transito" className="scroll-mt-24 space-y-4">
-        {!showSignsSection ? (
-          /* Botón grande y llamativo: SEÑALES DE TRÁNSITO */
-          <div className="bg-gradient-to-r from-amber-500/15 via-blue-500/15 to-red-500/15 border-2 border-amber-400 dark:border-amber-400/60 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-all hover:border-amber-500 hover:shadow-md">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-3xl shadow-md shrink-0">
-                🚦
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    SEÑALES DE TRÁNSITO
-                  </h2>
-                  <span className="text-[11px] font-black uppercase px-3 py-0.5 rounded-full bg-red-600 text-white shadow-xs">
-                    3 Secciones Oficiales
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-semibold max-w-2xl leading-relaxed">
-                  Haz clic en el botón para abrir las 3 secciones oficiales: <strong className="text-red-600 dark:text-red-400">1. Reglamentarias</strong> (circulares, fondo blanco y borde rojo • Son las que obligan), <strong className="text-amber-600 dark:text-amber-400">2. Preventivas</strong> (diamante amarillo • Avisan peligro) y <strong className="text-blue-600 dark:text-blue-400">3. Informativas</strong> (cuadradas azules o verdes • Dan información).
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              id="btn-abrir-senales-transito"
-              onClick={() => {
-                setShowSignsSection(true);
-                setTimeout(() => {
-                  document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
-                }, 50);
-              }}
-              className="w-full md:w-auto px-7 py-4 rounded-2xl bg-[#0052cc] hover:bg-[#0043a8] active:scale-95 text-white font-black text-sm shadow-md hover:shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2.5 shrink-0"
-            >
-              <span>SEÑALES DE TRÁNSITO</span>
-              <ArrowRight size={18} />
-            </button>
-          </div>
-        ) : (
-          /* Al darle clic: Abre las 3 secciones completas dentro del apartado inicio */
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-blue-200 dark:border-blue-900/60 p-4 sm:p-6 shadow-md space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🚦</span>
-                <div>
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    SEÑALES DE TRÁNSITO • DENTRO DE INICIO
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                    Manual de Señalización Vial • 1. Reglamentarias • 2. Preventivas • 3. Informativas
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowSignsSection(false)}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-              >
-                <X size={15} />
-                <span>Ocultar Señales</span>
-              </button>
-            </div>
-
-            {/* Componente oficial de las 3 secciones */}
-            <TrafficSignsScreen onBackToDashboard={() => setShowSignsSection(false)} />
-          </div>
-        )}
-      </section>
 
       {/* ===================== APARTADO APRENDER (DENTRO DE INICIO) ===================== */}
       <section id="seccion-aprender-inicio" className="scroll-mt-24 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-6 transition-colors">
@@ -916,6 +652,21 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             </button>
             <button
               type="button"
+              onClick={() => setAprenderTab('consejos')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                aprenderTab === 'consejos'
+                  ? 'bg-white dark:bg-slate-900 text-[#0052cc] dark:text-sky-400 shadow-xs ring-1 ring-amber-400/60'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Lightbulb size={14} className="text-amber-500 shrink-0" />
+              <span>3 Consejos Viales</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase">
+                Colombia
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => setAprenderTab('decalogo')}
               className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 aprenderTab === 'decalogo'
@@ -940,6 +691,38 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             </button>
           </div>
         </div>
+
+        {/* Banner de acceso rápido: 3 Consejos de Seguridad Vial en Colombia */}
+        {aprenderTab !== 'consejos' && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-emerald-500/10 border border-amber-300 dark:border-amber-400/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl shrink-0 font-black shadow-xs">
+                🇨🇴
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                    3 Consejos Clave de Seguridad Vial en Colombia
+                  </h4>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                    Recomendado
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                  1. Regla de 3 segundos en lluvia • 2. Margen de 1.5 m con ciclistas • 3. Prelación en glorietas y cero celular.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAprenderTab('consejos')}
+              className="px-4 py-2 rounded-xl bg-[#0052cc] hover:bg-[#0043a8] text-white text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-xs"
+            >
+              <Lightbulb size={14} />
+              <span>Ver y Escuchar los 3 Consejos</span>
+            </button>
+          </div>
+        )}
 
         {/* Tab 1: Normas & Leyes Clave */}
         {aprenderTab === 'teoria' && (
@@ -1098,6 +881,181 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: 3 Consejos de Seguridad Vial en Colombia */}
+        {aprenderTab === 'consejos' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 shadow-2xs">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-2xl shrink-0 font-black shadow-xs">
+                  🇨🇴
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                      3 Consejos Clave de Seguridad Vial en Colombia
+                    </h3>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                      Hábitos Salvavidas
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-2xl">
+                    Pautas prioritarias basadas en la realidad geográfica, accidentalidad vial y la legislación colombiana (Ley 769, Ley 1811 y Ley 2251). Puedes escuchar cada consejo con su botón de voz interactivo.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Consejo 1 */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 border-cyan-300 dark:border-cyan-800/80 hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                      Consejo 1 • Clima & Montaña
+                    </span>
+                    <span className="text-2xl">🌧️</span>
+                  </div>
+
+                  <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    La Regla de los 3 Segundos y Distancia en Vía Húmeda
+                  </h4>
+
+                  <div className="text-[11px] font-bold text-cyan-700 dark:text-cyan-400 flex items-center gap-1">
+                    <Scale size={13} />
+                    <span>Art. 108 Ley 769 (Código de Tránsito)</span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    En Colombia la topografía montañosa (curvas pronunciadas y aguaceros imprevistos en vías como <strong>La Línea, Las Palmas o Bogotá-Medellín</strong>), el agua sobre el asfalto reduce la adherencia de las llantas hasta en un 70%.
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-cyan-50/70 dark:bg-cyan-950/40 border border-cyan-200/80 dark:border-cyan-900 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                    <p className="font-bold text-cyan-900 dark:text-cyan-200">¿Cómo aplicarlo en la vía?</p>
+                    <p>Fija la vista en un poste o señal; cuando el auto de adelante pase por allí, cuenta <strong>"mil uno, mil dos, mil tres"</strong>. Si llueve o hay niebla, <strong>duplica a 6 segundos</strong> para evitar el aquaplaning y choques traseros.</p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 size={13} />
+                    <span>Evita choques por alcance</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSpeakTip(1, 'Consejo número 1 de seguridad vial en Colombia: La regla de los 3 segundos y la distancia en vía húmeda. Según el artículo 108 del Código Nacional de Tránsito, debes mantener una distancia prudente con el vehículo que te antecede. En carreteras de montaña y con lluvia, cuenta mentalmente tres segundos en piso seco y duplica a seis segundos si el pavimento está mojado para prevenir el hidroplaneo y salvar tu vida.')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      speakingTipId === 1
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-900/60 dark:hover:bg-cyan-800 text-cyan-800 dark:text-cyan-200'
+                    }`}
+                  >
+                    {speakingTipId === 1 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                    <span>{speakingTipId === 1 ? 'Detener Voz' : 'Escuchar Voz'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Consejo 2 */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 border-emerald-300 dark:border-emerald-800/80 hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      Consejo 2 • Actores Vulnerables
+                    </span>
+                    <span className="text-2xl">🚲</span>
+                  </div>
+
+                  <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    El Margen Sagrado de 1.50 Metros al Adelantar Ciclistas
+                  </h4>
+
+                  <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                    <Scale size={13} />
+                    <span>Ley 1811 de 2016 (Ley Pro-Bici) y Ley 2251</span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Colombia es potencia mundial de ciclismo y miles de personas usan la bicicleta a diario para trabajar y entrenar en vías como <strong>Las Palmas, Patios, La Calera o vías intermunicipales</strong>. El ciclista carece de carrocería protectora.
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                    <p className="font-bold text-emerald-900 dark:text-emerald-200">¿Cómo aplicarlo en la vía?</p>
+                    <p>Al rebasar a un ciclista, <strong>reduce a menos de 30 km/h y abre el carro dejando mínimo 1.5 metros de separación</strong>. Jamás toques el pito detrás de él; el susto puede desestabilizarlo y provocar una caída fatal.</p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 size={13} />
+                    <span>Protege al ciclista</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSpeakTip(2, 'Consejo número 2 de seguridad vial en Colombia: El margen sagrado de 1.50 metros al adelantar ciclistas. Por mandato de la Ley 1811 y la Ley 2251, al rebasar a un ciclista en cualquier vía del país debes disminuir tu velocidad y dejar al menos un metro y medio de separación lateral libre. No uses el pito detrás de ellos; protégelos como actores vulnerables de la vía.')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      speakingTipId === 2
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200'
+                    }`}
+                  >
+                    {speakingTipId === 2 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                    <span>{speakingTipId === 2 ? 'Detener Voz' : 'Escuchar Voz'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Consejo 3 */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 border-amber-300 dark:border-amber-800/80 hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                      Consejo 3 • Intersecciones & Foco
+                    </span>
+                    <span className="text-2xl">🔄</span>
+                  </div>
+
+                  <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    Prelación en Glorietas y Cero Celular al Volante
+                  </h4>
+
+                  <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                    <Scale size={13} />
+                    <span>Art. 70 Ley 769 y Ley 1696 (Cero Distracción)</span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Las glorietas son complejas en ciudades colombianas (como <strong>San Diego, La Aguacatala, El Campín o la Glorieta de la 80</strong>). La regla de oro: quien ya circula por el anillo interno tiene prelación absoluta.
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                    <p className="font-bold text-amber-900 dark:text-amber-200">¿Cómo aplicarlo en la vía?</p>
+                    <p>Frena antes de ingresar y mira a tu izquierda. Y <strong>cero celular</strong>: responder un mensaje a 50 km/h significa rodar más de 70 metros a ciegas (más de media cuadra). Mantén ambas manos al volante y la mirada en la vía.</p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 size={13} />
+                    <span>Cero accidentes en rotondas</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSpeakTip(3, 'Consejo número 3 de seguridad vial en Colombia: Prelación en glorietas y desconexión total del celular al volante. En todas las rotondas del país, el vehículo que ya circula por el anillo interno tiene prelación absoluta sobre el que va a entrar. Además, queda prohibido manipular el teléfono celular al conducir; responder un mensaje equivale a avanzar setenta metros a ciegas. Pon siempre tu atención al cien por ciento en el camino.')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      speakingTipId === 3
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200'
+                    }`}
+                  >
+                    {speakingTipId === 3 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                    <span>{speakingTipId === 3 ? 'Detener Voz' : 'Escuchar Voz'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1289,12 +1247,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
 
           {/* 2. Señales de Tránsito */}
           <div 
-            onClick={() => {
-              setShowSignsSection(true);
-              setTimeout(() => {
-                document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
-              }, 50);
-            }}
+            onClick={() => onNavigate('senales')}
             className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
@@ -1309,7 +1262,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                   <ShieldAlert size={24} />
                 </div>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-900">
-                  3 Secciones Oficiales
+                  Apartado Oficial
                 </span>
               </div>
               <h3 className="text-base font-black text-[#0f172a] dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors uppercase tracking-tight">
@@ -1323,7 +1276,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
               className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold"
               style={{ color: activeThemeConfig.primaryHex }}
             >
-              <span>Abrir las 3 Secciones</span>
+              <span>Ir al Apartado de Señales</span>
               <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
@@ -1413,20 +1366,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                   <MapPin size={22} />
                 </div>
                 <span className="text-[10px] font-bold text-[#0052cc] bg-blue-50 dark:bg-blue-950/60 dark:text-sky-300 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-900">
-                  Google Maps
+                  Apartado Oficial
                 </span>
               </div>
               <h3 className="text-base font-bold text-[#0f172a] dark:text-white group-hover:text-[#0052cc] transition-colors">
-                Google Maps & Incidencias Viales
+                Reportes en Vía y Mapa en Vivo
               </h3>
               <p className="text-xs text-[#64748b] dark:text-slate-400 mt-1.5 leading-relaxed">
-                Visualiza el mapa interactivo con capa de tráfico en tiempo real, geolocaliza baches, semáforos y obras, o traza rutas seguras en Colombia.
+                Accede al mapa interactivo de Medellín con buscador de direcciones, capa de tráfico en tiempo real y reporte colaborativo de incidencias viales.
               </p>
             </div>
             <div 
               className="mt-5 pt-3 border-t border-[#f1f5f9] dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#0052cc] dark:text-sky-400"
             >
-              <span>Abrir Google Maps</span>
+              <span>Ir a Reportes y Mapa</span>
               <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

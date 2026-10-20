@@ -109,7 +109,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   };
 
   // =========================================================================
-  // 1. MODO EDUCAPLAY: EMPAREJAR SEÑALES Y REGLAS (MATCHING)
+  // 1. MODO DIDÁCTICO: EMPAREJAR SEÑALES Y REGLAS (MATCHING)
   // =========================================================================
   const [matchSigns, setMatchSigns] = useState<MatchSignItem[]>([]);
   const [shuffledRules, setShuffledRules] = useState<{ id: string; rule: string }[]>([]);
@@ -204,7 +204,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   };
 
   // =========================================================================
-  // 2. MODO EDUCAPLAY: RELLENAR HUECOS (FILL IN THE BLANKS)
+  // 2. MODO DIDÁCTICO: RELLENAR HUECOS (FILL IN THE BLANKS)
   // =========================================================================
   const [fillChallengeIdx, setFillChallengeIdx] = useState<number>(0);
   const [userFilledWords, setUserFilledWords] = useState<string[]>([]);
@@ -494,7 +494,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
       </div>
 
       {/* =====================================================================
-          1. HUB PRINCIPAL DE MODOS DE JUEGO (ESTILO EDUCAPLAY)
+          1. HUB PRINCIPAL DE MODOS DE JUEGO DIDÁCTICOS INTERACTIVOS
          ===================================================================== */}
       {gameMode === 'hub' && (
         <div className="space-y-8 animate-fade-in">
@@ -556,7 +556,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
             </button>
           </div>
 
-          {/* 6 MODOS EDUCAPLAY INTERACTIVOS */}
+          {/* 6 MODOS DIDÁCTICOS INTERACTIVOS */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* 1. Crucigrama Vial Interactivo */}
@@ -572,7 +572,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                       <HelpCircle size={22} />
                     </div>
                     <span className="px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-[10px] font-black uppercase">
-                      Educaplay • Crucigrama
+                      Juego Didáctico • Crucigrama
                     </span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
@@ -603,7 +603,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
                       <Sparkles size={22} />
                     </div>
                     <span className="px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-black uppercase">
-                      Educaplay • Sopa 10x10
+                      Juego Didáctico • Sopa 10x10
                     </span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-[#0052cc] dark:group-hover:text-[#00AFFF] transition-colors">
@@ -857,7 +857,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
           <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-sky-400 tracking-wider">
-                ACTIVIDAD INTERACTIVA EDUCAPLAY
+                ACTIVIDAD INTERACTIVA DIDÁCTICA
               </span>
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
                 Relacionar Señal con su Significado
@@ -1314,7 +1314,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
       )}
 
       {/* =====================================================================
-          MUNDOS EDUCAPLAY: CRUCIGRAMA, SOPA DE LETRAS Y ENCUESTAS / DILEMAS
+          MUNDOS DIDÁCTICOS: CRUCIGRAMA, SOPA DE LETRAS Y ENCUESTAS / DILEMAS
          ===================================================================== */}
       {gameMode === 'crossword' && (
         <CrosswordGame 

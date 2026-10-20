@@ -1629,7 +1629,7 @@ export function getQuizTopics(lang: string): QuizTopic[] {
 }
 
 // =========================================================================
-// EDUCAPLAY-STYLE INTERACTIVE DATASETS FOR GAMIFIED QUIZZES
+// INTERACTIVE DATASETS FOR GAMIFIED DIDACTIC QUIZZES
 // =========================================================================
 
 export interface MatchSignItem {

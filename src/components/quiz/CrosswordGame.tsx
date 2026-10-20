@@ -634,7 +634,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase text-[#0052cc] dark:text-[#00AFFF] tracking-wider">
-                EDUCAPLAY STYLE • 3 CRUCIGRAMAS
+                JUEGO DIDÁCTICO • 3 CRUCIGRAMAS
               </span>
               <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-[#0052cc] dark:text-sky-300 text-[10px] font-bold">
                 {currentLevel.difficulty}

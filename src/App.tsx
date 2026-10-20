@@ -147,13 +147,6 @@ function AppContent() {
       return;
     }
 
-    if (screen === 'senales') {
-      setCurrentScreen('inicio');
-      setTimeout(() => {
-        document.getElementById('seccion-senales-transito')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-      return;
-    }
 
     if (screen === 'educacion_vial') {
       setCurrentScreen('inicio');
@@ -218,11 +211,16 @@ function AppContent() {
         ) : (
           /* ================= ESTADO 2: DENTRO DE LA APP (USUARIO AUTENTICADO) ================= */
           <ErrorBoundary onReset={() => setCurrentScreen('inicio')}>
-            {(currentScreen === 'inicio' || currentScreen === 'educacion_vial' || currentScreen === 'simulador' || currentScreen === 'senales') && (
+            {(currentScreen === 'inicio' || currentScreen === 'educacion_vial' || currentScreen === 'simulador') && (
               <DashboardScreen
                 user={user}
                 onNavigate={handleNavigate}
-                initialShowSigns={currentScreen === 'senales'}
+              />
+            )}
+
+            {currentScreen === 'senales' && (
+              <TrafficSignsScreen
+                onBackToDashboard={() => setCurrentScreen('inicio')}
               />
             )}
 
