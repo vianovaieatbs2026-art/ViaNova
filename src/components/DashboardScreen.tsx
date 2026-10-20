@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
   ShieldCheck, 
-  ShieldAlert,
   Clock, 
   Award, 
   MapPin, 
@@ -15,7 +14,6 @@ import {
   Sparkles, 
   CheckCircle2, 
   ChevronRight, 
-  User,
   UserPlus, 
   LogIn, 
   AlertTriangle, 
@@ -34,7 +32,6 @@ import {
   Building2,
   Gamepad2,
   Film,
-  Lightbulb,
   Play,
   Bike,
   FileText,
@@ -101,43 +98,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       setSpeakingTipId(null);
     }
   };
-
-  // Quick navigation chips
-  const quickAccessChips = [
-    {
-      id: 'senales',
-      label: 'Señales de Tránsito',
-      icon: ShieldAlert,
-      action: () => {
-        onNavigate('senales');
-      },
-    },
-    {
-      id: 'consejos',
-      label: '3 Consejos Viales (Ley 2251)',
-      icon: Lightbulb,
-      action: () => {
-        document.getElementById('seccion-consejos-ley2251')?.scrollIntoView({ behavior: 'smooth' });
-      },
-    },
-    {
-      id: 'reportes',
-      label: 'Reportes en Vía (Mapa)',
-      icon: MapPin,
-      isLive: true,
-      action: () => {
-        onNavigate('reportes');
-      },
-    },
-    {
-      id: 'perfil',
-      label: 'Perfil',
-      icon: User,
-      action: () => {
-        onNavigate('perfil');
-      },
-    },
-  ];
 
   // Popular suggested searches when search is focused/empty
   const popularDashboardItems: SearchResultItem[] = React.useMemo(() => [
@@ -425,43 +385,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             )}
           </div>
         )}
-      </div>
-
-      {/* ===================== BARRITA HORIZONTAL CON ACCESOS RÁPIDOS (CHIP PILL) ===================== */}
-      <div className="w-full -mt-2">
-        <div 
-          className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-2 px-0.5 scroll-smooth"
-          role="navigation"
-          aria-label="Accesos rápidos"
-        >
-          {quickAccessChips.map((chip) => {
-            const Icon = chip.icon;
-            const isLive = chip.isLive;
-
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                id={`quick-chip-${chip.id}`}
-                onClick={chip.action}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shadow-2xs shrink-0 select-none active:scale-95 border ${
-                  isLive
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-[#0052cc] dark:hover:border-sky-400 hover:text-[#0052cc] dark:hover:text-sky-300 hover:bg-blue-50/50 dark:hover:bg-slate-800'
-                }`}
-              >
-                {isLive && (
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                )}
-                <Icon size={15} className={isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#0052cc] dark:text-sky-400'} />
-                <span>{chip.label}</span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* ===================== 3 CONSEJOS CLAVE DE SEGURIDAD VIAL EN COLOMBIA (LEY 2251 DE 2022) ===================== */}
