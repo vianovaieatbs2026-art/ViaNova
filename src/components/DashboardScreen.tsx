@@ -121,14 +121,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       },
     },
     {
-      id: 'quiz',
-      label: 'Quiz & Juegos Didácticos',
-      icon: HelpCircle,
-      action: () => {
-        onNavigate('quiz');
-      },
-    },
-    {
       id: 'reportes',
       label: 'Reportes en Vía (Mapa)',
       icon: MapPin,
@@ -160,26 +152,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       tags: ['sr-01', 'pare']
     },
     {
-      id: 'quick-sim',
-      title: 'Simulador de Examen Oficial',
-      categoryType: 'evaluacion',
-      categoryLabel: 'Simulador Licencias',
-      subtitle: 'Prueba teórica de 30 preguntas con temporizador',
-      targetScreen: 'quiz',
-      description: 'Simulador oficial',
-      tags: ['simulador', 'examen']
-    },
-    {
-      id: 'quick-quiz',
-      title: 'Quiz de Conocimiento Vial',
-      categoryType: 'evaluacion',
-      categoryLabel: 'Evaluación Rápida',
-      subtitle: 'Practica preguntas clave sobre normas y señalización',
-      targetScreen: 'quiz',
-      description: 'Quiz interactivo',
-      tags: ['quiz']
-    },
-    {
       id: 'quick-ley2251',
       title: 'Límites de Velocidad (Ley 2251)',
       categoryType: 'educacion',
@@ -188,6 +160,16 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
       targetScreen: 'inicio',
       description: 'Ley Julián Esteban',
       tags: ['velocidad', 'ley 2251']
+    },
+    {
+      id: 'quick-ley769',
+      title: 'Código Nacional de Tránsito (Ley 769)',
+      categoryType: 'educacion',
+      categoryLabel: 'Normativa Vial',
+      subtitle: 'Reglamento general de tránsito terrestre en Colombia',
+      targetScreen: 'inicio',
+      description: 'Código de tránsito',
+      tags: ['ley 769', 'codigo']
     },
     {
       id: 'quick-mapa',
@@ -314,7 +296,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
                 }}
                 onFocus={() => setIsSearchDropdownOpen(true)}
                 onClick={() => setIsSearchDropdownOpen(true)}
-                placeholder={t('search_prompt', '¿Qué deseas buscar hoy en ViaNova? (Señales, leyes, quiz, simulador...)')}
+                placeholder={t('search_prompt', '¿Qué deseas buscar hoy en ViaNova? (Señales, leyes, normas, reportes...)')}
                 className="w-full py-2 pr-8 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 bg-transparent focus:outline-none"
               />
               {dashboardSearchQuery && (
@@ -427,7 +409,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ user, onNaviga
             ) : (
               <div className="p-6 text-center text-xs text-slate-500">
                 <p className="font-semibold text-slate-700">No encontramos resultados directos para "{dashboardSearchQuery}"</p>
-                <p className="text-slate-400 mt-1">Prueba buscando "SR-01", "Pare", "Simulador", "Quiz" o "Velocidad"</p>
+                <p className="text-slate-400 mt-1">Prueba buscando "SR-01", "Pare", "Ley 2251", "Ley 769" o "Velocidad"</p>
                 <button
                   type="button"
                   onClick={() => {

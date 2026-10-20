@@ -150,17 +150,11 @@ function AppContent() {
 
     if (screen === 'educacion_vial') {
       setCurrentScreen('inicio');
-      setTimeout(() => {
-        document.getElementById('seccion-aprender-inicio')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
       return;
     }
 
     if (screen === 'simulador') {
-      setCurrentScreen('inicio');
-      setTimeout(() => {
-        document.getElementById('seccion-practica-inicio')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      setCurrentScreen('quiz');
       return;
     }
 
